@@ -1,0 +1,171 @@
+@import "tailwindcss";
+
+/* ── FALCON DESIGN TOKENS (Tailwind v4 @theme) ── */
+@theme {
+  /* Primary — Falcon Navy (logo body) */
+  --color-primary-900: #0F1B3D;
+  --color-primary-800: #162A54;
+  --color-primary-700: #1B3A6B;
+  --color-primary-600: #1E4D8C;
+  /* Primary — Falcon Cyan (logo wing) */
+  --color-primary-500: #29ABD4;
+  --color-primary-400: #4DBFE0;
+  --color-primary-300: #7DD3EC;
+  --color-primary-200: #B0E4F4;
+  --color-primary-100: #D6F1FA;
+  --color-primary-50: #EBF8FD;
+
+  /* CTA Green */
+  --color-cta: #10B981;
+  --color-cta-hover: #059669;
+  --color-cta-light: #D1FAE5;
+
+  /* Dark backgrounds */
+  --color-dark: #0F1B3D;
+  --color-dark-lighter: #162A54;
+  --color-dark-border: #1B3A6B;
+
+  /* Neutrals */
+  --color-surface: #F8FAFC;
+  --color-surface-alt: #F1F5F9;
+  --color-card: #FFFFFF;
+
+  /* Text */
+  --color-text-primary: #0F1B3D;
+  --color-text-secondary: #64748B;
+  --color-text-muted: #94A3B8;
+  --color-text-on-dark: #F8FAFC;
+
+  /* Accents */
+  --color-gold: #D4A843;
+  --color-gold-light: #FEF3C7;
+  --color-saudi-green: #006C35;
+  --color-compliance-bg: #ECFDF5;
+
+  /* Status */
+  --color-error: #EF4444;
+  --color-warning: #F59E0B;
+  --color-info: #3B82F6;
+  --color-success: #10B981;
+
+  /* Shadows */
+  --shadow-card: 0 4px 24px rgba(15, 23, 42, 0.06);
+  --shadow-card-hover: 0 20px 40px rgba(15, 23, 42, 0.1);
+  --shadow-navbar: 0 1px 3px rgba(0, 0, 0, 0.1);
+
+  /* Border Radius */
+  --radius-card: 16px;
+  --radius-button: 12px;
+
+  /* Fonts */
+  --font-sans: "Inter", "DM Sans", "Helvetica Neue", system-ui, sans-serif;
+  --font-arabic: "Tajawal", "IBM Plex Sans Arabic", "Arial", sans-serif;
+
+  /* Animations */
+  --animate-marquee: marquee 60s linear infinite;
+  --animate-marquee-reverse: marquee-reverse 60s linear infinite;
+}
+
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+@keyframes marquee-reverse {
+  0% { transform: translateX(-50%); }
+  100% { transform: translateX(0); }
+}
+
+@keyframes accordion-expand {
+  from { height: 0; opacity: 0; }
+  to { height: var(--radix-accordion-content-height); opacity: 1; }
+}
+
+@keyframes accordion-collapse {
+  from { height: var(--radix-accordion-content-height); opacity: 1; }
+  to { height: 0; opacity: 0; }
+}
+
+/* ── BASE STYLES ── */
+@layer base {
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    font-family: var(--font-sans);
+    color: var(--color-text-primary);
+    background-color: #ffffff;
+    line-height: 1.7;
+    font-size: 17px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Arabic RTL overrides */
+  [dir="rtl"] body {
+    font-family: var(--font-arabic);
+    font-size: 18px;
+    line-height: 1.8;
+  }
+
+  [dir="rtl"] h1 {
+    font-size: 44px;
+  }
+
+  h1 {
+    font-size: 48px;
+    font-weight: 800;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+  }
+
+  h2 {
+    font-size: 36px;
+    font-weight: 700;
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+  }
+
+  h3 {
+    font-size: 24px;
+    font-weight: 600;
+    line-height: 1.35;
+  }
+
+  h4 {
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 1.4;
+  }
+}
+
+/* ── UTILITY CLASSES ── */
+@layer utilities {
+  .section-padding {
+    padding-top: 5rem;
+    padding-bottom: 5rem;
+  }
+
+  @media (min-width: 1024px) {
+    .section-padding {
+      padding-top: 7rem;
+      padding-bottom: 7rem;
+    }
+  }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+}
