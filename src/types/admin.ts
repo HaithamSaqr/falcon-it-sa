@@ -132,12 +132,59 @@ export interface IntegrationSettings {
     apiToken: string;
     phoneId: string;
   };
+  helpdesk: {
+    enabled: boolean;
+    defaultTeamId: number;
+    allowRating: boolean;
+    allowNewTickets: boolean;
+  };
 }
 
 export interface CalendarSlot {
   start: string;
   end: string;
   available: boolean;
+}
+
+// ── Portal / Helpdesk Types ────────────────────────────────────────
+export interface PortalUser {
+  uid: number;
+  name: string;
+  email: string;
+  partnerId: number;
+}
+
+export interface HelpdeskTicket {
+  id: number;
+  ticketNumber: string;
+  name: string;
+  description: string;
+  stage: string;
+  stageClosed: boolean;
+  priority: "0" | "1" | "2" | "3";
+  categoryName: string;
+  teamName: string;
+  assignedTo: string;
+  createdAt: string;
+  closedAt: string | null;
+  slaDeadline: string | null;
+  slaStatus: string;
+  rating: string;
+  ratingComment: string;
+  messageCount: number;
+}
+
+export interface HelpdeskMessage {
+  id: number;
+  body: string;
+  author: string;
+  date: string;
+  type: "comment" | "notification";
+}
+
+export interface HelpdeskCategory {
+  id: number;
+  name: string;
 }
 
 // ── Analytics Types ─────────────────────────────────────────────────

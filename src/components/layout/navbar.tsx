@@ -236,7 +236,7 @@ function MobileMenu({
           <div className="border-t px-4 py-4 space-y-3">
             <LanguageToggle className="w-full justify-center" />
 
-            <Button variant="outline" href="/demo" className="w-full">
+            <Button variant="outline" href="/login" className="w-full">
               {t("nav.login")}
             </Button>
 
@@ -314,7 +314,7 @@ export default function Navbar() {
           <LanguageToggle />
 
           <Link
-            href="/demo"
+            href="/login"
             className="px-3 py-2 text-sm font-medium text-text-secondary transition-colors hover:text-primary-500"
           >
             {t("nav.login")}

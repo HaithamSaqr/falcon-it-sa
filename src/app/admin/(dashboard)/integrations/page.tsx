@@ -6,6 +6,7 @@ import type { IntegrationSettings } from "@/types/admin";
 const TABS = [
   { key: "odoo", label: "Odoo CRM" },
   { key: "calendar", label: "Calendar" },
+  { key: "helpdesk", label: "Helpdesk Portal" },
   { key: "email", label: "Email" },
   { key: "whatsapp", label: "WhatsApp" },
 ] as const;
@@ -273,6 +274,66 @@ export default function IntegrationsPage() {
                   </button>
                 ))}
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Helpdesk Portal Tab ── */}
+      {activeTab === "helpdesk" && (
+        <div className="space-y-6">
+          <div className="rounded-xl border border-slate-200 bg-white p-6">
+            <div className="mb-6 flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-semibold text-slate-900">Helpdesk Client Portal</h3>
+                <p className="text-sm text-slate-500">Allow customers to log in and manage support tickets via Odoo Helpdesk</p>
+              </div>
+              <label className="relative inline-flex cursor-pointer items-center">
+                <input
+                  type="checkbox"
+                  checked={settings.helpdesk?.enabled ?? false}
+                  onChange={(e) => update("helpdesk", "enabled", e.target.checked)}
+                  className="peer sr-only"
+                />
+                <div className="peer h-6 w-11 rounded-full bg-slate-200 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all peer-checked:bg-cyan-500 peer-checked:after:translate-x-full" />
+              </label>
+            </div>
+
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+              <Field
+                label="Default Team ID"
+                value={String(settings.helpdesk?.defaultTeamId ?? 1)}
+                onChange={(v) => update("helpdesk", "defaultTeamId", Number(v))}
+                type="number"
+                placeholder="1"
+              />
+
+              <div className="flex flex-col gap-4">
+                <label className="flex cursor-pointer items-center gap-3">
+                  <input
+                    type="checkbox"
+                    checked={settings.helpdesk?.allowRating ?? true}
+                    onChange={(e) => update("helpdesk", "allowRating", e.target.checked)}
+                    className="h-4 w-4 rounded border-slate-300 text-cyan-500 focus:ring-cyan-500"
+                  />
+                  <span className="text-sm text-slate-700">Allow customer ratings on closed tickets</span>
+                </label>
+                <label className="flex cursor-pointer items-center gap-3">
+                  <input
+                    type="checkbox"
+                    checked={settings.helpdesk?.allowNewTickets ?? true}
+                    onChange={(e) => update("helpdesk", "allowNewTickets", e.target.checked)}
+                    className="h-4 w-4 rounded border-slate-300 text-cyan-500 focus:ring-cyan-500"
+                  />
+                  <span className="text-sm text-slate-700">Allow customers to create new tickets</span>
+                </label>
+              </div>
+            </div>
+
+            <div className="mt-6 rounded-lg bg-slate-50 px-4 py-3 text-sm text-slate-600">
+              <strong>Note:</strong> Customers log in using their Odoo portal credentials (email & password).
+              Make sure the Odoo <code>fv_helpdesk</code> module is installed and customers have portal access.
+              Portal URL: <code>/login</code>
             </div>
           </div>
         </div>

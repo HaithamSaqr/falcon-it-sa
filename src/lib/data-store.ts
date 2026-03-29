@@ -401,10 +401,24 @@ const DEFAULT_INTEGRATIONS: IntegrationSettings = {
     apiToken: "",
     phoneId: "",
   },
+  helpdesk: {
+    enabled: false,
+    defaultTeamId: 0,
+    allowRating: true,
+    allowNewTickets: true,
+  },
 };
 
 export async function getIntegrations(): Promise<IntegrationSettings> {
-  return readJson<IntegrationSettings>(INTEGRATIONS_FILE, DEFAULT_INTEGRATIONS);
+  const stored = await readJson<Partial<IntegrationSettings>>(INTEGRATIONS_FILE, DEFAULT_INTEGRATIONS);
+  // Deep-merge defaults so new sections/fields are always present
+  return {
+    odoo: { ...DEFAULT_INTEGRATIONS.odoo, ...stored.odoo },
+    calendar: { ...DEFAULT_INTEGRATIONS.calendar, ...stored.calendar },
+    email: { ...DEFAULT_INTEGRATIONS.email, ...stored.email },
+    whatsapp: { ...DEFAULT_INTEGRATIONS.whatsapp, ...stored.whatsapp },
+    helpdesk: { ...DEFAULT_INTEGRATIONS.helpdesk, ...stored.helpdesk },
+  };
 }
 
 export async function updateIntegrations(settings: IntegrationSettings): Promise<void> {

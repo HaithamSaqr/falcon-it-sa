@@ -395,4 +395,319 @@ export async function testOdooConnection(
   }
 }
 
+// ── Portal Authentication ────────────────────────────────────────────
+export async function authenticatePortalUser(
+  email: string,
+  password: string
+): Promise<{ uid: number; name: string; partnerId: number } | null> {
+  const config = await getOdooConfig();
+  if (!config.enabled) return null;
+
+  try {
+    // Authenticate using the customer's own credentials
+    const odoo = new (await import("odoo-xmlrpc")).default({
+      url: config.url,
+      db: config.db,
+      username: email,
+      password: password,
+    });
+
+    // Step 1: Authenticate with user's credentials to verify they're valid
+    // Note: odoo-xmlrpc passes uid as 2nd callback arg, NOT as odoo.uid property
+    const uid: number | null = await new Promise((resolve) => {
+      odoo.connect(((err: Error | null, uidValue?: number) => {
+        if (err) {
+          console.error("[Odoo Portal] Auth failed:", err.message);
+          resolve(null);
+        } else {
+          resolve(uidValue || null);
+        }
+      }) as (err: Error | null) => void);
+    });
+
+    if (!uid) return null;
+
+    // Step 2: Use admin connection to look up user's name and partner_id
+    // (portal users can't read res.users)
+    try {
+      const adminOdoo = await createOdooClient();
+      const userInfo: { name: string; partnerId: number } = await new Promise((resolve, reject) => {
+        adminOdoo.execute_kw(
+          "res.users",
+          "search_read",
+          [[
+            [["id", "=", uid]],
+            ["name", "partner_id"],
+            0,
+            1,
+          ]],
+          (readErr: Error | null, result: unknown) => {
+            if (readErr || !Array.isArray(result) || result.length === 0) {
+              console.warn("[Odoo Portal] Could not read user info, using fallback");
+              resolve({ name: email, partnerId: uid });
+            } else {
+              const user = result[0] as { name: string; partner_id: [number, string] };
+              console.log("[Odoo Portal] User info:", { uid, name: user.name, partnerId: user.partner_id?.[0] });
+              resolve({
+                name: user.name,
+                partnerId: user.partner_id?.[0] || uid,
+              });
+            }
+          }
+        );
+      });
+
+      return { uid, ...userInfo };
+    } catch {
+      // If admin lookup fails, fall back to uid
+      console.warn("[Odoo Portal] Admin lookup failed, using uid as partnerId");
+      return { uid, name: email, partnerId: uid };
+    }
+  } catch (error) {
+    console.error("[Odoo Portal] Auth error:", error);
+    return null;
+  }
+}
+
+// ── Helpdesk Tickets (portal) ────────────────────────────────────────
+export async function getHelpdeskTickets(
+  partnerId: number,
+  options?: { limit?: number; offset?: number; closed?: boolean }
+): Promise<Record<string, unknown>[]> {
+  const domain: unknown[][] = [
+    ["partner_id", "=", partnerId],
+  ];
+  if (options?.closed === false) {
+    domain.push(["is_closed", "=", false]);
+  } else if (options?.closed === true) {
+    domain.push(["is_closed", "=", true]);
+  }
+
+  const config = await getOdooConfig();
+  if (!config.enabled) return [];
+
+  try {
+    const odoo = await createOdooClient();
+    return new Promise((resolve, reject) => {
+      odoo.execute_kw(
+        "helpdesk.ticket",
+        "search_read",
+        [[
+          domain,
+          [
+            "ticket_number", "name", "description", "stage_id", "priority",
+            "category_id", "team_id", "user_id", "create_date", "date_close",
+            "sla_deadline", "sla_status", "rating", "rating_comment", "is_closed",
+            "message_ids",
+          ],
+          options?.offset || 0,
+          options?.limit || 50,
+          "create_date desc",
+        ]],
+        (err: Error | null, result: unknown) => {
+          if (err) {
+            console.error("[Odoo] Failed to fetch helpdesk tickets:", err.message);
+            reject(err);
+          } else {
+            resolve(result as Record<string, unknown>[]);
+          }
+        }
+      );
+    });
+  } catch (error) {
+    console.error("[Odoo] Helpdesk tickets error:", error);
+    return [];
+  }
+}
+
+export async function getHelpdeskTicketById(
+  ticketId: number,
+  partnerId: number
+): Promise<Record<string, unknown> | null> {
+  const config = await getOdooConfig();
+  if (!config.enabled) return null;
+
+  try {
+    const odoo = await createOdooClient();
+    const tickets: Record<string, unknown>[] = await new Promise((resolve, reject) => {
+      odoo.execute_kw(
+        "helpdesk.ticket",
+        "search_read",
+        [[
+          [["id", "=", ticketId], ["partner_id", "=", partnerId]],
+          [
+            "ticket_number", "name", "description", "stage_id", "priority",
+            "category_id", "team_id", "user_id", "create_date", "date_close",
+            "sla_deadline", "sla_status", "rating", "rating_comment", "is_closed",
+            "message_ids",
+          ],
+          0,
+          1,
+        ]],
+        (err: Error | null, result: unknown) => {
+          if (err) reject(err);
+          else resolve(result as Record<string, unknown>[]);
+        }
+      );
+    });
+    return tickets.length > 0 ? tickets[0] : null;
+  } catch (error) {
+    console.error("[Odoo] Helpdesk ticket detail error:", error);
+    return null;
+  }
+}
+
+export async function getTicketMessages(
+  ticketId: number
+): Promise<Record<string, unknown>[]> {
+  const config = await getOdooConfig();
+  if (!config.enabled) return [];
+
+  try {
+    const odoo = await createOdooClient();
+    return new Promise((resolve, reject) => {
+      odoo.execute_kw(
+        "mail.message",
+        "search_read",
+        [[
+          [["res_id", "=", ticketId], ["model", "=", "helpdesk.ticket"], ["message_type", "in", ["comment", "notification"]]],
+          ["body", "author_id", "date", "message_type", "subtype_id"],
+          0,
+          100,
+          "date asc",
+        ]],
+        (err: Error | null, result: unknown) => {
+          if (err) reject(err);
+          else resolve(result as Record<string, unknown>[]);
+        }
+      );
+    });
+  } catch (error) {
+    console.error("[Odoo] Ticket messages error:", error);
+    return [];
+  }
+}
+
+export async function createHelpdeskTicket(data: {
+  partnerId: number;
+  name: string;
+  description: string;
+  categoryId?: number;
+  teamId?: number;
+  priority?: string;
+}): Promise<number | null> {
+  const values: Record<string, unknown> = {
+    name: data.name,
+    description: data.description,
+    partner_id: data.partnerId,
+    priority: data.priority || "1",
+  };
+  if (data.categoryId) values.category_id = data.categoryId;
+  if (data.teamId) values.team_id = data.teamId;
+
+  return createRecord("helpdesk.ticket", values);
+}
+
+export async function addTicketMessage(
+  ticketId: number,
+  body: string,
+  authorId: number
+): Promise<number | null> {
+  const config = await getOdooConfig();
+  if (!config.enabled) return null;
+
+  try {
+    const odoo = await createOdooClient();
+    return new Promise((resolve, reject) => {
+      odoo.execute_kw(
+        "helpdesk.ticket",
+        "message_post",
+        [[ticketId], {
+          body,
+          message_type: "comment",
+          subtype_xmlid: "mail.mt_comment",
+          author_id: authorId,
+        }],
+        (err: Error | null, result: number) => {
+          if (err) reject(err);
+          else resolve(result);
+        }
+      );
+    });
+  } catch (error) {
+    console.error("[Odoo] Add ticket message error:", error);
+    return null;
+  }
+}
+
+export async function rateTicket(
+  ticketId: number,
+  rating: string,
+  comment?: string
+): Promise<boolean> {
+  const config = await getOdooConfig();
+  if (!config.enabled) return false;
+
+  try {
+    const odoo = await createOdooClient();
+    return new Promise((resolve, reject) => {
+      odoo.execute_kw(
+        "helpdesk.ticket",
+        "write",
+        [[[ticketId], { rating, rating_comment: comment || "" }]],
+        (err: Error | null) => {
+          if (err) reject(err);
+          else resolve(true);
+        }
+      );
+    });
+  } catch (error) {
+    console.error("[Odoo] Rate ticket error:", error);
+    return false;
+  }
+}
+
+export async function getHelpdeskCategories(): Promise<Record<string, unknown>[]> {
+  return searchRecords(
+    "helpdesk.category",
+    [],
+    ["id", "name"],
+    100
+  );
+}
+
+export async function getHelpdeskTicketCount(
+  partnerId: number
+): Promise<{ open: number; closed: number; total: number }> {
+  const config = await getOdooConfig();
+  if (!config.enabled) return { open: 0, closed: 0, total: 0 };
+
+  try {
+    const odoo = await createOdooClient();
+
+    const searchCount = (domain: unknown[][]): Promise<number> =>
+      new Promise((resolve, reject) => {
+        odoo.execute_kw(
+          "helpdesk.ticket",
+          "search_count",
+          [[domain]],
+          (err: Error | null, result: number) => {
+            if (err) reject(err);
+            else resolve(result);
+          }
+        );
+      });
+
+    const [open, closed] = await Promise.all([
+      searchCount([["partner_id", "=", partnerId], ["is_closed", "=", false]]),
+      searchCount([["partner_id", "=", partnerId], ["is_closed", "=", true]]),
+    ]);
+
+    return { open, closed, total: open + closed };
+  } catch (error) {
+    console.error("[Odoo] Ticket count error:", error);
+    return { open: 0, closed: 0, total: 0 };
+  }
+}
+
 export { getOdooCountryId, getTeamByCountry };
