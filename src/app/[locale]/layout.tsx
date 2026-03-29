@@ -9,6 +9,7 @@ import Navbar from "@/components/layout/navbar";
 import Footer from "@/components/layout/footer";
 import WhatsAppWidget from "@/components/layout/whatsapp-widget";
 import MobileBottomBar from "@/components/layout/mobile-bottom-bar";
+import { SettingsProvider } from "@/components/providers/settings-provider";
 
 import "@/app/globals.css";
 
@@ -59,11 +60,13 @@ export default async function LocaleLayout({
         )}
       >
         <NextIntlClientProvider locale={locale} messages={messages}>
-          <Navbar />
-          <main>{children}</main>
-          <Footer />
-          <WhatsAppWidget />
-          <MobileBottomBar />
+          <SettingsProvider>
+            <Navbar />
+            <main>{children}</main>
+            <Footer />
+            <WhatsAppWidget />
+            <MobileBottomBar />
+          </SettingsProvider>
         </NextIntlClientProvider>
       </body>
     </html>

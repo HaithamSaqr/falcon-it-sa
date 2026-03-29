@@ -1,7 +1,10 @@
+"use client";
+
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
-import { COMPANY, NAV_ITEMS } from "@/lib/constants";
+import { NAV_ITEMS } from "@/lib/constants";
+import { useSettings } from "@/components/providers/settings-provider";
 import Container from "@/components/ui/container";
 
 /* ------------------------------------------------------------------ */
@@ -9,7 +12,7 @@ import Container from "@/components/ui/container";
 /* ------------------------------------------------------------------ */
 
 const SOCIAL_ICONS: Record<
-  keyof typeof COMPANY.social,
+  string,
   { label: string; path: string; viewBox?: string }
 > = {
   linkedin: {
@@ -38,10 +41,11 @@ function SocialLink({
   platform,
   href,
 }: {
-  platform: keyof typeof SOCIAL_ICONS;
+  platform: string;
   href: string;
 }) {
   const icon = SOCIAL_ICONS[platform];
+  if (!icon || !href) return null;
   return (
     <a
       href={href}
@@ -101,6 +105,7 @@ function FooterColumn({
 
 export default function Footer() {
   const t = useTranslations();
+  const { company, social } = useSettings();
 
   const aboutLinks = [
     { label: t("footer.aboutUs"), href: "/about" },
@@ -152,7 +157,7 @@ export default function Footer() {
             <div className="mt-6 space-y-3">
               {/* Phone */}
               <a
-                href={`tel:${COMPANY.phone.ksa}`}
+                href={`tel:${company.phone.ksa}`}
                 className="flex items-center gap-2 text-sm text-text-on-dark/60 transition-colors hover:text-primary-400"
               >
                 <svg
@@ -168,12 +173,12 @@ export default function Footer() {
                     clipRule="evenodd"
                   />
                 </svg>
-                {COMPANY.phone.ksa}
+                {company.phone.ksa}
               </a>
 
               {/* Email */}
               <a
-                href={`mailto:${COMPANY.email}`}
+                href={`mailto:${company.email}`}
                 className="flex items-center gap-2 text-sm text-text-on-dark/60 transition-colors hover:text-primary-400"
               >
                 <svg
@@ -186,18 +191,13 @@ export default function Footer() {
                   <path d="M3 4a2 2 0 00-2 2v1.161l8.441 4.221a1.25 1.25 0 001.118 0L19 7.162V6a2 2 0 00-2-2H3z" />
                   <path d="M19 8.839l-7.77 3.885a2.75 2.75 0 01-2.46 0L1 8.839V14a2 2 0 002 2h14a2 2 0 002-2V8.839z" />
                 </svg>
-                {COMPANY.email}
+                {company.email}
               </a>
             </div>
 
             {/* Social icons */}
             <div className="mt-6 flex gap-1">
-              {(
-                Object.entries(COMPANY.social) as [
-                  keyof typeof COMPANY.social,
-                  string,
-                ][]
-              ).map(([platform, href]) => (
+              {Object.entries(social).map(([platform, href]) => (
                 <SocialLink key={platform} platform={platform} href={href} />
               ))}
             </div>

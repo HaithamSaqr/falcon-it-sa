@@ -1,10 +1,11 @@
 import { getSettings } from "@/lib/data-store";
 import { jsonSuccess } from "@/lib/api-helpers";
+import { NextResponse } from "next/server";
 
-// GET /api/settings/public — public endpoint for regional settings
+// GET /api/settings/public — public endpoint for site settings
 export async function GET() {
   const settings = await getSettings();
-  return jsonSuccess({
+  const res = jsonSuccess({
     gulfOnly: settings.regional?.gulfOnly ?? false,
     company: {
       name: settings.company.name,
@@ -17,5 +18,10 @@ export async function GET() {
         ? { ksa: settings.company.address.ksa }
         : settings.company.address,
     },
+    social: settings.social,
   });
+
+  // Cache for 60s on CDN, revalidate in background
+  res.headers.set("Cache-Control", "public, s-maxage=60, stale-while-revalidate=300");
+  return res;
 }

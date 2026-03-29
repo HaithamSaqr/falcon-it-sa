@@ -1,13 +1,14 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { COMPANY } from "@/lib/constants";
+import { useSettings } from "@/components/providers/settings-provider";
 
 export default function WhatsAppWidget() {
   const t = useTranslations();
+  const { company } = useSettings();
 
   const message = encodeURIComponent(t("common.whatsappMessage"));
-  const href = `https://wa.me/${COMPANY.whatsapp}?text=${message}`;
+  const href = `https://wa.me/${company.whatsapp}?text=${message}`;
 
   return (
     <div className="fixed bottom-6 end-6 z-50">

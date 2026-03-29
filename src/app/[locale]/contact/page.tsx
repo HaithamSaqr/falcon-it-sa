@@ -8,7 +8,7 @@ import Container from "@/components/ui/container";
 import Button from "@/components/ui/button";
 import Card from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { COMPANY } from "@/lib/constants";
+import { useSettings } from "@/components/providers/settings-provider";
 import { api } from "@/lib/api-client";
 import { contactFormSchema, type ContactFormData } from "@/lib/validations";
 
@@ -16,15 +16,7 @@ export default function ContactPage() {
   const t = useTranslations("contact");
   const [submitted, setSubmitted] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
-  const [gulfOnly, setGulfOnly] = useState(false);
-
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => {
-    fetch("/api/settings/public")
-      .then((r) => r.json())
-      .then((d) => setGulfOnly(d.data?.gulfOnly ?? false))
-      .catch(() => {});
-  }, []);
+  const { gulfOnly, company } = useSettings();
 
   const {
     register,
@@ -185,24 +177,24 @@ export default function ContactPage() {
               <div className="space-y-3 text-sm text-text-secondary">
                 <p className="flex items-start gap-3">
                   <span className="text-lg">📍</span>
-                  {COMPANY.address.ksa.en}
+                  {company.address.ksa.en}
                 </p>
                 <p className="flex items-start gap-3">
                   <span className="text-lg">📞</span>
                   <a
-                    href={`tel:${COMPANY.phone.ksa}`}
+                    href={`tel:${company.phone.ksa}`}
                     className="transition-colors hover:text-primary-500"
                   >
-                    {COMPANY.phone.ksa}
+                    {company.phone.ksa}
                   </a>
                 </p>
                 <p className="flex items-start gap-3">
                   <span className="text-lg">✉️</span>
                   <a
-                    href={`mailto:${COMPANY.email}`}
+                    href={`mailto:${company.email}`}
                     className="transition-colors hover:text-primary-500"
                   >
-                    {COMPANY.email}
+                    {company.email}
                   </a>
                 </p>
               </div>
@@ -217,24 +209,24 @@ export default function ContactPage() {
                 <div className="space-y-3 text-sm text-text-secondary">
                   <p className="flex items-start gap-3">
                     <span className="text-lg">📍</span>
-                    {COMPANY.address.egypt.en}
+                    {company.address.egypt?.en}
                   </p>
                   <p className="flex items-start gap-3">
                     <span className="text-lg">📞</span>
                     <a
-                      href={`tel:${COMPANY.phone.egypt}`}
+                      href={`tel:${company.phone.egypt || ""}`}
                       className="transition-colors hover:text-primary-500"
                     >
-                      {COMPANY.phone.egypt}
+                      {company.phone.egypt}
                     </a>
                   </p>
                   <p className="flex items-start gap-3">
                     <span className="text-lg">✉️</span>
                     <a
-                      href={`mailto:${COMPANY.email}`}
+                      href={`mailto:${company.email}`}
                       className="transition-colors hover:text-primary-500"
                     >
-                      {COMPANY.email}
+                      {company.email}
                     </a>
                   </p>
                 </div>
@@ -252,7 +244,7 @@ export default function ContactPage() {
               <Button
                 variant="cta"
                 size="sm"
-                href={`https://wa.me/${COMPANY.whatsapp}`}
+                href={`https://wa.me/${company.whatsapp}`}
               >
                 Chat on WhatsApp
               </Button>

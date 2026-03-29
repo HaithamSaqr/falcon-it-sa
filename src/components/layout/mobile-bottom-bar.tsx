@@ -1,13 +1,14 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { COMPANY } from "@/lib/constants";
+import { useSettings } from "@/components/providers/settings-provider";
 import Button from "@/components/ui/button";
 
 export default function MobileBottomBar() {
   const t = useTranslations();
+  const { company } = useSettings();
 
-  const whatsappHref = `https://wa.me/${COMPANY.whatsapp}?text=${encodeURIComponent(
+  const whatsappHref = `https://wa.me/${company.whatsapp}?text=${encodeURIComponent(
     t("common.whatsappMessage"),
   )}`;
 
