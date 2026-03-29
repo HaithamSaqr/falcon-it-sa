@@ -6,7 +6,7 @@ services:
     container_name: falcon-web
     restart: unless-stopped
     ports:
-      - "3000:3000"
+      - "3001:3000"
     volumes:
       - falcon-data:/app/data
     environment:
