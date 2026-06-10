@@ -4,6 +4,7 @@ import Container from "@/components/ui/container";
 import Button from "@/components/ui/button";
 import Card from "@/components/ui/card";
 import SectionHeader from "@/components/shared/section-header";
+import IndustryGrid from "@/components/sections/industry-grid";
 
 type Props = {
   params: Promise<{ locale: string }>;
@@ -24,24 +25,18 @@ const PAIN_POINTS = [
   { icon: "\u23F3", key: "problem3" },
 ] as const;
 
-const INDUSTRIES = [
-  { key: "industry1", icon: "\uD83C\uDFD7\uFE0F" },
-  { key: "industry2", icon: "\uD83C\uDFED" },
-  { key: "industry3", icon: "\uD83D\uDCE6" },
-  { key: "industry4", icon: "\uD83C\uDFE2" },
-  { key: "industry5", icon: "\uD83D\uDED2" },
-  { key: "industry6", icon: "\uD83C\uDFE5" },
-] as const;
+
 
 const TRUST_BADGES = ["trustBadge1", "trustBadge2", "trustBadge3", "trustBadge4"] as const;
 
 export default async function FalconErpDesktopPage({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
-  return <FalconErpDesktopContent />;
+  const isArabic = locale === "ar";
+  return <FalconErpDesktopContent isArabic={isArabic} />;
 }
 
-function FalconErpDesktopContent() {
+function FalconErpDesktopContent({ isArabic }: { isArabic: boolean }) {
   const t = useTranslations("products");
   const tp = useTranslations("desktopPage");
   const tc = useTranslations("common");
@@ -59,11 +54,8 @@ function FalconErpDesktopContent() {
               <h1 className="mb-6 text-4xl font-extrabold text-white sm:text-5xl lg:text-6xl">
                 {tp("heroTitle")}
               </h1>
-              <p className="mb-4 text-xl text-gray-300">
+              <p className="mb-8 text-xl text-gray-300">
                 {tp("heroSubtitle")}
-              </p>
-              <p className="mb-8 text-2xl font-bold text-primary-500">
-                {t("desktopErp.price")}
               </p>
               <div className="mb-8 flex flex-wrap items-center gap-4">
                 <Button variant="cta" size="lg" href="/contact">
@@ -153,8 +145,226 @@ function FalconErpDesktopContent() {
         </Container>
       </section>
 
+      {/* NEW: Comprehensive Brochure & Module Deep Dive */}
+      <section className="py-20 bg-white border-t border-gray-100">
+        <Container>
+          <div className="mx-auto max-w-3xl text-center mb-16">
+            <h2 className="text-3xl font-extrabold text-text-primary sm:text-4xl">
+              {isArabic ? "المميزات التفصيلية للنسخة المكتبية" : "Detailed Desktop Version Features"}
+            </h2>
+            <p className="mt-4 text-lg text-text-secondary">
+              {isArabic 
+                ? "دليل متكامل لكافة الخصائص والمواصفات التي تميز خيار التثبيت المحلي من فالكون ERP" 
+                : "An all-inclusive guide to the features and capabilities of Falcon ERP on-premise deployment"}
+            </p>
+          </div>
+
+          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 text-start">
+            {/* Accounting */}
+            <div className="rounded-2xl border border-gray-100 bg-slate-50/50 p-6">
+              <span className="text-3xl">📊</span>
+              <h3 className="mt-4 text-lg font-bold text-text-primary">
+                {isArabic ? "المحاسبة والإدارة المالية" : "Accounting & Finance"}
+              </h3>
+              <ul className="mt-4 space-y-2.5 text-sm text-text-secondary">
+                <li className="flex items-start gap-2">
+                  <span className="text-primary-500 font-bold">✓</span>
+                  <span>{isArabic ? "شجرة حسابات ديناميكية متعددة المستويات لتناسب هيكل شركتك" : "Dynamic multi-level charts of accounts to match your corporate structure"}</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-primary-500 font-bold">✓</span>
+                  <span>{isArabic ? "توليد تلقائي بالكامل للقيود اليومية والترحيب بدفاتر الأستاذ" : "Fully automated journal entries and ledger postings"}</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-primary-500 font-bold">✓</span>
+                  <span>{isArabic ? "إدارة مراكز التكلفة المتعددة وحساب أرباح وخسائر المشاريع" : "Multi-cost center management and project P&L calculations"}</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-primary-500 font-bold">✓</span>
+                  <span>{isArabic ? "استخراج فوري للإقرارات الضريبية والقوائم المالية الختامية" : "Instant extraction of tax declarations and final financial statements"}</span>
+                </li>
+              </ul>
+            </div>
+
+            {/* Inventory */}
+            <div className="rounded-2xl border border-gray-100 bg-slate-50/50 p-6">
+              <span className="text-3xl">📦</span>
+              <h3 className="mt-4 text-lg font-bold text-text-primary">
+                {isArabic ? "المستودعات والمخازن" : "Inventory & Warehouse"}
+              </h3>
+              <ul className="mt-4 space-y-2.5 text-sm text-text-secondary">
+                <li className="flex items-start gap-2">
+                  <span className="text-primary-500 font-bold">✓</span>
+                  <span>{isArabic ? "تتبع المخزون بالدفعات (Batches) وتواريخ الصلاحية والأرقام التسلسلية" : "Batch tracking, expiry dates, and serial numbers"}</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-primary-500 font-bold">✓</span>
+                  <span>{isArabic ? "إدارة طلبات التحويل بين المخازن والفروع والموافقة عليها" : "Inter-warehouse and branch transfer request management"}</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-primary-500 font-bold">✓</span>
+                  <span>{isArabic ? "تكامل تام مع قارئ الباركود والجرد الإلكتروني الذكي" : "Full integration with barcode scanners for smart digital stocktakes"}</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-primary-500 font-bold">✓</span>
+                  <span>{isArabic ? "إشعارات تنبيهية تلقائية عند وصول الأصناف لحد الطلب" : "Automated reorder point notifications to prevent stockouts"}</span>
+                </li>
+              </ul>
+            </div>
+
+            {/* HR & Payroll */}
+            <div className="rounded-2xl border border-gray-100 bg-slate-50/50 p-6">
+              <span className="text-3xl">👥</span>
+              <h3 className="mt-4 text-lg font-bold text-text-primary">
+                {isArabic ? "الموارد البشرية والرواتب" : "HR & Payroll"}
+              </h3>
+              <ul className="mt-4 space-y-2.5 text-sm text-text-secondary">
+                <li className="flex items-start gap-2">
+                  <span className="text-primary-500 font-bold">✓</span>
+                  <span>{isArabic ? "احتساب مسير الرواتب بضغطة زر وتصدير ملف الـ WPS المعتمد" : "One-click payroll run with compliant WPS bank file export"}</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-primary-500 font-bold">✓</span>
+                  <span>{isArabic ? "تكامل مع أجهزة البصمة المحلية لحساب الحضور والغياب" : "Direct integration with local biometric devices for attendance"}</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-primary-500 font-bold">✓</span>
+                  <span>{isArabic ? "حساب تلقائي لمستحقات التأمينات الاجتماعية ومكافأة نهاية الخدمة" : "Automated calculations for GOSI and End of Service (EOS) benefits"}</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-primary-500 font-bold">✓</span>
+                  <span>{isArabic ? "إدارة الطلبات الذاتية للموظفين (إجازات، عهد، سلف)" : "Employee self-service request portal (leaves, advances, assets)"}</span>
+                </li>
+              </ul>
+            </div>
+
+            {/* ZATCA Phase 2 */}
+            <div className="rounded-2xl border border-gray-100 bg-slate-50/50 p-6">
+              <span className="text-3xl">🛡️</span>
+              <h3 className="mt-4 text-lg font-bold text-text-primary">
+                {isArabic ? "الربط مع هيئة الزكاة والضريبة" : "ZATCA Phase 2 Integration"}
+              </h3>
+              <ul className="mt-4 space-y-2.5 text-sm text-text-secondary">
+                <li className="flex items-start gap-2">
+                  <span className="text-primary-500 font-bold">✓</span>
+                  <span>{isArabic ? "توليد وحفظ الفواتير الإلكترونية بصيغة XML المتوافقة تماماً" : "XML invoice generation and storage in complete compliance"}</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-primary-500 font-bold">✓</span>
+                  <span>{isArabic ? "توقيع الفاتورة رقمياً وربطها لحظياً مع بوابة (فاتورة) للمرحلة الثانية" : "Cryptographic signing and real-time API syncing with Fatoora Portal"}</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-primary-500 font-bold">✓</span>
+                  <span>{isArabic ? "إنشاء وتضمين رموز الاستجابة السريعة (QR Codes) المشفرة تلقائياً" : "Automatic generation of encrypted QR Codes on all invoices"}</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-primary-500 font-bold">✓</span>
+                  <span>{isArabic ? "المرونة التامة وإمكانية العمل في وضع عدم الاتصال بالإنترنت" : "Offline billing capacity with delayed auto-sync for uninterrupted sales"}</span>
+                </li>
+              </ul>
+            </div>
+
+            {/* Manufacturing */}
+            <div className="rounded-2xl border border-gray-100 bg-slate-50/50 p-6">
+              <span className="text-3xl">🏭</span>
+              <h3 className="mt-4 text-lg font-bold text-text-primary">
+                {isArabic ? "التصنيع والإنتاج" : "Manufacturing & Production"}
+              </h3>
+              <ul className="mt-4 space-y-2.5 text-sm text-text-secondary">
+                <li className="flex items-start gap-2">
+                  <span className="text-primary-500 font-bold">✓</span>
+                  <span>{isArabic ? "تحديد قائمة المواد (BOM) ومراحل التصنيع بوضوح" : "Define Bills of Materials (BOM) and production routing steps"}</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-primary-500 font-bold">✓</span>
+                  <span>{isArabic ? "أتمتة طلبات صرف المواد الخام بناء على أوامر الإنتاج" : "Automated raw material dispatch requests based on work orders"}</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-primary-500 font-bold">✓</span>
+                  <span>{isArabic ? "حساب التكاليف الإجمالية للمنتج (المواد + العمالة + المصاريف غير المباشرة)" : "Full costing analysis (raw materials + direct labor + overheads)"}</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-primary-500 font-bold">✓</span>
+                  <span>{isArabic ? "تخطيط متطلبات المواد وجدولة خطوط الإنتاج بكفاءة" : "Material Requirements Planning (MRP) and production scheduling"}</span>
+                </li>
+              </ul>
+            </div>
+
+            {/* Security & Ownership */}
+            <div className="rounded-2xl border border-gray-100 bg-slate-50/50 p-6">
+              <span className="text-3xl">🔑</span>
+              <h3 className="mt-4 text-lg font-bold text-text-primary">
+                {isArabic ? "أمن البيانات والملكية الكاملة" : "Data Security & Ownership"}
+              </h3>
+              <ul className="mt-4 space-y-2.5 text-sm text-text-secondary">
+                <li className="flex items-start gap-2">
+                  <span className="text-primary-500 font-bold">✓</span>
+                  <span>{isArabic ? "البيانات مخزنة داخل خوادمك ولا يتم إرسالها خارج الشركة أبداً" : "Data is stored on your local servers and never sent outside the organization"}</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-primary-500 font-bold">✓</span>
+                  <span>{isArabic ? "الامتثال التام لقانون حماية البيانات الشخصية بالمملكة" : "100% compliance with Saudi Personal Data Protection Law (PDPL)"}</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-primary-500 font-bold">✓</span>
+                  <span>{isArabic ? "ترخيص دائم تملكه مدى الحياة بدون اشتراكات أو فواتير شهرية" : "One-off perpetual license owned for life, with no recurring monthly bills"}</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-primary-500 font-bold">✓</span>
+                  <span>{isArabic ? "إعداد نظام نسخ احتياطي تلقائي ومجدول على أقراص خارجية" : "Automatic and scheduled backup routines on external storage or private NAS"}</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </Container>
+      </section>
+
+      {/* NEW: Technical Specifications Section */}
+      <section className="py-20 bg-gray-50 border-t border-b border-gray-100">
+        <Container>
+          <div className="mx-auto max-w-3xl text-center mb-16">
+            <h2 className="text-3xl font-extrabold text-text-primary">
+              {isArabic ? "المواصفات الفنية والمتطلبات التشغيلية" : "Technical Specifications & Requirements"}
+            </h2>
+            <p className="mt-4 text-text-secondary">
+              {isArabic 
+                ? "كل ما تحتاج معرفته عن البنية التحتية المطلوبة لتشغيل خادم فالكون ديسكتوب ERP محلياً" 
+                : "Everything you need to know about the infrastructure needed to deploy Falcon ERP on-premise"}
+            </p>
+          </div>
+
+          <div className="mx-auto max-w-4xl bg-white rounded-2xl border border-gray-200 p-8 shadow-sm text-start">
+            <div className="grid gap-8 md:grid-cols-2">
+              <div>
+                <h3 className="text-lg font-bold text-text-primary mb-4 border-b border-gray-100 pb-2">
+                  {isArabic ? "متطلبات الخادم (Server Specs)" : "Server Requirements"}
+                </h3>
+                <ul className="space-y-3 text-sm text-text-secondary">
+                  <li><strong>{isArabic ? "نظام التشغيل:" : "OS:"}</strong> Windows Server 2019/2022 {isArabic ? "أو" : "or"} Linux Ubuntu 22.04 LTS</li>
+                  <li><strong>{isArabic ? "المعالج (CPU):" : "CPU:"}</strong> Intel Xeon {isArabic ? "أو معالج ثماني النواة كحد أدنى" : "or 8-core CPU minimum"}</li>
+                  <li><strong>{isArabic ? "الذاكرة العشوائية (RAM):" : "RAM:"}</strong> 16 GB RAM {isArabic ? "لـ 20 مستخدماً" : "for up to 20 users"} / 32 GB RAM {isArabic ? "لأكثر من ذلك" : "for more"}</li>
+                  <li><strong>{isArabic ? "سعة التخزين:" : "Storage:"}</strong> 100 GB SSD/NVMe {isArabic ? "مساحة فارغة (توصية)" : "free space (Recommended)"}</li>
+                </ul>
+              </div>
+
+              <div>
+                <h3 className="text-lg font-bold text-text-primary mb-4 border-b border-gray-100 pb-2">
+                  {isArabic ? "قواعد البيانات والشبكة" : "Database & Network"}
+                </h3>
+                <ul className="space-y-3 text-sm text-text-secondary">
+                  <li><strong>{isArabic ? "محرك قواعد البيانات:" : "Database Engine:"}</strong> PostgreSQL 15+ {isArabic ? "(افتراضي ومجاني)" : "(Default, Open-source)"} / Microsoft SQL Server</li>
+                  <li><strong>{isArabic ? "الشبكة الداخلية:" : "Local Network:"}</strong> 1 Gbps Ethernet LAN {isArabic ? "لضمان سرعة تبادل البيانات" : "for seamless file and database exchange"}</li>
+                  <li><strong>{isArabic ? "الوصول الخارجي (اختياري):" : "Remote Access (Optional):"}</strong> IP {isArabic ? "ثابت (Static IP) مع اتصال VPN آمن للوصول من خارج المكتب" : "Static IP with secure VPN tunnel configuration"}</li>
+                  <li><strong>{isArabic ? "النسخ الاحتياطي:" : "Backups:"}</strong> {isArabic ? "دعم النسخ الاحتياطي السحابي التلقائي (خارج الموقع) المشفر" : "Integrated support for encrypted off-site cloud backups"}</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </Container>
+      </section>
+
       {/* Section 4: How It Works (3 steps) */}
-      <section id="how-it-works" className="py-20 lg:py-28">
+      <section id="how-it-works" className="py-20 lg:py-28 bg-white">
         <Container>
           <SectionHeader
             eyebrow={tp("howItWorksEyebrow")}
@@ -202,29 +412,61 @@ function FalconErpDesktopContent() {
       </section>
 
       {/* Section 6: Who It's For */}
-      <section className="py-20 lg:py-28">
+      <IndustryGrid
+        variant="compact"
+        eyebrow={tp("whoItsForEyebrow")}
+        title={tp("whoItsForTitle")}
+        ctaText={tp("whoItsForCtaText")}
+        ctaHref="/contact"
+      />
+
+      {/* NEW: Specific Product FAQ */}
+      <section className="py-20 bg-gray-50 border-t border-b border-gray-100">
         <Container>
-          <SectionHeader
-            eyebrow={tp("whoItsForEyebrow")}
-            title={tp("whoItsForTitle")}
-          />
-          <div className="mx-auto grid max-w-4xl gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {INDUSTRIES.map((ind) => (
-              <div
-                key={ind.key}
-                className="flex items-center gap-3 rounded-xl border border-gray-200 bg-white px-5 py-4 shadow-sm transition-shadow hover:shadow-md"
-              >
-                <span className="text-2xl">{ind.icon}</span>
-                <span className="font-semibold text-text-primary">
-                  {tp(ind.key)}
-                </span>
-              </div>
-            ))}
+          <div className="mx-auto max-w-3xl text-center mb-16">
+            <h2 className="text-3xl font-extrabold text-text-primary">
+              {isArabic ? "الأسئلة الشائعة حول النسخة المكتبية" : "Desktop Version FAQ"}
+            </h2>
+            <p className="mt-4 text-text-secondary">
+              {isArabic 
+                ? "إجابات شافية حول ترخيص واستخدام وأمان نظام فالكون ERP المحلي" 
+                : "Clear answers to common questions about Falcon ERP on-premise licensing, usage, and security"}
+            </p>
           </div>
-          <div className="mt-10 text-center">
-            <Button variant="outline" size="md" href="/contact">
-              {tp("whoItsForCtaText")}
-            </Button>
+
+          <div className="mx-auto max-w-3xl space-y-6 text-start">
+            <div className="rounded-xl bg-white border border-gray-200 p-6">
+              <h3 className="font-bold text-text-primary text-base">
+                {isArabic ? "هل يحتاج النظام لوجود اتصال مستمر بالإنترنت؟" : "Does the system require a continuous internet connection?"}
+              </h3>
+              <p className="mt-2 text-sm text-text-secondary leading-relaxed">
+                {isArabic 
+                  ? "لا، فالكون ديسكتوب يعمل بالكامل داخل شبكتك المحلية بدون إنترنت. يتم فقط الاتصال بالإنترنت بشكل مؤقت ومحمي عند إرسال وربط الفواتير مع هيئة الزكاة (ZATCA)، مما يضمن استمرارية الفوترة والبيع حتى في حال انقطاع الإنترنت."
+                  : "No, Falcon Desktop runs entirely within your local office network and does not require active internet for daily activities. An internet connection is only briefly used to authenticate and submit invoices to ZATCA, ensuring you can keep billing even during internet outages."}
+              </p>
+            </div>
+
+            <div className="rounded-xl bg-white border border-gray-200 p-6">
+              <h3 className="font-bold text-text-primary text-base">
+                {isArabic ? "ما هي آلية الحصول على التحديثات وخاصة المتعلقة بهيئة الزكاة؟" : "How are ZATCA and system updates delivered?"}
+              </h3>
+              <p className="mt-2 text-sm text-text-secondary leading-relaxed">
+                {isArabic 
+                  ? "نوفر خطة دعم وصيانة سنوية تضمن حصولك الفوري على كافة التحديثات البرمجية وتحديثات الامتثال القانوني والضريبي فور صدورها من الهيئة، ويقوم فريقنا بتثبيتها وتدريب فريقك عليها مجاناً."
+                  : "We offer an annual maintenance and support SLA that guarantees you receive all system updates and tax compliance adjustments as soon as ZATCA announces changes. Our certified technical team will apply the updates for you."}
+              </p>
+            </div>
+
+            <div className="rounded-xl bg-white border border-gray-200 p-6">
+              <h3 className="font-bold text-text-primary text-base">
+                {isArabic ? "هل هناك حد أقصى لعدد المستخدمين أو حجم البيانات؟" : "Is there a user or database limit?"}
+              </h3>
+              <p className="mt-2 text-sm text-text-secondary leading-relaxed">
+                {isArabic 
+                  ? "لا يوجد أي حد برمجي مفروض من النظام. حجم البيانات وعدد المستخدمين النشطين يعتمد بالكامل على مواصفات الخادم الخاص بك. يمكنك إضافة أي عدد من المستخدمين وترقية مواصفات جهاز السيرفر بحرية تامة."
+                  : "There is no software-imposed limit on database size or user count. It depends entirely on your server hardware capacity. You are free to upgrade your server and add users as your organization grows."}
+              </p>
+            </div>
           </div>
         </Container>
       </section>
@@ -291,7 +533,7 @@ function FalconErpDesktopContent() {
               {tp("formDisclaimer")}
             </p>
             <p className="mt-6 text-sm text-gray-400">
-              {tc("orCallUs")}: <span className="font-semibold text-white" dir="ltr">+966 50 123 4567</span>
+              {tc("orCallUs")}: <span className="font-semibold text-white" dir="ltr">00966568406006</span>
             </p>
             <div className="mt-8 flex flex-wrap items-center justify-center gap-6 text-sm text-gray-400">
               {TRUST_BADGES.map((badge) => (

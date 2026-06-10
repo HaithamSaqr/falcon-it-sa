@@ -39,39 +39,31 @@ export default function ProductTrio() {
 
         <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
           {PRODUCTS.map((product) => (
-            <Card key={product.key} className="flex flex-col">
-              {/* Product screenshot */}
-              <div className="mb-5 flex h-48 items-center justify-center overflow-hidden rounded-xl bg-slate-50">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={product.image}
-                  alt={t(`${product.key}.name`)}
-                  className="h-full w-full object-contain p-2"
-                />
-              </div>
+            <Link
+              key={product.key}
+              href={product.href}
+              className="group block rounded-2xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-500"
+            >
+              <Card className="flex flex-col h-full transition-all duration-300 hover:scale-[1.03] hover:shadow-lg cursor-pointer text-start border border-gray-100">
+                {/* Product screenshot */}
+                <div className="mb-5 flex h-48 items-center justify-center overflow-hidden rounded-xl bg-slate-50">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={product.image}
+                    alt={t(`${product.key}.name`)}
+                    className="h-full w-full object-contain p-2"
+                  />
+                </div>
 
-              <h3 className="mb-2 text-text-primary">
-                {t(`${product.key}.name`)}
-              </h3>
+                <h3 className="mb-3 text-text-primary text-xl font-bold transition-colors group-hover:text-primary-500">
+                  {t(`${product.key}.name`)}
+                </h3>
 
-              <p className="mb-3 text-lg font-semibold text-primary-500">
-                {t(`${product.key}.price`)}
-              </p>
-
-              <p className="mb-6 flex-1 text-text-secondary">
-                {t(`${product.key}.description`)}
-              </p>
-
-              <Link
-                href={product.href}
-                className="inline-flex items-center gap-1 text-sm font-semibold text-primary-500 transition-colors hover:text-primary-400"
-              >
-                {t("learnMore")}
-                <span aria-hidden="true" className="rtl:rotate-180">
-                  &rarr;
-                </span>
-              </Link>
-            </Card>
+                <p className="flex-1 text-text-secondary text-sm leading-relaxed">
+                  {t(`${product.key}.description`)}
+                </p>
+              </Card>
+            </Link>
           ))}
         </div>
       </Container>

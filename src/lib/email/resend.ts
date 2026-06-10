@@ -115,7 +115,7 @@ export async function sendDemoConfirmation(data: {
             </ul>
           </div>
           <p style="color: #64748B; font-size: 14px;">
-            لأي استفسار عاجل، تواصل معنا عبر الواتساب: <a href="https://wa.me/966500000000" style="color: #10B981;">+966 50 000 0000</a>
+            لأي استفسار عاجل، تواصل معنا عبر الواتساب: <a href="https://wa.me/966568406006" style="color: #10B981;">00966568406006</a>
           </p>
           <hr style="border: none; border-top: 1px solid #E2E8F0; margin: 24px 0;" />
           <p style="color: #94A3B8; font-size: 12px; text-align: center;">
@@ -142,7 +142,7 @@ export async function sendDemoConfirmation(data: {
             </ul>
           </div>
           <p style="color: #64748B; font-size: 14px;">
-            For urgent inquiries, reach us on WhatsApp: <a href="https://wa.me/966500000000" style="color: #10B981;">+966 50 000 0000</a>
+            For urgent inquiries, reach us on WhatsApp: <a href="https://wa.me/966568406006" style="color: #10B981;">00966568406006</a>
           </p>
           <hr style="border: none; border-top: 1px solid #E2E8F0; margin: 24px 0;" />
           <p style="color: #94A3B8; font-size: 12px; text-align: center;">

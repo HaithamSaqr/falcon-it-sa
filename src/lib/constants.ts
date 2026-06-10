@@ -2,8 +2,8 @@ export const COMPANY = {
   name: { en: "Falcon Smart Solutions", ar: "فالكون للحلول الذكية" },
   website: "falcon-it.sa",
   email: "info@falcon-v.com",
-  phone: { ksa: "+966500000000", egypt: "+201000000000" },
-  whatsapp: process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "966500000000",
+  phone: { ksa: "00966568406006", egypt: "+201000000000" },
+  whatsapp: process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "966568406006",
   address: {
     ksa: { en: "Riyadh, Saudi Arabia", ar: "الرياض، المملكة العربية السعودية" },
     egypt: { en: "Cairo, Egypt", ar: "القاهرة، مصر" },
@@ -13,7 +13,7 @@ export const COMPANY = {
     twitter: "https://twitter.com/falconsmart",
     facebook: "https://facebook.com/falconsmartsolutions",
     instagram: "https://instagram.com/falconsmart",
-    youtube: "https://youtube.com/@falconsmart",
+    youtube: "https://www.youtube.com/@Falcon_Valley",
   },
   demo: "https://erp.falcon-v.com",
 } as const;

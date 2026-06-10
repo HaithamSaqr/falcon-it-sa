@@ -247,8 +247,8 @@ const DEFAULT_SETTINGS: SiteSettings = {
   company: {
     name: { en: "Falcon Smart Solutions", ar: "فالكون للحلول الذكية" },
     email: "info@falcon-v.com",
-    phone: { ksa: "+966500000000", egypt: "+201000000000" },
-    whatsapp: "966500000000",
+    phone: { ksa: "00966568406006", egypt: "+201000000000" },
+    whatsapp: "966568406006",
     address: {
       ksa: { en: "Riyadh, Saudi Arabia", ar: "الرياض، المملكة العربية السعودية" },
       egypt: { en: "Cairo, Egypt", ar: "القاهرة، مصر" },
@@ -263,7 +263,7 @@ const DEFAULT_SETTINGS: SiteSettings = {
     twitter: "https://twitter.com/falconsmart",
     facebook: "https://facebook.com/falconsmartsolutions",
     instagram: "https://instagram.com/falconsmart",
-    youtube: "https://youtube.com/@falconsmart",
+    youtube: "https://www.youtube.com/@Falcon_Valley",
   },
   regional: {
     gulfOnly: false,
