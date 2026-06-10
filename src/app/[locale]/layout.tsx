@@ -1,8 +1,9 @@
 import { Inter, Tajawal } from "next/font/google";
 import { NextIntlClientProvider, hasLocale } from "next-intl";
 import { getMessages, setRequestLocale } from "next-intl/server";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 
+import { isInstalled } from "@/lib/db/config";
 import { routing } from "@/i18n/routing";
 import { cn } from "@/lib/utils";
 import Navbar from "@/components/layout/navbar";
@@ -27,9 +28,8 @@ const tajawal = Tajawal({
   display: "swap",
 });
 
-export function generateStaticParams() {
-  return routing.locales.map((locale) => ({ locale }));
-}
+// Run per-request so the first-run install gate is always evaluated freshly.
+export const dynamic = "force-dynamic";
 
 export default async function LocaleLayout({
   children,
@@ -42,6 +42,11 @@ export default async function LocaleLayout({
 
   if (!hasLocale(routing.locales, locale)) {
     notFound();
+  }
+
+  // First-run: send visitors to the quick-setup wizard until the DB is configured.
+  if (!(await isInstalled())) {
+    redirect("/setup");
   }
 
   setRequestLocale(locale);

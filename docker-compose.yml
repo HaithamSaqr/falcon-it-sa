@@ -1,6 +1,22 @@
 version: "3.8"
 
 services:
+  db:
+    image: postgres:16
+    container_name: falcon-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: falcon
+      POSTGRES_PASSWORD: falcon
+      POSTGRES_DB: falcon
+    volumes:
+      - falcon-db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U falcon"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   falcon-web:
     build: .
     container_name: falcon-web
@@ -11,6 +27,15 @@ services:
       - falcon-data:/app/data
     environment:
       - NODE_ENV=production
+      # Pre-fill values for the first-run setup wizard (host = the `db` service).
+      # The wizard persists the final connection to /app/data/db-config.json.
+      - PGHOST=db
+      - PGPORT=5432
+      - PGDATABASE=falcon
+      - PGUSER=falcon
+    depends_on:
+      db:
+        condition: service_healthy
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:3000"]
       interval: 30s
@@ -19,3 +44,4 @@ services:
 
 volumes:
   falcon-data:
+  falcon-db:

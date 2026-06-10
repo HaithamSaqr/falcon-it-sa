@@ -111,13 +111,11 @@ export default function Footer() {
     { label: t("footer.aboutUs"), href: "/about" },
     { label: t("footer.blog"), href: "/blog" },
     { label: t("footer.careers"), href: "/careers" },
-    { label: t("footer.partners"), href: "/partners" },
   ];
 
   const supportLinks = [
     { label: t("footer.faq"), href: "/faq" },
     { label: t("footer.helpCenter"), href: "/help" },
-    { label: t("footer.chatSupport"), href: "/contact" },
     { label: t("footer.webinars"), href: "/webinars" },
   ];
 
@@ -125,11 +123,11 @@ export default function Footer() {
   const productLinks =
     "children" in (productItems ?? {})
       ? (productItems as Extract<typeof productItems, { children: unknown }>)!.children.map(
-          (child) => ({
-            label: t(`nav.${child.key}`),
-            href: child.href,
-          }),
-        )
+        (child) => ({
+          label: t(`nav.${child.key}`),
+          href: child.href,
+        }),
+      )
       : [];
 
   return (

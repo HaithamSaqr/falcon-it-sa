@@ -1,15 +1,17 @@
 /**
- * JSON File Data Store
- * Simple file-based persistence for leads, content, and settings.
- * Uses in-process mutex to prevent concurrent write corruption.
+ * PostgreSQL-backed data store for leads, content, settings, and integrations.
+ *
+ * Public API is unchanged from the previous JSON-file implementation, so all
+ * admin pages and API routes keep working. Leads live in the `leads` table;
+ * content/settings/integrations are single JSONB documents in `singletons`.
+ *
+ * When the app is not yet installed (no DB configured), reads fall back to the
+ * in-memory defaults so the public marketing site still renders.
  */
 
-import fs from "fs/promises";
-import path from "path";
 import crypto from "crypto";
 import type {
   Lead,
-  LeadType,
   LeadStatus,
   LeadFilters,
   LeadsResponse,
@@ -17,57 +19,56 @@ import type {
   SiteSettings,
   IntegrationSettings,
 } from "@/types/admin";
+import { query } from "@/lib/db/pool";
+import { isInstalledSync } from "@/lib/db/config";
+import { DEFAULT_CONTENT, DEFAULT_SETTINGS, DEFAULT_INTEGRATIONS } from "@/lib/db/defaults";
 
-// ── Paths ───────────────────────────────────────────────────────────
-const DATA_DIR = path.join(process.cwd(), "data");
-const LEADS_FILE = path.join(DATA_DIR, "leads.json");
-const CONTENT_FILE = path.join(DATA_DIR, "content.json");
-const SETTINGS_FILE = path.join(DATA_DIR, "settings.json");
-const INTEGRATIONS_FILE = path.join(DATA_DIR, "integrations.json");
+// ═══════════════════════════════════════════════════════════════════
+// Helpers
+// ═══════════════════════════════════════════════════════════════════
 
-// ── File Mutex (per-file write serialization) ───────────────────────
-const locks = new Map<string, Promise<void>>();
-
-async function withLock<T>(file: string, fn: () => Promise<T>): Promise<T> {
-  const prev = locks.get(file) || Promise.resolve();
-  let resolve: () => void;
-  const next = new Promise<void>((r) => { resolve = r; });
-  locks.set(file, next);
-
-  await prev;
-  try {
-    return await fn();
-  } finally {
-    resolve!();
-  }
+interface LeadRow {
+  id: string;
+  type: string;
+  status: string;
+  data: Record<string, unknown>;
+  source: string | null;
+  locale: string | null;
+  ip: string | null;
+  notes: string | null;
+  created_at: Date;
+  updated_at: Date;
 }
 
-// ── Low-level file I/O ──────────────────────────────────────────────
-async function ensureDir(): Promise<void> {
-  try {
-    await fs.mkdir(DATA_DIR, { recursive: true });
-  } catch {
-    // already exists
-  }
+function rowToLead(r: LeadRow): Lead {
+  return {
+    id: r.id,
+    type: r.type as Lead["type"],
+    status: r.status as LeadStatus,
+    data: r.data ?? {},
+    source: r.source ?? undefined,
+    locale: r.locale ?? undefined,
+    ip: r.ip ?? undefined,
+    notes: r.notes ?? undefined,
+    createdAt: r.created_at.toISOString(),
+    updatedAt: r.updated_at.toISOString(),
+  };
 }
 
-async function readJson<T>(file: string, fallback: T): Promise<T> {
-  await ensureDir();
-  try {
-    const raw = await fs.readFile(file, "utf-8");
-    return JSON.parse(raw) as T;
-  } catch {
-    // File doesn't exist or invalid JSON — write default
-    await fs.writeFile(file, JSON.stringify(fallback, null, 2), "utf-8");
-    return fallback;
-  }
+async function getSingleton<T>(key: string): Promise<T | null> {
+  const res = await query<{ value: T }>(
+    `SELECT value FROM singletons WHERE key = $1`,
+    [key]
+  );
+  return res.rows[0]?.value ?? null;
 }
 
-async function writeJson<T>(file: string, data: T): Promise<void> {
-  await ensureDir();
-  const tmp = file + ".tmp";
-  await fs.writeFile(tmp, JSON.stringify(data, null, 2), "utf-8");
-  await fs.rename(tmp, file);
+async function setSingleton<T>(key: string, value: T): Promise<void> {
+  await query(
+    `INSERT INTO singletons (key, value) VALUES ($1, $2::jsonb)
+     ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value`,
+    [key, JSON.stringify(value)]
+  );
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -75,7 +76,16 @@ async function writeJson<T>(file: string, data: T): Promise<void> {
 // ═══════════════════════════════════════════════════════════════════
 
 export async function getAllLeads(): Promise<Lead[]> {
-  return readJson<Lead[]>(LEADS_FILE, []);
+  if (!isInstalledSync()) return [];
+  try {
+    const res = await query<LeadRow>(
+      `SELECT id, type, status, data, source, locale, ip, notes, created_at, updated_at
+       FROM leads ORDER BY created_at DESC`
+    );
+    return res.rows.map(rowToLead);
+  } catch {
+    return [];
+  }
 }
 
 export async function getLeads(filters?: LeadFilters): Promise<LeadsResponse> {
@@ -130,160 +140,141 @@ export async function getLeads(filters?: LeadFilters): Promise<LeadsResponse> {
 }
 
 export async function getLeadById(id: string): Promise<Lead | null> {
-  const leads = await getAllLeads();
-  return leads.find((l) => l.id === id) || null;
+  if (!isInstalledSync()) return null;
+  const res = await query<LeadRow>(
+    `SELECT id, type, status, data, source, locale, ip, notes, created_at, updated_at
+     FROM leads WHERE id = $1`,
+    [id]
+  );
+  return res.rows[0] ? rowToLead(res.rows[0]) : null;
 }
 
 export async function addLead(
   lead: Omit<Lead, "id" | "createdAt" | "updatedAt">
 ): Promise<Lead> {
-  return withLock(LEADS_FILE, async () => {
-    const leads = await getAllLeads();
-    const now = new Date().toISOString();
-    const newLead: Lead = {
-      ...lead,
-      id: crypto.randomUUID(),
-      createdAt: now,
-      updatedAt: now,
-    };
-    leads.unshift(newLead); // newest first
-    await writeJson(LEADS_FILE, leads);
-    return newLead;
-  });
+  const id = crypto.randomUUID();
+  const res = await query<LeadRow>(
+    `INSERT INTO leads (id, type, status, data, source, locale, ip, notes)
+     VALUES ($1, $2, $3, $4::jsonb, $5, $6, $7, $8)
+     RETURNING id, type, status, data, source, locale, ip, notes, created_at, updated_at`,
+    [
+      id,
+      lead.type,
+      lead.status,
+      JSON.stringify(lead.data ?? {}),
+      lead.source ?? null,
+      lead.locale ?? null,
+      lead.ip ?? null,
+      lead.notes ?? null,
+    ]
+  );
+  return rowToLead(res.rows[0]);
 }
 
 export async function updateLead(
   id: string,
   updates: Partial<Pick<Lead, "status" | "notes">>
 ): Promise<Lead | null> {
-  return withLock(LEADS_FILE, async () => {
-    const leads = await getAllLeads();
-    const idx = leads.findIndex((l) => l.id === id);
-    if (idx === -1) return null;
-
-    leads[idx] = {
-      ...leads[idx],
-      ...updates,
-      updatedAt: new Date().toISOString(),
-    };
-    await writeJson(LEADS_FILE, leads);
-    return leads[idx];
-  });
+  const res = await query<LeadRow>(
+    `UPDATE leads
+     SET status = COALESCE($2, status),
+         notes  = COALESCE($3, notes),
+         updated_at = now()
+     WHERE id = $1
+     RETURNING id, type, status, data, source, locale, ip, notes, created_at, updated_at`,
+    [id, updates.status ?? null, updates.notes ?? null]
+  );
+  return res.rows[0] ? rowToLead(res.rows[0]) : null;
 }
 
 export async function deleteLead(id: string): Promise<boolean> {
-  return withLock(LEADS_FILE, async () => {
-    const leads = await getAllLeads();
-    const filtered = leads.filter((l) => l.id !== id);
-    if (filtered.length === leads.length) return false;
-    await writeJson(LEADS_FILE, filtered);
-    return true;
-  });
+  const res = await query(`DELETE FROM leads WHERE id = $1`, [id]);
+  return (res.rowCount ?? 0) > 0;
 }
 
 export async function bulkUpdateStatus(
   ids: string[],
   status: LeadStatus
 ): Promise<number> {
-  return withLock(LEADS_FILE, async () => {
-    const leads = await getAllLeads();
-    let count = 0;
-    const now = new Date().toISOString();
-    for (const lead of leads) {
-      if (ids.includes(lead.id)) {
-        lead.status = status;
-        lead.updatedAt = now;
-        count++;
-      }
-    }
-    await writeJson(LEADS_FILE, leads);
-    return count;
-  });
+  if (ids.length === 0) return 0;
+  const res = await query(
+    `UPDATE leads SET status = $2, updated_at = now() WHERE id = ANY($1::uuid[])`,
+    [ids, status]
+  );
+  return res.rowCount ?? 0;
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // CONTENT
 // ═══════════════════════════════════════════════════════════════════
 
-const DEFAULT_CONTENT: SiteContent = {
-  hero: {
-    en: {
-      title: "Enterprise ERP Power. Half the Price. Built for the Middle East.",
-      subtitle: "ZATCA-compliant. Arabic-native. On-premise or Cloud. Go live in 4-8 weeks.",
-      cta1Text: "Start Free Trial",
-      cta2Text: "Book a Demo",
-    },
-    ar: {
-      title: "قوة أنظمة ERP المؤسسية. بنصف التكلفة. مصمم للشرق الأوسط.",
-      subtitle: "متوافق مع هيئة الزكاة والضريبة. عربي بالكامل. محلي أو سحابي.",
-      cta1Text: "ابدأ تجربتك المجانية",
-      cta2Text: "احجز عرض تجريبي",
-    },
-  },
-  testimonials: [],
-  faqs: [],
-  stats: [
-    { value: 500, suffix: "+", label: { en: "SMEs served", ar: "شركة ومؤسسة" } },
-    { value: 5000, suffix: "+", label: { en: "Monthly users", ar: "مستخدم شهري" } },
-    { value: 1000000, suffix: "+", label: { en: "Transactions processed", ar: "عملية محاسبية" } },
-  ],
-};
-
 export async function getContent(): Promise<SiteContent> {
-  return readJson<SiteContent>(CONTENT_FILE, DEFAULT_CONTENT);
+  if (!isInstalledSync()) return DEFAULT_CONTENT;
+  try {
+    const stored = await getSingleton<SiteContent>("content");
+    return stored ?? DEFAULT_CONTENT;
+  } catch {
+    return DEFAULT_CONTENT;
+  }
 }
 
 export async function updateContent(content: SiteContent): Promise<void> {
-  return withLock(CONTENT_FILE, async () => {
-    await writeJson(CONTENT_FILE, content);
-  });
+  await setSingleton("content", content);
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // SETTINGS
 // ═══════════════════════════════════════════════════════════════════
 
-const DEFAULT_SETTINGS: SiteSettings = {
-  company: {
-    name: { en: "Falcon Smart Solutions", ar: "فالكون للحلول الذكية" },
-    email: "info@falcon-v.com",
-    phone: { ksa: "00966568406006", egypt: "+201000000000" },
-    whatsapp: "966568406006",
-    address: {
-      ksa: { en: "Riyadh, Saudi Arabia", ar: "الرياض، المملكة العربية السعودية" },
-      egypt: { en: "Cairo, Egypt", ar: "القاهرة، مصر" },
-    },
-  },
-  notifications: {
-    emailOnNewLead: true,
-    salesEmail: "info@falcon-v.com",
-  },
-  social: {
-    linkedin: "https://linkedin.com/company/falcon-smart-solutions",
-    twitter: "https://twitter.com/falconsmart",
-    facebook: "https://facebook.com/falconsmartsolutions",
-    instagram: "https://instagram.com/falconsmart",
-    youtube: "https://www.youtube.com/@Falcon_Valley",
-  },
-  regional: {
-    gulfOnly: false,
-  },
-  security: {
-    adminPassword: process.env.ADMIN_PASSWORD || "",
-    jwtSecret: process.env.ADMIN_JWT_SECRET || crypto.randomUUID() + crypto.randomUUID(),
-    rateLimitMax: Number(process.env.RATE_LIMIT_MAX) || 10,
-    rateLimitWindowMs: Number(process.env.RATE_LIMIT_WINDOW_MS) || 60000,
-  },
-};
+function mergeSettings(stored: Partial<SiteSettings>): SiteSettings {
+  return {
+    ...DEFAULT_SETTINGS,
+    ...stored,
+    company: { ...DEFAULT_SETTINGS.company, ...stored.company },
+    notifications: { ...DEFAULT_SETTINGS.notifications, ...stored.notifications },
+    social: { ...DEFAULT_SETTINGS.social, ...stored.social },
+    regional: { ...DEFAULT_SETTINGS.regional, ...stored.regional },
+    security: { ...DEFAULT_SETTINGS.security, ...stored.security },
+  };
+}
 
 export async function getSettings(): Promise<SiteSettings> {
-  return readJson<SiteSettings>(SETTINGS_FILE, DEFAULT_SETTINGS);
+  if (!isInstalledSync()) return DEFAULT_SETTINGS;
+  try {
+    const stored = await getSingleton<SiteSettings>("settings");
+    return stored ? mergeSettings(stored) : DEFAULT_SETTINGS;
+  } catch {
+    return DEFAULT_SETTINGS;
+  }
 }
 
 export async function updateSettings(settings: SiteSettings): Promise<void> {
-  return withLock(SETTINGS_FILE, async () => {
-    await writeJson(SETTINGS_FILE, settings);
-  });
+  await setSingleton("settings", settings);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// INTEGRATIONS
+// ═══════════════════════════════════════════════════════════════════
+
+export async function getIntegrations(): Promise<IntegrationSettings> {
+  if (!isInstalledSync()) return DEFAULT_INTEGRATIONS;
+  try {
+    const stored = (await getSingleton<Partial<IntegrationSettings>>("integrations")) ?? {};
+    // Deep-merge defaults so new sections/fields are always present
+    return {
+      odoo: { ...DEFAULT_INTEGRATIONS.odoo, ...stored.odoo },
+      calendar: { ...DEFAULT_INTEGRATIONS.calendar, ...stored.calendar },
+      email: { ...DEFAULT_INTEGRATIONS.email, ...stored.email },
+      whatsapp: { ...DEFAULT_INTEGRATIONS.whatsapp, ...stored.whatsapp },
+      helpdesk: { ...DEFAULT_INTEGRATIONS.helpdesk, ...stored.helpdesk },
+    };
+  } catch {
+    return DEFAULT_INTEGRATIONS;
+  }
+}
+
+export async function updateIntegrations(settings: IntegrationSettings): Promise<void> {
+  await setSingleton("integrations", settings);
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -359,70 +350,10 @@ export async function getAnalytics() {
     thisWeek,
     lastWeek,
     conversionRate: leads.length > 0 ? Math.round((converted / leads.length) * 100) : 0,
-    byType: byType as Record<LeadType, number>,
+    byType: byType as Record<Lead["type"], number>,
     byStatus: byStatus as Record<LeadStatus, number>,
     byDay,
     topCountries,
     topIndustries,
   };
-}
-
-// ═══════════════════════════════════════════════════════════════════
-// INTEGRATIONS
-// ═══════════════════════════════════════════════════════════════════
-
-const DEFAULT_INTEGRATIONS: IntegrationSettings = {
-  odoo: {
-    enabled: false,
-    url: process.env.ODOO_URL || "",
-    db: process.env.ODOO_DB || "",
-    username: process.env.ODOO_USERNAME || "",
-    password: process.env.ODOO_PASSWORD || "",
-  },
-  calendar: {
-    enabled: false,
-    resourceId: 1,
-    slotDuration: 30,
-    availableDays: [0, 1, 2, 3, 4], // Sun-Thu (MENA work week)
-    startHour: 9,
-    endHour: 17,
-    bufferMinutes: 10,
-    maxAdvanceDays: 30,
-  },
-  email: {
-    enabled: false,
-    provider: "resend",
-    apiKey: process.env.RESEND_API_KEY || "",
-    fromEmail: process.env.RESEND_FROM_EMAIL || "noreply@falcon-it.sa",
-    replyTo: process.env.RESEND_REPLY_TO || "info@falcon-v.com",
-  },
-  whatsapp: {
-    enabled: false,
-    apiToken: "",
-    phoneId: "",
-  },
-  helpdesk: {
-    enabled: false,
-    defaultTeamId: 0,
-    allowRating: true,
-    allowNewTickets: true,
-  },
-};
-
-export async function getIntegrations(): Promise<IntegrationSettings> {
-  const stored = await readJson<Partial<IntegrationSettings>>(INTEGRATIONS_FILE, DEFAULT_INTEGRATIONS);
-  // Deep-merge defaults so new sections/fields are always present
-  return {
-    odoo: { ...DEFAULT_INTEGRATIONS.odoo, ...stored.odoo },
-    calendar: { ...DEFAULT_INTEGRATIONS.calendar, ...stored.calendar },
-    email: { ...DEFAULT_INTEGRATIONS.email, ...stored.email },
-    whatsapp: { ...DEFAULT_INTEGRATIONS.whatsapp, ...stored.whatsapp },
-    helpdesk: { ...DEFAULT_INTEGRATIONS.helpdesk, ...stored.helpdesk },
-  };
-}
-
-export async function updateIntegrations(settings: IntegrationSettings): Promise<void> {
-  return withLock(INTEGRATIONS_FILE, async () => {
-    await writeJson(INTEGRATIONS_FILE, settings);
-  });
 }

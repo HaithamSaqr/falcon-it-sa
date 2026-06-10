@@ -7,6 +7,11 @@ const intlMiddleware = createMiddleware(routing);
 export default function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  // ── Setup wizard: bypass i18n entirely (install gate lives in layouts) ──
+  if (pathname === "/setup" || pathname.startsWith("/setup/")) {
+    return NextResponse.next();
+  }
+
   // ── Admin routes: bypass i18n, check auth cookie ──────────────────
   if (pathname.startsWith("/admin")) {
     // Login page is public

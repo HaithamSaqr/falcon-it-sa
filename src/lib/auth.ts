@@ -1,12 +1,13 @@
 /**
  * Admin Authentication — HMAC-SHA256 JWT with HttpOnly cookies.
- * Zero external dependencies (uses Node.js crypto).
- * Reads password & JWT secret from the settings store (admin-configurable).
+ * Credentials (username + scrypt password hash) live in the `settings`
+ * singleton, set during the first-run setup wizard.
  */
 
 import crypto from "crypto";
 import { cookies } from "next/headers";
 import { getSettings } from "@/lib/data-store";
+import { verifyPasswordHash } from "@/lib/password";
 
 const COOKIE_NAME = "falcon_admin_session";
 const TOKEN_EXPIRY_SECONDS = 24 * 60 * 60; // 24 hours
@@ -15,20 +16,22 @@ const TOKEN_EXPIRY_SECONDS = 24 * 60 * 60; // 24 hours
 async function getSecurityConfig() {
   const settings = await getSettings();
   return {
-    adminPassword: settings.security?.adminPassword || process.env.ADMIN_PASSWORD || "",
-    jwtSecret: settings.security?.jwtSecret || process.env.ADMIN_JWT_SECRET || "dev-fallback-secret-change-me",
+    adminUsername: settings.security?.adminUsername || "",
+    adminPasswordHash: settings.security?.adminPasswordHash || "",
+    jwtSecret:
+      settings.security?.jwtSecret ||
+      process.env.ADMIN_JWT_SECRET ||
+      "dev-fallback-secret-change-me",
   };
 }
 
-// ── Password verification ───────────────────────────────────────────
-export async function verifyPassword(password: string): Promise<boolean> {
-  const { adminPassword } = await getSecurityConfig();
-  if (!adminPassword) return false;
-  // Constant-time comparison to prevent timing attacks
-  const a = Buffer.from(password);
-  const b = Buffer.from(adminPassword);
-  if (a.length !== b.length) return false;
-  return crypto.timingSafeEqual(a, b);
+// ── Credential verification ─────────────────────────────────────────
+export async function verifyLogin(username: string, password: string): Promise<boolean> {
+  const { adminUsername, adminPasswordHash } = await getSecurityConfig();
+  if (!adminUsername || !adminPasswordHash) return false;
+  const userOk = username.trim().toLowerCase() === adminUsername.trim().toLowerCase();
+  const passOk = verifyPasswordHash(password, adminPasswordHash);
+  return userOk && passOk;
 }
 
 // ── JWT helpers (minimal HMAC-SHA256) ───────────────────────────────
@@ -129,8 +132,8 @@ export async function getSession(): Promise<{ authenticated: boolean }> {
 
 // ── Setup check ─────────────────────────────────────────────────────
 export async function isSetupComplete(): Promise<boolean> {
-  const { adminPassword } = await getSecurityConfig();
-  return Boolean(adminPassword);
+  const { adminUsername, adminPasswordHash } = await getSecurityConfig();
+  return Boolean(adminUsername && adminPasswordHash);
 }
 
 // ── API route auth guard ────────────────────────────────────────────

@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { requireAuth } from "@/lib/auth";
 import { getSettings, updateSettings } from "@/lib/data-store";
 import { jsonSuccess, jsonError } from "@/lib/api-helpers";
+import { hashPassword } from "@/lib/password";
 import type { SiteSettings } from "@/types/admin";
 
 const MASK = "••••••••";
@@ -22,11 +23,13 @@ export async function GET() {
 
   const settings = await getSettings();
 
-  // Mask sensitive security fields
+  // Mask sensitive security fields; never expose the password hash.
   const masked = JSON.parse(JSON.stringify(settings)) as SiteSettings;
   if (masked.security) {
-    masked.security.adminPassword = maskValue(settings.security.adminPassword);
+    // Show a masked placeholder if a password is configured, else empty.
+    masked.security.adminPassword = settings.security.adminPasswordHash ? MASK : "";
     masked.security.jwtSecret = maskValue(settings.security.jwtSecret);
+    delete masked.security.adminPasswordHash;
   }
 
   return jsonSuccess(masked);
@@ -40,15 +43,36 @@ export async function PUT(request: NextRequest) {
   const body = await request.json().catch(() => null) as SiteSettings | null;
   if (!body) return jsonError("Invalid body", 400);
 
-  // Preserve existing secrets if masked values were sent back
+  const existing = await getSettings();
+
+  // Merge security carefully so credentials set during setup are never wiped
+  // by the settings form (which doesn't render every field).
   if (body.security) {
-    const existing = await getSettings();
-    if (isMasked(body.security.adminPassword)) {
-      body.security.adminPassword = existing.security.adminPassword;
+    const incoming = body.security;
+
+    // Admin password: only re-hash when a real new plaintext value was typed.
+    let adminPasswordHash = existing.security.adminPasswordHash || "";
+    const typed = incoming.adminPassword;
+    if (typed && !isMasked(typed) && typed.trim().length > 0) {
+      adminPasswordHash = hashPassword(typed);
     }
-    if (isMasked(body.security.jwtSecret)) {
-      body.security.jwtSecret = existing.security.jwtSecret;
+
+    // JWT secret: keep existing if masked / empty.
+    let jwtSecret = existing.security.jwtSecret;
+    if (incoming.jwtSecret && !isMasked(incoming.jwtSecret)) {
+      jwtSecret = incoming.jwtSecret;
     }
+
+    body.security = {
+      ...existing.security,
+      ...incoming,
+      adminUsername: incoming.adminUsername?.trim() || existing.security.adminUsername,
+      adminPassword: "", // never persist plaintext
+      adminPasswordHash,
+      jwtSecret,
+    };
+  } else {
+    body.security = existing.security;
   }
 
   await updateSettings(body);

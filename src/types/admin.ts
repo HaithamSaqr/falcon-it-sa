@@ -92,7 +92,12 @@ export interface SiteSettings {
     gulfOnly: boolean; // Hide Egypt office, phone, address when true
   };
   security: {
-    adminPassword: string;
+    /** Admin login username (set during first-run setup). */
+    adminUsername: string;
+    /** Write-only plaintext password input (settings UI). Never persisted. */
+    adminPassword?: string;
+    /** scrypt hash — the source of truth for admin login. */
+    adminPasswordHash?: string;
     jwtSecret: string;
     rateLimitMax: number;
     rateLimitWindowMs: number;
