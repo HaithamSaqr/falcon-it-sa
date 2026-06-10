@@ -331,9 +331,17 @@ export default function IntegrationsPage() {
             </div>
 
             <div className="mt-6 rounded-lg bg-slate-50 px-4 py-3 text-sm text-slate-600">
-              <strong>Note:</strong> Customers log in using their Odoo portal credentials (email & password).
-              Make sure the Odoo <code>fv_helpdesk</code> module is installed and customers have portal access.
-              Portal URL: <code>/login</code>
+              <strong>Note:</strong> Customer login is handled on the external client portal.
+              The website&apos;s <em>Login</em> button redirects to{" "}
+              <a
+                href="https://falcon-valley.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-cyan-600 underline"
+              >
+                falcon-valley.com
+              </a>
+              .
             </div>
           </div>
         </div>

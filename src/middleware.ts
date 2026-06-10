@@ -21,20 +21,6 @@ export default function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // ── Portal routes: i18n + portal auth cookie check ────────────────
-  // Match /en/portal, /ar/portal, /portal (any locale prefix)
-  const portalMatch = pathname.match(/^\/(?:ar|en)?\/portal(?:\/|$)/);
-  if (portalMatch) {
-    const token = request.cookies.get("falcon_portal_session")?.value;
-    if (!token) {
-      // Redirect to login page with locale prefix
-      const locale = pathname.startsWith("/ar") ? "ar" : "en";
-      return NextResponse.redirect(new URL(`/${locale}/login`, request.url));
-    }
-    // Continue with i18n middleware for locale handling
-    return intlMiddleware(request);
-  }
-
   // ── All other routes: i18n middleware ──────────────────────────────
   return intlMiddleware(request);
 }

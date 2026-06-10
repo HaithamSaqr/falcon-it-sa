@@ -236,9 +236,14 @@ function MobileMenu({
           <div className="border-t px-4 py-4 space-y-3">
             <LanguageToggle className="w-full justify-center" />
 
-            <Button variant="outline" href="/login" className="w-full">
+            <a
+              href="https://falcon-valley.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-[var(--radius-button)] border-2 border-primary-500 px-6 text-base font-semibold text-primary-500 transition-all duration-200 hover:bg-primary-500 hover:text-white"
+            >
               {t("nav.login")}
-            </Button>
+            </a>
 
             <Button variant="cta" href="/demo" className="w-full">
               {t("nav.startTrial")}
@@ -313,12 +318,14 @@ export default function Navbar() {
         <div className="hidden lg:flex lg:items-center lg:gap-2">
           <LanguageToggle />
 
-          <Link
-            href="/login"
+          <a
+            href="https://falcon-valley.com"
+            target="_blank"
+            rel="noopener noreferrer"
             className="px-3 py-2 text-sm font-medium text-text-secondary transition-colors hover:text-primary-500"
           >
             {t("nav.login")}
-          </Link>
+          </a>
 
           <Button variant="cta" size="sm" href="/demo">
             {t("nav.startTrial")}
