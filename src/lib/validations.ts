@@ -33,6 +33,18 @@ export const newsletterSchema = z.object({
   email: z.string().email("Invalid email address"),
 });
 
+export const sectorLeadSchema = z.object({
+  company: z.string().min(2, "Company name is required"),
+  email: z.string().email("Invalid email address"),
+  phone: z.string().min(8, "Phone number is required"),
+  users: z
+    .number({ message: "Number of users is required" })
+    .int()
+    .min(1, "At least 1 user")
+    .max(100000, "Too many users"),
+});
+
 export type DemoFormData = z.infer<typeof demoFormSchema>;
 export type ContactFormData = z.infer<typeof contactFormSchema>;
 export type NewsletterData = z.infer<typeof newsletterSchema>;
+export type SectorLeadData = z.infer<typeof sectorLeadSchema>;

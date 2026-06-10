@@ -156,6 +156,106 @@
     "trading": "Trading & Wholesale",
     "learnMore": "Learn More"
   },
+  "sectors": {
+    "heading": "Sectors we serve",
+    "subheading": "One ERP built for every sector — pick yours and get an instant quote.",
+    "learnMore": "Learn more & get a quote",
+    "items": {
+      "retail": {
+        "name": "Retail & E-Commerce",
+        "desc": "Manage sales, POS, inventory and loyalty across all your branches and online store."
+      },
+      "manufacturing": {
+        "name": "Manufacturing",
+        "desc": "Production planning, work orders, raw materials and costing in one platform."
+      },
+      "construction": {
+        "name": "Construction & Contracting",
+        "desc": "Manage projects, progress billing, subcontractors and cost per site."
+      },
+      "real-estate": {
+        "name": "Real Estate & Property",
+        "desc": "Leases, collections, maintenance and unit/owner management with ease."
+      },
+      "hospitality": {
+        "name": "Hospitality & Restaurants",
+        "desc": "Reservations, POS, table and inventory management for hotels and restaurants."
+      },
+      "healthcare": {
+        "name": "Healthcare & Clinics",
+        "desc": "Appointments, patient records, billing and insurance for clinics and hospitals."
+      },
+      "education": {
+        "name": "Education & Training",
+        "desc": "Manage students, fees, schedules and training centers in one system."
+      },
+      "logistics": {
+        "name": "Logistics & Transport",
+        "desc": "Fleet, shipments, warehouses, routing and tracking management."
+      },
+      "trading": {
+        "name": "Trading, Wholesale & Distribution",
+        "desc": "Purchasing, sales, multi-warehouse, pricing and distributor management."
+      },
+      "automotive": {
+        "name": "Automotive & Workshops",
+        "desc": "Repair orders, spare parts, maintenance and billing for workshops and showrooms."
+      },
+      "food-beverage": {
+        "name": "Food & Beverage",
+        "desc": "Food production, batch & expiry tracking, distribution and compliance."
+      },
+      "pharma": {
+        "name": "Pharma & Medical Supplies",
+        "desc": "Batch & expiry tracking, licensing and pharmaceutical supply chains."
+      },
+      "professional-services": {
+        "name": "Professional Services",
+        "desc": "Projects, timesheets, billing and contracts for consulting firms."
+      },
+      "agriculture": {
+        "name": "Agriculture & Livestock",
+        "desc": "Crop, farm, inventory, production and cost management."
+      },
+      "energy": {
+        "name": "Energy, Oil & Gas",
+        "desc": "Asset, project, maintenance and compliance management for the energy sector."
+      },
+      "fashion": {
+        "name": "Fashion & Apparel",
+        "desc": "Sizes, colors, variants, inventory and POS for fashion brands."
+      },
+      "jewelry": {
+        "name": "Jewelry & Gold",
+        "desc": "Gold pricing by weight/karat, inventory and security for jewelers."
+      },
+      "nonprofit": {
+        "name": "Nonprofits & Associations",
+        "desc": "Donations, members, projects, grants and reporting management."
+      }
+    },
+    "landing": {
+      "back": "All sectors",
+      "planIncludesCloud": "The plan includes full cloud hosting (Falcon Cloud) — with no extra server costs.",
+      "formTitle": "Get an instant quote",
+      "formSubtitle": "Enter your details and calculate your sector's cloud ERP cost in seconds.",
+      "company": "Company name",
+      "companyPh": "e.g. Falcon Trading Co.",
+      "email": "Email address",
+      "emailPh": "name@company.com",
+      "phone": "Phone number",
+      "phonePh": "05XXXXXXXX",
+      "users": "Number of users",
+      "calculate": "Calculate cost",
+      "estimateTitle": "Estimated cost",
+      "monthly": "per month",
+      "yearly": "per year",
+      "currency": "SAR",
+      "estimateHint": "Includes all users + cloud hosting. Prices are estimates and customizable.",
+      "completeWhatsApp": "Complete via WhatsApp",
+      "whatsappHeader": "Quote request — {sector} sector"
+    }
+  },
   "stats": {
     "heading": "Falcon delivers excellence",
     "clients": "SMEs served",
@@ -559,10 +659,22 @@
     "vision": "Our Vision",
     "visionText": "To be the leading ERP platform across the MENA region, enabling businesses of all sizes to compete globally while honoring local requirements.",
     "stats": {
-      "clients": { "value": "500+", "label": "Clients Served" },
-      "experience": { "value": "15+", "label": "Years Experience" },
-      "users": { "value": "5,000+", "label": "Active Users" },
-      "industries": { "value": "9", "label": "Industries Covered" }
+      "clients": {
+        "value": "500+",
+        "label": "Clients Served"
+      },
+      "experience": {
+        "value": "15+",
+        "label": "Years Experience"
+      },
+      "users": {
+        "value": "5,000+",
+        "label": "Active Users"
+      },
+      "industries": {
+        "value": "9",
+        "label": "Industries Covered"
+      }
     },
     "whyFalcon": {
       "eyebrow": "Why Falcon",
