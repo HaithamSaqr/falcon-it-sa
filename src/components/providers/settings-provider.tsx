@@ -3,6 +3,18 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import { COMPANY } from "@/lib/constants";
 
+interface BilingualText {
+  en: string;
+  ar: string;
+}
+
+export interface PublicBranch {
+  id: string;
+  name: BilingualText;
+  address: BilingualText;
+  phone: string;
+}
+
 interface PublicSettings {
   gulfOnly: boolean;
   company: {
@@ -10,10 +22,7 @@ interface PublicSettings {
     email: string;
     phone: { ksa: string; egypt?: string };
     whatsapp: string;
-    address: {
-      ksa: { en: string; ar: string };
-      egypt?: { en: string; ar: string };
-    };
+    branches: PublicBranch[];
   };
   social: {
     linkedin: string;
@@ -32,7 +41,7 @@ const DEFAULT_SETTINGS: PublicSettings = {
     email: COMPANY.email,
     phone: COMPANY.phone,
     whatsapp: COMPANY.whatsapp,
-    address: COMPANY.address as unknown as PublicSettings["company"]["address"],
+    branches: COMPANY.branches as unknown as PublicBranch[],
   },
   social: COMPANY.social as unknown as PublicSettings["social"],
 };

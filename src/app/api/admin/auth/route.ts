@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
     return jsonError("Invalid username or password", 401);
   }
 
-  const token = await createToken();
+  const token = await createToken(username);
   await setSessionCookie(token);
 
   return jsonSuccess({ authenticated: true }, "Login successful");

@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import Container from "@/components/ui/container";
 import Button from "@/components/ui/button";
 import Card from "@/components/ui/card";
@@ -14,9 +14,11 @@ import { contactFormSchema, type ContactFormData } from "@/lib/validations";
 
 export default function ContactPage() {
   const t = useTranslations("contact");
+  const locale = useLocale();
   const [submitted, setSubmitted] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
-  const { gulfOnly, company } = useSettings();
+  const { company } = useSettings();
+  const isAr = locale === "ar";
 
   const {
     register,
@@ -169,57 +171,29 @@ export default function ContactPage() {
 
           {/* Office Info Side */}
           <div className="space-y-6">
-            {/* KSA Office */}
-            <Card className="text-start">
-              <h3 className="mb-4 text-xl font-bold text-text-primary">
-                {t("officeKSA")}
-              </h3>
-              <div className="space-y-3 text-sm text-text-secondary">
-                <p className="flex items-start gap-3">
-                  <span className="text-lg">📍</span>
-                  {company.address.ksa.en}
-                </p>
-                <p className="flex items-start gap-3">
-                  <span className="text-lg">📞</span>
-                  <a
-                    href={`tel:${company.phone.ksa}`}
-                    className="transition-colors hover:text-primary-500"
-                  >
-                    {company.phone.ksa}
-                  </a>
-                </p>
-                <p className="flex items-start gap-3">
-                  <span className="text-lg">✉️</span>
-                  <a
-                    href={`mailto:${company.email}`}
-                    className="transition-colors hover:text-primary-500"
-                  >
-                    {company.email}
-                  </a>
-                </p>
-              </div>
-            </Card>
-
-            {/* Egypt Office — hidden when Gulf Only mode is on */}
-            {!gulfOnly && (
-              <Card className="text-start">
+            {/* Branches — dynamic list managed from the admin panel */}
+            {(company.branches ?? []).map((branch) => (
+              <Card key={branch.id} className="text-start">
                 <h3 className="mb-4 text-xl font-bold text-text-primary">
-                  {t("officeEgypt")}
+                  {isAr ? branch.name.ar : branch.name.en}
                 </h3>
                 <div className="space-y-3 text-sm text-text-secondary">
                   <p className="flex items-start gap-3">
                     <span className="text-lg">📍</span>
-                    {company.address.egypt?.en}
+                    {isAr ? branch.address.ar : branch.address.en}
                   </p>
-                  <p className="flex items-start gap-3">
-                    <span className="text-lg">📞</span>
-                    <a
-                      href={`tel:${company.phone.egypt || ""}`}
-                      className="transition-colors hover:text-primary-500"
-                    >
-                      {company.phone.egypt}
-                    </a>
-                  </p>
+                  {branch.phone && (
+                    <p className="flex items-start gap-3">
+                      <span className="text-lg">📞</span>
+                      <a
+                        href={`tel:${branch.phone}`}
+                        className="transition-colors hover:text-primary-500"
+                        dir="ltr"
+                      >
+                        {branch.phone}
+                      </a>
+                    </p>
+                  )}
                   <p className="flex items-start gap-3">
                     <span className="text-lg">✉️</span>
                     <a
@@ -231,7 +205,7 @@ export default function ContactPage() {
                   </p>
                 </div>
               </Card>
-            )}
+            ))}
 
             {/* WhatsApp CTA */}
             <Card className="bg-cta/5 text-start">

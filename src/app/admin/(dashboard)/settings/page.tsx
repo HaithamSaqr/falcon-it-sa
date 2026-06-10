@@ -3,10 +3,24 @@
 import { useEffect, useState } from "react";
 import type { SiteSettings } from "@/types/admin";
 
+interface DbConn {
+  host: string;
+  port: number;
+  database: string;
+  user: string;
+  password: string;
+  hasPassword?: boolean;
+}
+
 export default function SettingsPage() {
   const [settings, setSettings] = useState<SiteSettings | null>(null);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+
+  // Database connection (stored in db-config.json, editable here)
+  const [conn, setConn] = useState<DbConn | null>(null);
+  const [connSaving, setConnSaving] = useState(false);
+  const [connMsg, setConnMsg] = useState<{ ok: boolean; text: string } | null>(null);
 
   useEffect(() => {
     fetch("/api/admin/settings")
@@ -14,7 +28,36 @@ export default function SettingsPage() {
       .then((data) => {
         if (data.success) setSettings(data.data);
       });
+    fetch("/api/admin/connection")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.success) setConn({ ...data.data, password: "" });
+      });
   }, []);
+
+  async function handleSaveConnection() {
+    if (!conn) return;
+    setConnSaving(true);
+    setConnMsg(null);
+    try {
+      const res = await fetch("/api/admin/connection", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(conn),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setConnMsg({ ok: true, text: data.message || "Connection updated" });
+        setConn((c) => (c ? { ...c, password: "", hasPassword: true } : c));
+      } else {
+        setConnMsg({ ok: false, text: data.error || "Failed to update connection" });
+      }
+    } catch {
+      setConnMsg({ ok: false, text: "Network error" });
+    } finally {
+      setConnSaving(false);
+    }
+  }
 
   async function handleSave() {
     if (!settings) return;
@@ -53,8 +96,113 @@ export default function SettingsPage() {
     });
   }
 
+  // ── Branches (dynamic list) ───────────────────────────────────────
+  function genId() {
+    try {
+      return crypto.randomUUID();
+    } catch {
+      return `b_${Date.now()}_${Math.floor(Math.random() * 1e6)}`;
+    }
+  }
+
+  function setBranch(index: number, path: string, value: string) {
+    setSettings((prev) => {
+      if (!prev) return prev;
+      const copy = JSON.parse(JSON.stringify(prev)) as SiteSettings;
+      const keys = path.split(".");
+      let obj = copy.company.branches[index] as unknown as Record<string, unknown>;
+      for (let i = 0; i < keys.length - 1; i++) {
+        obj = obj[keys[i]] as Record<string, unknown>;
+      }
+      obj[keys[keys.length - 1]] = value;
+      return copy;
+    });
+  }
+
+  function addBranch() {
+    setSettings((prev) => {
+      if (!prev) return prev;
+      const copy = JSON.parse(JSON.stringify(prev)) as SiteSettings;
+      copy.company.branches = [
+        ...(copy.company.branches ?? []),
+        { id: genId(), name: { en: "", ar: "" }, address: { en: "", ar: "" }, phone: "" },
+      ];
+      return copy;
+    });
+  }
+
+  function removeBranch(index: number) {
+    setSettings((prev) => {
+      if (!prev) return prev;
+      const copy = JSON.parse(JSON.stringify(prev)) as SiteSettings;
+      copy.company.branches.splice(index, 1);
+      return copy;
+    });
+  }
+
   return (
     <div className="mx-auto max-w-3xl space-y-6">
+      {/* Database Connection */}
+      <div className="rounded-xl border-2 border-cyan-200 bg-cyan-50/40 p-6">
+        <div className="mb-1 flex items-center gap-2">
+          <span className="text-lg">🗄️</span>
+          <h3 className="text-sm font-semibold text-slate-700">Database Connection</h3>
+        </div>
+        <p className="mb-4 text-xs text-slate-500">
+          PostgreSQL connection used by the whole app. Saving tests the connection, creates the
+          database &amp; tables if missing, then reconnects.
+        </p>
+        {conn ? (
+          <>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div>
+                <label className={labelClasses}>Host</label>
+                <input value={conn.host} onChange={(e) => setConn({ ...conn, host: e.target.value })} className={inputClasses} placeholder="localhost" />
+              </div>
+              <div>
+                <label className={labelClasses}>Port</label>
+                <input value={conn.port} onChange={(e) => setConn({ ...conn, port: Number(e.target.value) || 5432 })} className={inputClasses} type="number" />
+              </div>
+              <div>
+                <label className={labelClasses}>Database</label>
+                <input value={conn.database} onChange={(e) => setConn({ ...conn, database: e.target.value })} className={inputClasses} />
+              </div>
+              <div>
+                <label className={labelClasses}>User</label>
+                <input value={conn.user} onChange={(e) => setConn({ ...conn, user: e.target.value })} className={inputClasses} />
+              </div>
+              <div className="sm:col-span-2">
+                <label className={labelClasses}>Password</label>
+                <input
+                  value={conn.password}
+                  onChange={(e) => setConn({ ...conn, password: e.target.value })}
+                  className={inputClasses}
+                  type="password"
+                  autoComplete="off"
+                  placeholder={conn.hasPassword ? "•••••••• (leave blank to keep current)" : "Database password"}
+                />
+              </div>
+            </div>
+            <div className="mt-4 flex items-center justify-end gap-3">
+              {connMsg && (
+                <span className={`text-sm ${connMsg.ok ? "text-emerald-600" : "text-red-600"}`}>
+                  {connMsg.text}
+                </span>
+              )}
+              <button
+                onClick={handleSaveConnection}
+                disabled={connSaving}
+                className="rounded-lg bg-cyan-600 px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-cyan-700 disabled:opacity-50"
+              >
+                {connSaving ? "Testing & saving..." : "Test & Save Connection"}
+              </button>
+            </div>
+          </>
+        ) : (
+          <p className="text-sm text-slate-400">Loading connection...</p>
+        )}
+      </div>
+
       {/* Company Info */}
       <div className="rounded-xl border border-slate-200 bg-white p-6">
         <h3 className="mb-4 text-sm font-semibold text-slate-700">Company Information</h3>
@@ -86,26 +234,69 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      {/* Addresses */}
+      {/* Branches (dynamic) */}
       <div className="rounded-xl border border-slate-200 bg-white p-6">
-        <h3 className="mb-4 text-sm font-semibold text-slate-700">Addresses</h3>
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="mb-4 flex items-center justify-between">
           <div>
-            <label className={labelClasses}>KSA Address (EN)</label>
-            <input value={settings.company.address.ksa.en} onChange={(e) => set("company.address.ksa.en", e.target.value)} className={inputClasses} />
+            <h3 className="text-sm font-semibold text-slate-700">Branches</h3>
+            <p className="mt-0.5 text-xs text-slate-400">
+              Add one or more office branches. They appear on the Contact page.
+            </p>
           </div>
-          <div>
-            <label className={labelClasses}>KSA Address (AR)</label>
-            <input value={settings.company.address.ksa.ar} onChange={(e) => set("company.address.ksa.ar", e.target.value)} className={inputClasses} dir="rtl" />
-          </div>
-          <div>
-            <label className={labelClasses}>Egypt Address (EN)</label>
-            <input value={settings.company.address.egypt.en} onChange={(e) => set("company.address.egypt.en", e.target.value)} className={inputClasses} />
-          </div>
-          <div>
-            <label className={labelClasses}>Egypt Address (AR)</label>
-            <input value={settings.company.address.egypt.ar} onChange={(e) => set("company.address.egypt.ar", e.target.value)} className={inputClasses} dir="rtl" />
-          </div>
+          <button
+            type="button"
+            onClick={addBranch}
+            className="rounded-lg bg-cyan-600 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-cyan-700"
+          >
+            + Add Branch
+          </button>
+        </div>
+
+        {(settings.company.branches ?? []).length === 0 && (
+          <p className="rounded-lg border border-dashed border-slate-200 py-8 text-center text-sm text-slate-400">
+            No branches yet. Click “Add Branch” to create one.
+          </p>
+        )}
+
+        <div className="space-y-4">
+          {(settings.company.branches ?? []).map((branch, i) => (
+            <div key={branch.id} className="rounded-lg border border-slate-200 bg-slate-50/60 p-4">
+              <div className="mb-3 flex items-center justify-between">
+                <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  Branch {i + 1}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => removeBranch(i)}
+                  className="rounded-md px-2 py-1 text-xs font-medium text-red-500 transition-colors hover:bg-red-50"
+                >
+                  Remove
+                </button>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label className={labelClasses}>Branch Name (EN)</label>
+                  <input value={branch.name.en} onChange={(e) => setBranch(i, "name.en", e.target.value)} className={inputClasses} placeholder="Saudi Arabia Office" />
+                </div>
+                <div>
+                  <label className={labelClasses}>Branch Name (AR)</label>
+                  <input value={branch.name.ar} onChange={(e) => setBranch(i, "name.ar", e.target.value)} className={inputClasses} dir="rtl" placeholder="مكتب السعودية" />
+                </div>
+                <div>
+                  <label className={labelClasses}>Address (EN)</label>
+                  <input value={branch.address.en} onChange={(e) => setBranch(i, "address.en", e.target.value)} className={inputClasses} placeholder="Riyadh, Saudi Arabia" />
+                </div>
+                <div>
+                  <label className={labelClasses}>Address (AR)</label>
+                  <input value={branch.address.ar} onChange={(e) => setBranch(i, "address.ar", e.target.value)} className={inputClasses} dir="rtl" placeholder="الرياض، المملكة العربية السعودية" />
+                </div>
+                <div className="sm:col-span-2">
+                  <label className={labelClasses}>Phone</label>
+                  <input value={branch.phone} onChange={(e) => setBranch(i, "phone", e.target.value)} className={inputClasses} dir="ltr" placeholder="00966500000000" />
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
 

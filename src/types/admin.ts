@@ -66,16 +66,21 @@ export interface SiteContent {
 }
 
 // ── Settings Types ──────────────────────────────────────────────────
+export interface Branch {
+  id: string;
+  name: BilingualText;
+  address: BilingualText;
+  phone: string;
+}
+
 export interface SiteSettings {
   company: {
     name: BilingualText;
     email: string;
     phone: { ksa: string; egypt: string };
     whatsapp: string;
-    address: {
-      ksa: BilingualText;
-      egypt: BilingualText;
-    };
+    /** Dynamic list of office branches (admin can add/remove). */
+    branches: Branch[];
   };
   notifications: {
     emailOnNewLead: boolean;

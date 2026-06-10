@@ -3,10 +3,10 @@ import crypto from "crypto";
 import { isInstalled, writeDbConfig, envDefaults, type DbConnection } from "@/lib/db/config";
 import { createPool, resetPool } from "@/lib/db/pool";
 import { ensureDatabaseExists } from "@/lib/db/provision";
-import { ensureSchema, seedDefaults } from "@/lib/db/schema";
-import { DEFAULT_SETTINGS } from "@/lib/db/defaults";
+import { ensureReady } from "@/lib/db/migrate";
+import { createAdmin } from "@/lib/db/store";
 import { hashPassword } from "@/lib/password";
-import { createToken, setSessionCookie } from "@/lib/auth";
+import { createToken, setSessionCookie, isSetupComplete } from "@/lib/auth";
 import { jsonSuccess, jsonError } from "@/lib/api-helpers";
 
 // GET /api/setup — status + suggested defaults to pre-fill the wizard
@@ -19,9 +19,10 @@ export async function GET() {
   });
 }
 
-// POST /api/setup — run first-time installation
+// POST /api/setup — run first-time installation (or create the admin if a DB is
+// connected but has no admin yet).
 export async function POST(request: NextRequest) {
-  if (await isInstalled()) {
+  if ((await isInstalled()) && (await isSetupComplete())) {
     return jsonError("Already installed.", 400);
   }
 
@@ -78,25 +79,14 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    await ensureSchema(pool);
-    await seedDefaults(pool);
-
-    // Store admin credentials + a fresh JWT secret in the settings singleton.
-    const settings = {
-      ...DEFAULT_SETTINGS,
-      security: {
-        ...DEFAULT_SETTINGS.security,
-        adminUsername,
-        adminPassword: "",
-        adminPasswordHash: hashPassword(adminPassword),
-        jwtSecret: crypto.randomBytes(48).toString("hex"),
-      },
-    };
+    // Create all tables + seed defaults (no legacy data on a fresh install).
+    await ensureReady(pool);
+    // Set a fresh JWT secret only if one isn't already present (don't break sessions).
     await pool.query(
-      `INSERT INTO singletons (key, value) VALUES ('settings', $1::jsonb)
-       ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value`,
-      [JSON.stringify(settings)]
+      `UPDATE site_settings SET jwt_secret = $1 WHERE id = 1 AND coalesce(jwt_secret, '') = ''`,
+      [crypto.randomBytes(48).toString("hex")]
     );
+    await createAdmin(pool, adminUsername, hashPassword(adminPassword));
   } catch (err) {
     await pool.end().catch(() => {});
     const msg = err instanceof Error ? err.message : "Provisioning failed";
@@ -110,7 +100,7 @@ export async function POST(request: NextRequest) {
   await resetPool();
 
   // Auto-login the new admin.
-  const token = await createToken();
+  const token = await createToken(adminUsername);
   await setSessionCookie(token);
 
   return jsonSuccess(

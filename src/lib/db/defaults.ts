@@ -36,10 +36,20 @@ export const DEFAULT_SETTINGS: SiteSettings = {
     email: "info@falcon-v.com",
     phone: { ksa: "00966568406006", egypt: "+201000000000" },
     whatsapp: "966568406006",
-    address: {
-      ksa: { en: "Riyadh, Saudi Arabia", ar: "الرياض، المملكة العربية السعودية" },
-      egypt: { en: "Cairo, Egypt", ar: "القاهرة، مصر" },
-    },
+    branches: [
+      {
+        id: "ksa",
+        name: { en: "Saudi Arabia Office", ar: "مكتب السعودية" },
+        address: { en: "Riyadh, Saudi Arabia", ar: "الرياض، المملكة العربية السعودية" },
+        phone: "00966568406006",
+      },
+      {
+        id: "egypt",
+        name: { en: "Egypt Office", ar: "مكتب مصر" },
+        address: { en: "Cairo, Egypt", ar: "القاهرة، مصر" },
+        phone: "+201000000000",
+      },
+    ],
   },
   notifications: {
     emailOnNewLead: true,

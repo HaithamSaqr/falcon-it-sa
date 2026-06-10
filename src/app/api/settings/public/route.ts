@@ -14,9 +14,7 @@ export async function GET() {
         ? { ksa: settings.company.phone.ksa }
         : settings.company.phone,
       whatsapp: settings.company.whatsapp,
-      address: settings.regional?.gulfOnly
-        ? { ksa: settings.company.address.ksa }
-        : settings.company.address,
+      branches: settings.company.branches ?? [],
     },
     social: settings.social,
   });

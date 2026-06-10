@@ -1,12 +1,10 @@
 /**
- * PostgreSQL-backed data store for leads, content, settings, and integrations.
+ * Relational data store. Leads live in the `leads` table; all config lives in
+ * dedicated typed tables (see src/lib/db/store.ts). Public API is unchanged so
+ * admin pages and API routes keep working.
  *
- * Public API is unchanged from the previous JSON-file implementation, so all
- * admin pages and API routes keep working. Leads live in the `leads` table;
- * content/settings/integrations are single JSONB documents in `singletons`.
- *
- * When the app is not yet installed (no DB configured), reads fall back to the
- * in-memory defaults so the public marketing site still renders.
+ * When the app isn't installed yet, reads fall back to in-memory defaults so the
+ * public marketing site still renders.
  */
 
 import crypto from "crypto";
@@ -18,13 +16,15 @@ import type {
   SiteContent,
   SiteSettings,
   IntegrationSettings,
+  Branch,
 } from "@/types/admin";
-import { query } from "@/lib/db/pool";
+import { query, getPool } from "@/lib/db/pool";
 import { isInstalledSync } from "@/lib/db/config";
 import { DEFAULT_CONTENT, DEFAULT_SETTINGS, DEFAULT_INTEGRATIONS } from "@/lib/db/defaults";
+import * as store from "@/lib/db/store";
 
 // ═══════════════════════════════════════════════════════════════════
-// Helpers
+// LEADS
 // ═══════════════════════════════════════════════════════════════════
 
 interface LeadRow {
@@ -55,26 +55,6 @@ function rowToLead(r: LeadRow): Lead {
   };
 }
 
-async function getSingleton<T>(key: string): Promise<T | null> {
-  const res = await query<{ value: T }>(
-    `SELECT value FROM singletons WHERE key = $1`,
-    [key]
-  );
-  return res.rows[0]?.value ?? null;
-}
-
-async function setSingleton<T>(key: string, value: T): Promise<void> {
-  await query(
-    `INSERT INTO singletons (key, value) VALUES ($1, $2::jsonb)
-     ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value`,
-    [key, JSON.stringify(value)]
-  );
-}
-
-// ═══════════════════════════════════════════════════════════════════
-// LEADS
-// ═══════════════════════════════════════════════════════════════════
-
 export async function getAllLeads(): Promise<Lead[]> {
   if (!isInstalledSync()) return [];
   try {
@@ -91,34 +71,22 @@ export async function getAllLeads(): Promise<Lead[]> {
 export async function getLeads(filters?: LeadFilters): Promise<LeadsResponse> {
   let leads = await getAllLeads();
 
-  // Apply filters
-  if (filters?.type) {
-    leads = leads.filter((l) => l.type === filters.type);
-  }
-  if (filters?.status) {
-    leads = leads.filter((l) => l.status === filters.status);
-  }
+  if (filters?.type) leads = leads.filter((l) => l.type === filters.type);
+  if (filters?.status) leads = leads.filter((l) => l.status === filters.status);
   if (filters?.search) {
     const q = filters.search.toLowerCase();
     leads = leads.filter((l) => {
       const d = l.data;
-      const searchable = [
-        d.fullName, d.name, d.email, d.company, d.contactName, d.phone,
-      ]
+      const searchable = [d.fullName, d.name, d.email, d.company, d.contactName, d.phone]
         .filter(Boolean)
         .join(" ")
         .toLowerCase();
       return searchable.includes(q);
     });
   }
-  if (filters?.dateFrom) {
-    leads = leads.filter((l) => l.createdAt >= filters.dateFrom!);
-  }
-  if (filters?.dateTo) {
-    leads = leads.filter((l) => l.createdAt <= filters.dateTo!);
-  }
+  if (filters?.dateFrom) leads = leads.filter((l) => l.createdAt >= filters.dateFrom!);
+  if (filters?.dateTo) leads = leads.filter((l) => l.createdAt <= filters.dateTo!);
 
-  // Sort
   const sortBy = filters?.sortBy || "createdAt";
   const sortOrder = filters?.sortOrder || "desc";
   leads.sort((a, b) => {
@@ -128,7 +96,6 @@ export async function getLeads(filters?: LeadFilters): Promise<LeadsResponse> {
     return sortOrder === "desc" ? -cmp : cmp;
   });
 
-  // Paginate
   const total = leads.length;
   const page = filters?.page || 1;
   const limit = filters?.limit || 20;
@@ -192,10 +159,7 @@ export async function deleteLead(id: string): Promise<boolean> {
   return (res.rowCount ?? 0) > 0;
 }
 
-export async function bulkUpdateStatus(
-  ids: string[],
-  status: LeadStatus
-): Promise<number> {
+export async function bulkUpdateStatus(ids: string[], status: LeadStatus): Promise<number> {
   if (ids.length === 0) return 0;
   const res = await query(
     `UPDATE leads SET status = $2, updated_at = now() WHERE id = ANY($1::uuid[])`,
@@ -211,45 +175,94 @@ export async function bulkUpdateStatus(
 export async function getContent(): Promise<SiteContent> {
   if (!isInstalledSync()) return DEFAULT_CONTENT;
   try {
-    const stored = await getSingleton<SiteContent>("content");
-    return stored ?? DEFAULT_CONTENT;
+    return await store.readContent(await getPool());
   } catch {
     return DEFAULT_CONTENT;
   }
 }
 
 export async function updateContent(content: SiteContent): Promise<void> {
-  await setSingleton("content", content);
+  await store.writeContent(await getPool(), content);
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // SETTINGS
 // ═══════════════════════════════════════════════════════════════════
 
-function mergeSettings(stored: Partial<SiteSettings>): SiteSettings {
-  return {
-    ...DEFAULT_SETTINGS,
-    ...stored,
-    company: { ...DEFAULT_SETTINGS.company, ...stored.company },
-    notifications: { ...DEFAULT_SETTINGS.notifications, ...stored.notifications },
-    social: { ...DEFAULT_SETTINGS.social, ...stored.social },
-    regional: { ...DEFAULT_SETTINGS.regional, ...stored.regional },
-    security: { ...DEFAULT_SETTINGS.security, ...stored.security },
-  };
-}
-
 export async function getSettings(): Promise<SiteSettings> {
   if (!isInstalledSync()) return DEFAULT_SETTINGS;
   try {
-    const stored = await getSingleton<SiteSettings>("settings");
-    return stored ? mergeSettings(stored) : DEFAULT_SETTINGS;
+    return await store.readSettings(await getPool());
   } catch {
     return DEFAULT_SETTINGS;
   }
 }
 
 export async function updateSettings(settings: SiteSettings): Promise<void> {
-  await setSingleton("settings", settings);
+  await store.writeSettings(await getPool(), settings);
+}
+
+/** Lightweight JWT secret read (no branches/admin joins) for the auth hot path. */
+export async function getJwtSecret(): Promise<string> {
+  if (!isInstalledSync()) return "";
+  try {
+    const pool = await getPool();
+    const r = await pool.query(`SELECT jwt_secret FROM site_settings WHERE id = 1`);
+    return r.rows[0]?.jwt_secret || "";
+  } catch {
+    return "";
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// BRANCHES
+// ═══════════════════════════════════════════════════════════════════
+
+export async function getBranches(): Promise<Branch[]> {
+  if (!isInstalledSync()) return DEFAULT_SETTINGS.company.branches;
+  try {
+    return await store.readBranches(await getPool());
+  } catch {
+    return DEFAULT_SETTINGS.company.branches;
+  }
+}
+
+export async function setBranches(branches: Branch[]): Promise<void> {
+  await store.writeBranches(await getPool(), branches);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// ADMIN USERS
+// ═══════════════════════════════════════════════════════════════════
+
+export async function findAdmin(username: string) {
+  return store.getAdminByUsername(await getPool(), username);
+}
+
+export async function adminCount(): Promise<number> {
+  if (!isInstalledSync()) return 0;
+  try {
+    return await store.countAdmins(await getPool());
+  } catch {
+    return 0;
+  }
+}
+
+export async function createAdminUser(username: string, passwordHash: string): Promise<void> {
+  await store.createAdmin(await getPool(), username, passwordHash);
+}
+
+export async function setAdminPassword(username: string, passwordHash: string): Promise<void> {
+  await store.updateAdminPassword(await getPool(), username, passwordHash);
+}
+
+export async function firstAdminUsername(): Promise<string> {
+  if (!isInstalledSync()) return "";
+  try {
+    return await store.firstAdminUsername(await getPool());
+  } catch {
+    return "";
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -259,22 +272,14 @@ export async function updateSettings(settings: SiteSettings): Promise<void> {
 export async function getIntegrations(): Promise<IntegrationSettings> {
   if (!isInstalledSync()) return DEFAULT_INTEGRATIONS;
   try {
-    const stored = (await getSingleton<Partial<IntegrationSettings>>("integrations")) ?? {};
-    // Deep-merge defaults so new sections/fields are always present
-    return {
-      odoo: { ...DEFAULT_INTEGRATIONS.odoo, ...stored.odoo },
-      calendar: { ...DEFAULT_INTEGRATIONS.calendar, ...stored.calendar },
-      email: { ...DEFAULT_INTEGRATIONS.email, ...stored.email },
-      whatsapp: { ...DEFAULT_INTEGRATIONS.whatsapp, ...stored.whatsapp },
-      helpdesk: { ...DEFAULT_INTEGRATIONS.helpdesk, ...stored.helpdesk },
-    };
+    return await store.readIntegrations(await getPool());
   } catch {
     return DEFAULT_INTEGRATIONS;
   }
 }
 
 export async function updateIntegrations(settings: IntegrationSettings): Promise<void> {
-  await setSingleton("integrations", settings);
+  await store.writeIntegrations(await getPool(), settings);
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -285,13 +290,11 @@ export async function getAnalytics() {
   const leads = await getAllLeads();
   const now = new Date();
 
-  // By type
   const byType: Record<string, number> = {};
   const byStatus: Record<string, number> = {};
   const countryMap: Record<string, number> = {};
   const industryMap: Record<string, number> = {};
 
-  // Week boundaries
   const startOfThisWeek = new Date(now);
   startOfThisWeek.setDate(now.getDate() - now.getDay());
   startOfThisWeek.setHours(0, 0, 0, 0);
@@ -302,7 +305,6 @@ export async function getAnalytics() {
   let lastWeek = 0;
   let converted = 0;
 
-  // Daily counts (last 30 days)
   const dayMap: Record<string, number> = {};
   for (let i = 29; i >= 0; i--) {
     const d = new Date(now);
@@ -311,22 +313,17 @@ export async function getAnalytics() {
   }
 
   for (const lead of leads) {
-    // Type & status counts
     byType[lead.type] = (byType[lead.type] || 0) + 1;
     byStatus[lead.status] = (byStatus[lead.status] || 0) + 1;
-
     if (lead.status === "converted") converted++;
 
-    // Week comparison
     const createdAt = new Date(lead.createdAt);
     if (createdAt >= startOfThisWeek) thisWeek++;
     else if (createdAt >= startOfLastWeek && createdAt < startOfThisWeek) lastWeek++;
 
-    // Daily
     const dayKey = lead.createdAt.slice(0, 10);
     if (dayKey in dayMap) dayMap[dayKey]++;
 
-    // Country & industry
     const country = (lead.data.country as string) || "";
     const industry = (lead.data.industry as string) || "";
     if (country) countryMap[country] = (countryMap[country] || 0) + 1;
@@ -334,12 +331,10 @@ export async function getAnalytics() {
   }
 
   const byDay = Object.entries(dayMap).map(([date, count]) => ({ date, count }));
-
   const topCountries = Object.entries(countryMap)
     .sort((a, b) => b[1] - a[1])
     .slice(0, 5)
     .map(([country, count]) => ({ country, count }));
-
   const topIndustries = Object.entries(industryMap)
     .sort((a, b) => b[1] - a[1])
     .slice(0, 5)

@@ -5,11 +5,12 @@
 
 import { Pool, type PoolConfig, type QueryResultRow } from "pg";
 import { getConnection, type DbConnection } from "./config";
+import { ensureReady } from "./migrate";
 
-type PoolCache = { pool: Pool | null; signature: string | null };
+type PoolCache = { pool: Pool | null; signature: string | null; ready: Promise<void> | null };
 
 const globalForPg = globalThis as unknown as { __falconPg?: PoolCache };
-const cache: PoolCache = globalForPg.__falconPg ?? { pool: null, signature: null };
+const cache: PoolCache = globalForPg.__falconPg ?? { pool: null, signature: null, ready: null };
 globalForPg.__falconPg = cache;
 
 function toPoolConfig(c: DbConnection): PoolConfig {
@@ -42,21 +43,39 @@ export async function getPool(): Promise<Pool> {
     throw new Error("Database is not configured. Complete setup at /setup first.");
   }
   const sig = signature(conn);
-  if (cache.pool && cache.signature === sig) return cache.pool;
+  if (cache.pool && cache.signature === sig) {
+    await ensureReadyOnce(cache.pool);
+    return cache.pool;
+  }
 
   // Config changed (or first use) — dispose old pool, create new.
   if (cache.pool) {
     const old = cache.pool;
     cache.pool = null;
+    cache.ready = null;
     old.end().catch(() => {});
   }
   cache.pool = createPool(conn);
   cache.signature = sig;
+  cache.ready = null;
+  await ensureReadyOnce(cache.pool);
   return cache.pool;
+}
+
+/** Run schema + migration exactly once per pool; retry on failure. */
+async function ensureReadyOnce(pool: Pool): Promise<void> {
+  if (!cache.ready) {
+    cache.ready = ensureReady(pool).catch((err) => {
+      cache.ready = null; // allow retry on next call
+      throw err;
+    });
+  }
+  await cache.ready;
 }
 
 /** Reset the cached pool — call after the connection config changes. */
 export async function resetPool(): Promise<void> {
+  cache.ready = null;
   if (cache.pool) {
     const old = cache.pool;
     cache.pool = null;
