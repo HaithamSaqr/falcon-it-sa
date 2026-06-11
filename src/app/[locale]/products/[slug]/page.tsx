@@ -4,7 +4,6 @@ import { getProduct, getBrochure } from "@/lib/data-store";
 import { PRODUCT_CONTENT } from "@/lib/product-content";
 import ProductHero from "@/components/sections/product-hero";
 import BrochureButton from "@/components/sections/brochure-button";
-import CtaBanner from "@/components/sections/cta-banner";
 import Container from "@/components/ui/container";
 import Button from "@/components/ui/button";
 
@@ -149,8 +148,6 @@ export default async function DynamicProductPage({ params }: Props) {
 
       {/* Full brochure (if enabled) */}
       <BrochureButton slug={slug} />
-
-      <CtaBanner />
     </>
   );
 }
