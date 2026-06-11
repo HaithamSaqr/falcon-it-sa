@@ -21,15 +21,26 @@ const schema = z.object({
   sectorId: z.string().min(1),
   sectorName: z.string().min(1),
   system: z.string().min(1),
+  systemLabel: z.string().optional(),
   name: z.string().min(2).optional(),
   company: z.string().min(2),
   email: z.string().email(),
   phone: z.string().min(6),
   users: z.number().min(1).max(100000),
   currency: z.string().optional(),
-  priceRegular: z.number().optional(),
-  priceTotal: z.number().optional(),
+  // All amounts are already in the selected currency.
+  pricePerUser: z.number().optional(),
+  userTotal: z.number().optional(),
+  hosting: z.number().optional(),
+  operating: z.number().optional(),
   trainingDays: z.number().optional(),
+  trainingCost: z.number().optional(),
+  priceRegular: z.number().optional(),
+  discountPercent: z.number().optional(),
+  baseDiscount: z.number().optional(),
+  volumeDiscountPercent: z.number().optional(),
+  volumeDiscount: z.number().optional(),
+  priceTotal: z.number().optional(),
 });
 
 type Data = z.infer<typeof schema>;
@@ -63,8 +74,28 @@ export async function POST(request: NextRequest) {
     console.error("[API /leads/sector] data store error (non-fatal):", err);
   }
 
-  // 2) Odoo opportunity
+  // 2) Odoo opportunity — full structured breakdown matching the website
   try {
+    const cur = data.currency ?? "USD";
+    const money = (n?: number) => (n != null ? `${Math.round(n).toLocaleString("en-US")} ${cur}` : "—");
+    const extraRows: Array<{ label: string; value: string }> = [
+      { label: "🏭 Sector", value: data.sectorName },
+      { label: "💻 System", value: data.systemLabel || data.system },
+      { label: "👥 Users", value: String(data.users) },
+      { label: `💵 Per user (${data.users} × ${money(data.pricePerUser)})`, value: money(data.userTotal) },
+      { label: "☁️ Hosting", value: money(data.hosting) },
+      { label: "⚙️ Operating costs", value: money(data.operating) },
+      { label: `🎓 Training (${data.trainingDays ?? "—"} days)`, value: money(data.trainingCost) },
+      { label: "🏷️ Regular price", value: money(data.priceRegular) },
+    ];
+    if (data.discountPercent) {
+      extraRows.push({ label: `➖ Base discount (${data.discountPercent}%)`, value: `− ${money(data.baseDiscount)}` });
+    }
+    if (data.volumeDiscountPercent) {
+      extraRows.push({ label: `➖ Volume discount (${data.volumeDiscountPercent}%)`, value: `− ${money(data.volumeDiscount)}` });
+    }
+    extraRows.push({ label: "✅ Total / year", value: `${money(data.priceTotal)} (incl. cloud hosting)` });
+
     await createLead({
       name: `Sector: ${data.sectorName} — ${data.name || data.company}`,
       contactName: data.name || data.company,
@@ -75,10 +106,8 @@ export async function POST(request: NextRequest) {
       source: "Sector Landing Page",
       pageUrl: `/sectors/${data.sectorId}`,
       language: locale,
-      message:
-        `Sector: ${data.sectorName}\nSystem: ${data.system}\nName: ${data.name || "-"}\nUsers: ${data.users}\n` +
-        `Training days: ${data.trainingDays ?? "-"}\n` +
-        `Estimated: ${data.priceTotal ?? "-"} ${data.currency ?? "USD"} (incl. cloud hosting)`,
+      extraRows,
+      message: `Estimated total: ${money(data.priceTotal)} / year (includes full cloud hosting).`,
     });
   } catch (err) {
     console.error("[API /leads/sector] Odoo error (non-fatal):", err);

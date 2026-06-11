@@ -1,13 +1,18 @@
-import { getSettings, getFooterLinks } from "@/lib/data-store";
+import { getSettings, getFooterLinks, getProducts } from "@/lib/data-store";
 import { jsonSuccess } from "@/lib/api-helpers";
 import { NextResponse } from "next/server";
 
 // GET /api/settings/public — public endpoint for site settings
 export async function GET() {
-  const [settings, footerLinks] = await Promise.all([getSettings(), getFooterLinks()]);
+  const [settings, footerLinks, products] = await Promise.all([
+    getSettings(),
+    getFooterLinks(),
+    getProducts(true), // enabled only
+  ]);
   const res = jsonSuccess({
     gulfOnly: settings.regional?.gulfOnly ?? false,
     loginUrl: settings.loginUrl || "https://falcon-valley.com",
+    products: products.map((p) => ({ slug: p.slug, name: p.name })),
     company: {
       name: settings.company.name,
       email: settings.company.email,

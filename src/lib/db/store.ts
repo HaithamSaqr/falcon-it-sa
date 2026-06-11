@@ -550,6 +550,25 @@ export async function seedContentExtras(pool: Pool): Promise<void> {
   }
 }
 
+/**
+ * Backfill the new product card_image (home "Product Trio" image) for the
+ * three seeded products only when it is still blank — never overwrites an
+ * admin-uploaded image.
+ */
+export async function backfillProductCardImages(pool: Pool): Promise<void> {
+  const defaults: [string, string][] = [
+    ["falcon-erp-desktop", "/images/products/falcon-erp-logo.png"],
+    ["falcon-cloud", "/images/screens/web-modules-dark.png"],
+    ["odoo-services", "/images/logos/odoo-logo.png"],
+  ];
+  for (const [slug, img] of defaults) {
+    await pool.query(
+      `UPDATE products SET card_image = $2 WHERE slug = $1 AND (card_image IS NULL OR card_image = '')`,
+      [slug, img]
+    );
+  }
+}
+
 // ── Integrations ────────────────────────────────────────────────────
 export async function readIntegrations(pool: Pool): Promise<IntegrationSettings> {
   const res = await pool.query(`SELECT * FROM integrations WHERE id = 1`);
@@ -971,6 +990,7 @@ function rowToProduct(r: any): Product {
     title: { en: r.title_en, ar: r.title_ar },
     description: { en: r.description_en, ar: r.description_ar },
     heroImage: r.hero_image,
+    cardImage: r.card_image ?? "",
     cta1: { label: { en: r.cta1_label_en, ar: r.cta1_label_ar }, url: r.cta1_url },
     cta2: { label: { en: r.cta2_label_en, ar: r.cta2_label_ar }, url: r.cta2_url },
     isCustom: r.is_custom,
@@ -1001,13 +1021,13 @@ export async function writeProducts(pool: Pool, products: Product[]): Promise<vo
       const p = products[i];
       await client.query(
         `INSERT INTO products (slug, name_en, name_ar, eyebrow_en, eyebrow_ar, title_en, title_ar,
-           description_en, description_ar, hero_image, cta1_label_en, cta1_label_ar, cta1_url,
+           description_en, description_ar, hero_image, card_image, cta1_label_en, cta1_label_ar, cta1_url,
            cta2_label_en, cta2_label_ar, cta2_url, is_custom, enabled, sort_order)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19)`,
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20)`,
         [
           p.slug, p.name?.en ?? "", p.name?.ar ?? "", p.eyebrow?.en ?? "", p.eyebrow?.ar ?? "",
           p.title?.en ?? "", p.title?.ar ?? "", p.description?.en ?? "", p.description?.ar ?? "",
-          p.heroImage ?? "", p.cta1?.label?.en ?? "", p.cta1?.label?.ar ?? "", p.cta1?.url ?? "/demo",
+          p.heroImage ?? "", p.cardImage ?? "", p.cta1?.label?.en ?? "", p.cta1?.label?.ar ?? "", p.cta1?.url ?? "/demo",
           p.cta2?.label?.en ?? "", p.cta2?.label?.ar ?? "", p.cta2?.url ?? "/contact",
           Boolean(p.isCustom), p.enabled !== false, i,
         ]

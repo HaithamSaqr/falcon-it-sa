@@ -21,6 +21,7 @@ import {
   backfillClientTags,
   seedHome,
   seedContentExtras,
+  backfillProductCardImages,
   countAdmins,
   createAdmin,
 } from "./store";
@@ -170,6 +171,9 @@ export async function ensureReady(pool: Pool): Promise<void> {
 
   // ── Testimonials + FAQs (seed defaults only if those tables are empty) ──
   await seedContentExtras(pool);
+
+  // ── Product "Trio" card images (backfill the 3 seeded products if blank) ──
+  await backfillProductCardImages(pool);
 
   // ── Client tags: create definitions for any tags already used by clients ──
   await backfillClientTags(pool);

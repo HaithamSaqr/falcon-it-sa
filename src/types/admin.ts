@@ -231,6 +231,8 @@ export interface Product {
   title: BilingualText;
   description: BilingualText;
   heroImage: string;
+  /** Separate image used by the home "Product Trio" card. */
+  cardImage: string;
   cta1: { label: BilingualText; url: string };
   cta2: { label: BilingualText; url: string };
   isCustom: boolean;

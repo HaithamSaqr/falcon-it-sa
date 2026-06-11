@@ -140,6 +140,16 @@ export default function SectorLandingForm({ sector, base, overrides, isEgypt, is
     setSending(true);
     setShowPrice(true);
     try {
+      // computePrice returns USD; convert every amount to the selected currency
+      // so the lead + Odoo opportunity match exactly what the user sees.
+      const rate = currency === "EGP" ? base.usdToEgp : currency === "SAR" ? breakdown.usdToSar : 1;
+      const conv = (n: number) => Math.round(n * rate);
+      const userTotal = breakdown.users * breakdown.pricePerUser;
+      const baseDiscountAmt =
+        ((breakdown.hosting + breakdown.operating + breakdown.trainingCost) * breakdown.discountPercent) / 100;
+      const volumeDiscountAmt = (userTotal * breakdown.volumeDiscountPercent) / 100;
+      const sysLabel = system ? (isAr ? SYSTEM_LABELS[system].ar : SYSTEM_LABELS[system].en) : "";
+
       await fetch("/api/leads/sector", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -147,15 +157,26 @@ export default function SectorLandingForm({ sector, base, overrides, isEgypt, is
           sectorId: sector.id,
           sectorName,
           system,
+          systemLabel: sysLabel,
           name: form.name,
           company: form.company,
           email: form.email,
           phone: form.phone,
           users: Number(form.users),
           currency,
-          priceRegular: breakdown.regular,
-          priceTotal: breakdown.total,
+          // All amounts below are in the selected currency.
+          pricePerUser: conv(breakdown.pricePerUser),
+          userTotal: conv(userTotal),
+          hosting: conv(breakdown.hosting),
+          operating: conv(breakdown.operating),
           trainingDays: breakdown.trainingDays,
+          trainingCost: conv(breakdown.trainingCost),
+          priceRegular: conv(breakdown.regular),
+          discountPercent: breakdown.discountPercent,
+          baseDiscount: conv(baseDiscountAmt),
+          volumeDiscountPercent: breakdown.volumeDiscountPercent,
+          volumeDiscount: conv(volumeDiscountAmt),
+          priceTotal: conv(breakdown.total),
         }),
       });
     } catch {

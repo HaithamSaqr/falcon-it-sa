@@ -382,7 +382,8 @@ function seededProduct(
   slug: string,
   ns: string,
   navKey: string,
-  i: number
+  i: number,
+  cardImage = ""
 ): Product {
   const a = arM[ns] ?? {};
   const e = enM[ns] ?? {};
@@ -393,6 +394,7 @@ function seededProduct(
     title: { en: e.heroTitle ?? "", ar: a.heroTitle ?? "" },
     description: { en: e.heroSubtitle ?? "", ar: a.heroSubtitle ?? "" },
     heroImage: "",
+    cardImage,
     cta1: { label: { en: e.heroCtaPrimary ?? "Get Started", ar: a.heroCtaPrimary ?? "ابدأ الآن" }, url: "/contact" },
     cta2: { label: { en: e.heroCtaSecondary ?? "Book a Demo", ar: a.heroCtaSecondary ?? "احجز عرضاً" }, url: "/demo" },
     isCustom: false,
@@ -402,9 +404,9 @@ function seededProduct(
 }
 
 export const DEFAULT_PRODUCTS: Product[] = [
-  seededProduct("falcon-erp-desktop", "desktopPage", "falconDesktop", 0),
-  seededProduct("falcon-cloud", "cloudPage", "falconCloud", 1),
-  seededProduct("odoo-services", "odooPage", "odooServices", 2),
+  seededProduct("falcon-erp-desktop", "desktopPage", "falconDesktop", 0, "/images/products/falcon-erp-logo.png"),
+  seededProduct("falcon-cloud", "cloudPage", "falconCloud", 1, "/images/screens/web-modules-dark.png"),
+  seededProduct("odoo-services", "odooPage", "odooServices", 2, "/images/logos/odoo-logo.png"),
   {
     slug: "server-management",
     name: { en: "Server Management", ar: "إدارة السيرفرات" },
@@ -415,6 +417,7 @@ export const DEFAULT_PRODUCTS: Product[] = [
       ar: "إدارة متكاملة لخوادمك — التجهيز والمراقبة وتعزيز الأمان والنسخ الاحتياطي والدعم على مدار الساعة. أبقِ بنيتك التحتية سريعة وآمنة ومتاحة دائماً.",
     },
     heroImage: "",
+    cardImage: "",
     cta1: { label: { en: "Request a Quote", ar: "اطلب عرض سعر" }, url: "/contact" },
     cta2: { label: { en: "Book a Demo", ar: "احجز عرضاً" }, url: "/demo" },
     isCustom: true,
@@ -431,6 +434,7 @@ export const DEFAULT_PRODUCTS: Product[] = [
       ar: "وحّد بياناتك وأمّنها وحلّلها. نسخ احتياطي موثوق وعمليات ترحيل وتكاملات ولوحات تحليلية تحوّل البيانات الخام إلى قرارات.",
     },
     heroImage: "",
+    cardImage: "",
     cta1: { label: { en: "Request a Quote", ar: "اطلب عرض سعر" }, url: "/contact" },
     cta2: { label: { en: "Book a Demo", ar: "احجز عرضاً" }, url: "/demo" },
     isCustom: true,
@@ -447,6 +451,7 @@ export const DEFAULT_PRODUCTS: Product[] = [
       ar: "تطبيقات ويب وجوال مخصصة مصمّمة لسير عملك — من الأدوات الداخلية إلى المنتجات الموجهة للعملاء، نصمّمها ونبنيها وندعمها بفريقنا.",
     },
     heroImage: "",
+    cardImage: "",
     cta1: { label: { en: "Request a Quote", ar: "اطلب عرض سعر" }, url: "/contact" },
     cta2: { label: { en: "Book a Demo", ar: "احجز عرضاً" }, url: "/demo" },
     isCustom: true,

@@ -22,9 +22,15 @@ export interface PublicFooterLink {
   url: string;
 }
 
+export interface PublicProduct {
+  slug: string;
+  name: BilingualText;
+}
+
 interface PublicSettings {
   gulfOnly: boolean;
   loginUrl: string;
+  products: PublicProduct[];
   company: {
     name: { en: string; ar: string };
     email: string;
@@ -47,6 +53,7 @@ interface PublicSettings {
 const DEFAULT_SETTINGS: PublicSettings = {
   gulfOnly: false,
   loginUrl: "https://falcon-valley.com",
+  products: [],
   company: {
     name: COMPANY.name as unknown as { en: string; ar: string },
     email: COMPANY.email,

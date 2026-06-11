@@ -170,6 +170,7 @@ CREATE TABLE IF NOT EXISTS products (
   description_en  text NOT NULL DEFAULT '',
   description_ar  text NOT NULL DEFAULT '',
   hero_image      text NOT NULL DEFAULT '',
+  card_image      text NOT NULL DEFAULT '',
   cta1_label_en   text NOT NULL DEFAULT '',
   cta1_label_ar   text NOT NULL DEFAULT '',
   cta1_url        text NOT NULL DEFAULT '/demo',
@@ -326,6 +327,7 @@ ALTER TABLE hero_content ADD COLUMN IF NOT EXISTS trust1_en text NOT NULL DEFAUL
 ALTER TABLE hero_content ADD COLUMN IF NOT EXISTS trust1_ar text NOT NULL DEFAULT '';
 ALTER TABLE hero_content ADD COLUMN IF NOT EXISTS trust2_en text NOT NULL DEFAULT '';
 ALTER TABLE hero_content ADD COLUMN IF NOT EXISTS trust2_ar text NOT NULL DEFAULT '';
+ALTER TABLE products ADD COLUMN IF NOT EXISTS card_image text NOT NULL DEFAULT '';
 `;
 
 export async function ensureSchema(pool: Pool): Promise<void> {

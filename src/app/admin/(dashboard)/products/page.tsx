@@ -31,6 +31,7 @@ export default function AdminProductsPage() {
         title: { en: "", ar: "" },
         description: { en: "", ar: "" },
         heroImage: "",
+        cardImage: "",
         cta1: { label: { en: "Request a Quote", ar: "اطلب عرض سعر" }, url: "/contact" },
         cta2: { label: { en: "Book a Demo", ar: "احجز عرضاً" }, url: "/demo" },
         isCustom: true,
@@ -88,6 +89,7 @@ export default function AdminProductsPage() {
 
           <div className="grid gap-4 lg:grid-cols-2">
             <ImageUpload value={p.heroImage} onChange={(url) => patch(i, (x) => ({ ...x, heroImage: url }))} label="Hero / main image" />
+            <ImageUpload value={p.cardImage} onChange={(url) => patch(i, (x) => ({ ...x, cardImage: url }))} label="Card image (home Products section)" />
             {p.isCustom && <div><label className={label}>Slug (URL)</label><input className={input} value={p.slug} onChange={(e) => patch(i, (x) => ({ ...x, slug: e.target.value }))} dir="ltr" placeholder="server-management" /></div>}
             <div><label className={label}>Name (EN)</label><input className={input} value={p.name.en} onChange={(e) => patch(i, (x) => ({ ...x, name: { ...x.name, en: e.target.value } }))} /></div>
             <div><label className={label}>Name (AR)</label><input className={input} value={p.name.ar} onChange={(e) => patch(i, (x) => ({ ...x, name: { ...x.name, ar: e.target.value } }))} dir="rtl" /></div>

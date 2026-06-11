@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import Image from "next/image";
 import { useTranslations, useLocale } from "next-intl";
 import * as Dialog from "@radix-ui/react-dialog";
 
@@ -17,7 +16,32 @@ import { useSettings } from "@/components/providers/settings-provider";
 /*  Types                                                              */
 /* ------------------------------------------------------------------ */
 
-type NavItem = (typeof NAV_ITEMS)[number];
+type ResolvedChild = { href: string; label: string };
+type ResolvedItem = { key: string; href: string; label: string; children?: ResolvedChild[] };
+
+/**
+ * Resolve the static NAV_ITEMS into ready-to-render items with localized
+ * labels. The Products dropdown is populated from the admin-managed products
+ * (via the public settings provider) so renaming a product in the dashboard
+ * updates the menu. Falls back to the translation keys before data loads.
+ */
+function useResolvedNav(): ResolvedItem[] {
+  const t = useTranslations();
+  const locale = useLocale();
+  const { products } = useSettings();
+  const isAr = locale === "ar";
+
+  return NAV_ITEMS.map((item) => {
+    const resolved: ResolvedItem = { key: item.key, href: item.href, label: t(`nav.${item.key}`) };
+    if ("children" in item) {
+      resolved.children =
+        products.length > 0
+          ? products.map((p) => ({ href: `/products/${p.slug}`, label: isAr ? p.name.ar : p.name.en }))
+          : item.children.map((c) => ({ href: c.href, label: t(`nav.${c.key}`) }));
+    }
+    return resolved;
+  });
+}
 
 /* ------------------------------------------------------------------ */
 /*  Sub-components                                                     */
@@ -26,11 +50,9 @@ type NavItem = (typeof NAV_ITEMS)[number];
 /** Desktop dropdown for nav items with children */
 function DesktopDropdown({
   item,
-  t,
   pathname,
 }: {
-  item: Extract<NavItem, { children: readonly { key: string; href: string }[] }>;
-  t: ReturnType<typeof useTranslations>;
+  item: ResolvedItem & { children: ResolvedChild[] };
   pathname: string;
 }) {
   return (
@@ -44,7 +66,7 @@ function DesktopDropdown({
             : "text-text-primary hover:text-primary-500",
         )}
       >
-        {t(`nav.${item.key}`)}
+        {item.label}
         <svg
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 20 20"
@@ -71,7 +93,7 @@ function DesktopDropdown({
         <div className="min-w-[220px] rounded-2xl bg-white p-2 shadow-card">
           {item.children.map((child) => (
             <Link
-              key={child.key}
+              key={child.href}
               href={child.href}
               className={cn(
                 "block rounded-xl px-4 py-2.5 text-sm font-medium transition-colors",
@@ -80,7 +102,7 @@ function DesktopDropdown({
                   : "text-text-primary hover:bg-primary-50 hover:text-primary-500",
               )}
             >
-              {t(`nav.${child.key}`)}
+              {child.label}
             </Link>
           ))}
         </div>
@@ -90,15 +112,7 @@ function DesktopDropdown({
 }
 
 /** Single desktop nav link (no children) */
-function DesktopNavLink({
-  item,
-  t,
-  pathname,
-}: {
-  item: NavItem;
-  t: ReturnType<typeof useTranslations>;
-  pathname: string;
-}) {
+function DesktopNavLink({ item, pathname }: { item: ResolvedItem; pathname: string }) {
   return (
     <Link
       href={item.href}
@@ -109,7 +123,7 @@ function DesktopNavLink({
           : "text-text-primary hover:text-primary-500",
       )}
     >
-      {t(`nav.${item.key}`)}
+      {item.label}
     </Link>
   );
 }
@@ -129,6 +143,7 @@ function MobileMenu({
   const pathname = usePathname();
   const locale = useLocale();
   const { loginUrl } = useSettings();
+  const navItems = useResolvedNav();
   const isRTL = locale === "ar";
 
   return (
@@ -197,7 +212,7 @@ function MobileMenu({
           {/* Nav links */}
           <nav className="flex-1 overflow-y-auto px-4 py-6">
             <ul className="space-y-1">
-              {NAV_ITEMS.map((item) => (
+              {navItems.map((item) => (
                 <li key={item.key}>
                   <Link
                     href={item.href}
@@ -209,26 +224,25 @@ function MobileMenu({
                         : "text-text-primary hover:bg-gray-50",
                     )}
                   >
-                    {t(`nav.${item.key}`)}
+                    {item.label}
                   </Link>
 
                   {/* Sub-items */}
-                  {"children" in item &&
-                    item.children.map((child) => (
-                      <Link
-                        key={child.key}
-                        href={child.href}
-                        onClick={() => onOpenChange(false)}
-                        className={cn(
-                          "block rounded-xl py-2.5 ps-8 pe-4 text-sm font-medium transition-colors",
-                          pathname === child.href
-                            ? "text-primary-500"
-                            : "text-text-secondary hover:text-primary-500",
-                        )}
-                      >
-                        {t(`nav.${child.key}`)}
-                      </Link>
-                    ))}
+                  {item.children?.map((child) => (
+                    <Link
+                      key={child.href}
+                      href={child.href}
+                      onClick={() => onOpenChange(false)}
+                      className={cn(
+                        "block rounded-xl py-2.5 ps-8 pe-4 text-sm font-medium transition-colors",
+                        pathname === child.href
+                          ? "text-primary-500"
+                          : "text-text-secondary hover:text-primary-500",
+                      )}
+                    >
+                      {child.label}
+                    </Link>
+                  ))}
                 </li>
               ))}
             </ul>
@@ -265,6 +279,7 @@ export default function Navbar() {
   const t = useTranslations();
   const pathname = usePathname();
   const { loginUrl } = useSettings();
+  const navItems = useResolvedNav();
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -298,21 +313,15 @@ export default function Navbar() {
 
         {/* Desktop navigation (center) */}
         <nav className="hidden lg:flex lg:items-center lg:gap-1">
-          {NAV_ITEMS.map((item) =>
-            "children" in item ? (
+          {navItems.map((item) =>
+            item.children ? (
               <DesktopDropdown
                 key={item.key}
-                item={item}
-                t={t}
+                item={item as ResolvedItem & { children: ResolvedChild[] }}
                 pathname={pathname}
               />
             ) : (
-              <DesktopNavLink
-                key={item.key}
-                item={item}
-                t={t}
-                pathname={pathname}
-              />
+              <DesktopNavLink key={item.key} item={item} pathname={pathname} />
             ),
           )}
         </nav>
@@ -322,7 +331,7 @@ export default function Navbar() {
           <LanguageToggle />
 
           <a
-            href="https://falcon-valley.com"
+            href={loginUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="px-3 py-2 text-sm font-medium text-text-secondary transition-colors hover:text-primary-500"

@@ -230,6 +230,8 @@ export interface LeadData {
   tcoCalculator?: boolean;
   calculatorUsers?: number;
   calculatorSaving?: number;
+  /** Extra structured rows rendered in the lead description table (e.g. pricing breakdown). */
+  extraRows?: Array<{ label: string; value: string }>;
 }
 
 export async function createLead(data: LeadData): Promise<number | null> {
@@ -264,6 +266,10 @@ export async function createLead(data: LeadData): Promise<number | null> {
   if (data.utmSource) addRow("📈 UTM Source", data.utmSource);
   if (data.utmMedium) addRow("📈 UTM Medium", data.utmMedium);
   if (data.utmCampaign) addRow("📈 UTM Campaign", data.utmCampaign);
+
+  if (data.extraRows) {
+    for (const r of data.extraRows) addRow(r.label, r.value);
+  }
 
   rows.push(`</table>`);
 
