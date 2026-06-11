@@ -28,6 +28,11 @@ export default async function SectorPage({ params }: Props) {
 
   const [base, allOverrides] = await Promise.all([getPricingBase(), getSectorPricing()]);
   const overrides = allOverrides.filter((o) => o.sectorId === slug);
+  if (process.env.NODE_ENV === "development") {
+    console.log(`[sector/${slug}] allOverrides(${allOverrides.length}):`, JSON.stringify(allOverrides));
+    console.log(`[sector/${slug}] filtered overrides(${overrides.length}):`, JSON.stringify(overrides));
+    console.log(`[sector/${slug}] sector.id:`, sector.id, "base.discountPercent:", base.discountPercent, "base.systemTrainingDays:", JSON.stringify(base.systemTrainingDays));
+  }
 
   // Country detection from common proxy headers (Vercel / Cloudflare).
   const h = await headers();

@@ -371,7 +371,8 @@ export async function getPricingBase(): Promise<PricingBase> {
   if (!isInstalledSync()) return DEFAULT_PRICING_BASE;
   try {
     return await store.readPricingBase(await getPool());
-  } catch {
+  } catch (err) {
+    console.error("[data-store] getPricingBase failed:", err);
     return DEFAULT_PRICING_BASE;
   }
 }
@@ -384,7 +385,8 @@ export async function getSectorPricing(): Promise<SectorPricingOverride[]> {
   if (!isInstalledSync()) return [];
   try {
     return await store.readSectorPricing(await getPool());
-  } catch {
+  } catch (err) {
+    console.error("[data-store] getSectorPricing failed:", err);
     return [];
   }
 }

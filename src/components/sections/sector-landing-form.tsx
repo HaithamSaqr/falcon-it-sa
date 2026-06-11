@@ -8,6 +8,7 @@ import Button from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useSettings } from "@/components/providers/settings-provider";
 import { computePrice, findOverride } from "@/lib/pricing";
+import type { VolumeDiscountTier } from "@/types/admin";
 import { toEmbedUrl } from "@/lib/video";
 import type { Sector, PricingBase, SectorPricingOverride, SectorSystem } from "@/types/admin";
 
@@ -30,7 +31,7 @@ export default function SectorLandingForm({ sector, base, overrides, isEgypt, is
   const isAr = locale === "ar";
   const { company } = useSettings();
 
-  const [form, setForm] = useState({ company: "", email: "", phone: "", users: 5 });
+  const [form, setForm] = useState({ name: "", company: "", email: "", phone: "", users: 5 });
   const [system, setSystem] = useState<SectorSystem | "">(sector.systems[0] ?? "");
   const [currency, setCurrency] = useState<"USD" | "EGP" | "SAR">(
     isEgypt ? "EGP" : "SAR"
@@ -53,8 +54,18 @@ export default function SectorLandingForm({ sector, base, overrides, isEgypt, is
 
   const breakdown = useMemo(() => {
     const ov = findOverride(overrides, sector.id, system || null);
-    return computePrice(base, form.users, ov);
+    return computePrice(base, form.users, ov, system || null);
   }, [base, overrides, sector.id, system, form.users]);
+
+  // Next volume discount tier hint
+  const nextTier = useMemo((): (VolumeDiscountTier & { usersNeeded: number }) | null => {
+    const ov = findOverride(overrides, sector.id, system || null);
+    const tiers: VolumeDiscountTier[] = ov?.volumeDiscounts ?? base.volumeDiscounts ?? [];
+    const sorted = [...tiers].sort((a, b) => a.minUsers - b.minUsers);
+    const next = sorted.find((t) => t.minUsers > form.users);
+    if (!next) return null;
+    return { ...next, usersNeeded: next.minUsers - form.users };
+  }, [base.volumeDiscounts, overrides, sector.id, system, form.users]);
 
   const fmt = (n: number) =>
     Math.round(n).toLocaleString(isAr ? "ar-EG" : "en-US");
@@ -69,6 +80,7 @@ export default function SectorLandingForm({ sector, base, overrides, isEgypt, is
   const embedUrl = toEmbedUrl(sector.videoUrl);
 
   function validate(): boolean {
+    if (form.name.trim().length < 2) return setError(isAr ? "الاسم مطلوب" : "Name required"), false;
     if (form.company.trim().length < 2) return setError(isAr ? "اسم الشركة مطلوب" : "Company name required"), false;
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) return setError(isAr ? "بريد غير صحيح" : "Invalid email"), false;
     if (form.phone.trim().length < 6) return setError(isAr ? "رقم الهاتف مطلوب" : "Phone required"), false;
@@ -84,6 +96,7 @@ export default function SectorLandingForm({ sector, base, overrides, isEgypt, is
       ? [
         `طلب عرض سعر — قطاع ${sectorName}`,
         "",
+        `الاسم: ${form.name}`,
         `الشركة: ${form.company}`,
         `البريد: ${form.email}`,
         `الهاتف: ${form.phone}`,
@@ -99,6 +112,7 @@ export default function SectorLandingForm({ sector, base, overrides, isEgypt, is
       : [
         `Quote request — ${sectorName} sector`,
         "",
+        `Name: ${form.name}`,
         `Company: ${form.company}`,
         `Email: ${form.email}`,
         `Phone: ${form.phone}`,
@@ -126,6 +140,7 @@ export default function SectorLandingForm({ sector, base, overrides, isEgypt, is
           sectorId: sector.id,
           sectorName,
           system,
+          name: form.name,
           company: form.company,
           email: form.email,
           phone: form.phone,
@@ -204,6 +219,10 @@ export default function SectorLandingForm({ sector, base, overrides, isEgypt, is
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="sm:col-span-2">
+              <label className={labelCls}>{isAr ? "الاسم" : "Name"} *</label>
+              <input className={inputCls} value={form.name} placeholder={isAr ? "اسمك الكريم" : "Your name"} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+            </div>
+            <div className="sm:col-span-2">
               <label className={labelCls}>{isAr ? "اسم الشركة" : "Company name"} *</label>
               <input className={inputCls} value={form.company} onChange={(e) => setForm({ ...form, company: e.target.value })} />
             </div>
@@ -244,23 +263,38 @@ export default function SectorLandingForm({ sector, base, overrides, isEgypt, is
                 <Row label={isAr ? "تكاليف التشغيل" : "Operating costs"} value={price(breakdown.operating)} />
                 <Row label={isAr ? `التدريب (${breakdown.trainingDays} يوم)` : `Training (${breakdown.trainingDays} days)`} value={price(breakdown.trainingCost)} />
               </div>
-              <div className="mt-3 border-t border-cta/20 pt-3">
+              <div className="mt-3 border-t border-cta/20 pt-3 space-y-1.5">
                 <div className="flex items-center justify-between text-sm text-text-secondary">
                   <span>{isAr ? "السعر العادي" : "Regular price"}</span>
                   <span className="line-through">{price(breakdown.regular)}</span>
                 </div>
-                <div className="flex items-center justify-between text-sm text-emerald-600">
-                  <span>{isAr ? `الخصم (${breakdown.discountPercent}%)` : `Discount (${breakdown.discountPercent}%)`}</span>
-                  <span>− {price(breakdown.discount)}</span>
-                </div>
-                <div className="mt-1 flex items-center justify-between">
+                {breakdown.discountPercent > 0 && (
+                  <div className="flex items-center justify-between text-sm text-emerald-600">
+                    <span>{isAr ? `خصم أساسي (${breakdown.discountPercent}%)` : `Base discount (${breakdown.discountPercent}%)`}</span>
+                    <span>− {price(breakdown.regular * breakdown.discountPercent / 100)}</span>
+                  </div>
+                )}
+                {breakdown.volumeDiscountPercent > 0 && (
+                  <div className="flex items-center justify-between text-sm text-emerald-500">
+                    <span>{isAr ? `خصم الكمية (+${breakdown.volumeDiscountPercent}%)` : `Volume discount (+${breakdown.volumeDiscountPercent}%)`}</span>
+                    <span>− {price(breakdown.regular * breakdown.volumeDiscountPercent / 100)}</span>
+                  </div>
+                )}
+                {nextTier && (
+                  <div className="rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-700">
+                    {isAr
+                      ? `أضف ${nextTier.usersNeeded} مستخدم${nextTier.usersNeeded === 1 ? "" : "ين"} للحصول على خصم إضافي ${nextTier.discountPercent}%`
+                      : `Add ${nextTier.usersNeeded} more user${nextTier.usersNeeded === 1 ? "" : "s"} to unlock +${nextTier.discountPercent}% off`}
+                  </div>
+                )}
+                <div className="mt-1 flex items-center justify-between border-t border-cta/20 pt-2">
                   <span className="font-bold text-text-primary">{isAr ? "السعر بعد الخصم" : "Price after discount"}</span>
                   <div className="flex items-baseline gap-1.5">
                     <span className="text-2xl font-extrabold text-primary-600">{price(breakdown.total)}</span>
                     <span className="text-sm font-medium text-text-secondary">{isAr ? "/ سنة" : "/ year"}</span>
                   </div>
                 </div>
-                <p className="mt-0.5 text-end text-xs text-text-secondary">
+                <p className="text-end text-xs text-text-secondary">
                   {isAr ? "يُدفع سنوياً · شامل الاستضافة السحابية" : "Billed annually · includes full cloud hosting"}
                 </p>
               </div>

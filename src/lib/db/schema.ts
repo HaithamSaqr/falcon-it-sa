@@ -120,8 +120,10 @@ CREATE TABLE IF NOT EXISTS pricing_base (
   training_cost_per_day numeric NOT NULL DEFAULT 80,
   training_days         int     NOT NULL DEFAULT 3,
   discount_percent      numeric NOT NULL DEFAULT 10,
-  usd_to_egp            numeric NOT NULL DEFAULT 50,
-  usd_to_sar            numeric NOT NULL DEFAULT 3.75
+  usd_to_egp              numeric NOT NULL DEFAULT 50,
+  usd_to_sar              numeric NOT NULL DEFAULT 3.75,
+  volume_discounts        jsonb   NOT NULL DEFAULT '[]',
+  system_training_days    jsonb   NOT NULL DEFAULT '{}'
 );
 
 -- Per-sector / per-system pricing overrides
@@ -132,6 +134,9 @@ CREATE TABLE IF NOT EXISTS sector_pricing (
   price_per_user  numeric,
   operating_costs numeric,
   training_days   int,
+  hosting_price   numeric,
+  discount_percent numeric,
+  volume_discounts jsonb,
   UNIQUE (sector_id, system)
 );
 
@@ -278,6 +283,11 @@ ALTER TABLE integrations ADD COLUMN IF NOT EXISTS ai_server_url text NOT NULL DE
 ALTER TABLE integrations ADD COLUMN IF NOT EXISTS ai_api_key text NOT NULL DEFAULT '';
 ALTER TABLE sectors ADD COLUMN IF NOT EXISTS video_url text NOT NULL DEFAULT '';
 ALTER TABLE pricing_base ADD COLUMN IF NOT EXISTS usd_to_sar numeric NOT NULL DEFAULT 3.75;
+ALTER TABLE pricing_base ADD COLUMN IF NOT EXISTS volume_discounts jsonb NOT NULL DEFAULT '[]';
+ALTER TABLE pricing_base ADD COLUMN IF NOT EXISTS system_training_days jsonb NOT NULL DEFAULT '{}';
+ALTER TABLE sector_pricing ADD COLUMN IF NOT EXISTS hosting_price numeric;
+ALTER TABLE sector_pricing ADD COLUMN IF NOT EXISTS discount_percent numeric;
+ALTER TABLE sector_pricing ADD COLUMN IF NOT EXISTS volume_discounts jsonb;
 `;
 
 export async function ensureSchema(pool: Pool): Promise<void> {

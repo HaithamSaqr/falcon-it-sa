@@ -270,6 +270,12 @@ export const DEFAULT_PRICING_BASE: PricingBase = {
   discountPercent: 10,
   usdToEgp: 50,
   usdToSar: 3.75,
+  systemTrainingDays: { desktop: 5, cloud: 3, odoo: 7 },
+  volumeDiscounts: [
+    { minUsers: 10, discountPercent: 5 },
+    { minUsers: 25, discountPercent: 10 },
+    { minUsers: 50, discountPercent: 15 },
+  ],
 };
 
 export const DEFAULT_SEO: SeoSettings = {

@@ -21,6 +21,7 @@ const schema = z.object({
   sectorId: z.string().min(1),
   sectorName: z.string().min(1),
   system: z.string().min(1),
+  name: z.string().min(2).optional(),
   company: z.string().min(2),
   email: z.string().email(),
   phone: z.string().min(6),
@@ -65,8 +66,8 @@ export async function POST(request: NextRequest) {
   // 2) Odoo opportunity
   try {
     await createLead({
-      name: `Sector: ${data.sectorName} — ${data.company}`,
-      contactName: data.company,
+      name: `Sector: ${data.sectorName} — ${data.name || data.company}`,
+      contactName: data.name || data.company,
       email: data.email,
       phone: data.phone,
       companyName: data.company,
@@ -75,7 +76,7 @@ export async function POST(request: NextRequest) {
       pageUrl: `/sectors/${data.sectorId}`,
       language: locale,
       message:
-        `Sector: ${data.sectorName}\nSystem: ${data.system}\nUsers: ${data.users}\n` +
+        `Sector: ${data.sectorName}\nSystem: ${data.system}\nName: ${data.name || "-"}\nUsers: ${data.users}\n` +
         `Training days: ${data.trainingDays ?? "-"}\n` +
         `Estimated: ${data.priceTotal ?? "-"} ${data.currency ?? "USD"} (incl. cloud hosting)`,
     });

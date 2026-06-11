@@ -12,6 +12,8 @@ type PoolCache = { pool: Pool | null; signature: string | null; ready: Promise<v
 const globalForPg = globalThis as unknown as { __falconPg?: PoolCache };
 const cache: PoolCache = globalForPg.__falconPg ?? { pool: null, signature: null, ready: null };
 globalForPg.__falconPg = cache;
+// Re-run migrations on every hot-reload so new schema changes are picked up automatically.
+cache.ready = null;
 
 function toPoolConfig(c: DbConnection): PoolConfig {
   return {

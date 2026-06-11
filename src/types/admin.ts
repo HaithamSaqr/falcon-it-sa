@@ -130,15 +130,22 @@ export interface Sector {
   sortOrder: number;
 }
 
+export interface VolumeDiscountTier {
+  minUsers: number;
+  discountPercent: number;
+}
+
 export interface PricingBase {
   pricePerUser: number;
   hostingPrice: number;
   operatingCosts: number;
   trainingCostPerDay: number;
   trainingDays: number;
+  systemTrainingDays: Partial<Record<SectorSystem, number>>;
   discountPercent: number;
   usdToEgp: number;
   usdToSar: number;
+  volumeDiscounts: VolumeDiscountTier[];
 }
 
 export interface SectorPricingOverride {
@@ -147,6 +154,9 @@ export interface SectorPricingOverride {
   pricePerUser: number | null;
   operatingCosts: number | null;
   trainingDays: number | null;
+  hostingPrice: number | null;
+  discountPercent: number | null;
+  volumeDiscounts: VolumeDiscountTier[] | null;
 }
 
 export interface ClientTag {
