@@ -2,14 +2,16 @@
 # Falcon IT — Portainer stack (app + PostgreSQL on one private network)
 #
 # Deploy:
-#   1) Build the image on the server (amd64):  docker build -t falcon-it:latest .
-#      (or use the `build:` block below if deploying this stack from a Git repo)
-#   2) Portainer → Stacks → Add stack → paste this file.
-#   3) In "Environment variables" set:  DB_PASSWORD = <a strong password>
-#   4) Deploy, then open  http://<server-ip>:3001/setup
-#      The wizard is pre-filled (Host = db). Enter the SAME DB_PASSWORD and
-#      create the admin account. Done — config persists in the data volume.
+#   1) Make sure the app image exists in Portainer → Images, and set the
+#      `image:` value under the `app` service to its EXACT name.
+#   2) Portainer → Stacks → Add stack → paste this file → Deploy.
+#   3) Open  http://<server-ip>:3001/setup  → the wizard is pre-filled
+#      (Host = db). Enter the SAME password below + create the admin account.
 # ───────────────────────────────────────────────────────────────────────────
+
+# ⬇️ كلمة مرور قاعدة البيانات — تُكتب هنا مرة واحدة فقط وتُستخدم في الخدمتين.
+#    لو احتوت كلمة المرور على علامة $ فضاعفها هكذا: $$
+x-db-password: &db_password "P@ss@123"
 
 services:
   db:
@@ -19,8 +21,7 @@ services:
     environment:
       POSTGRES_DB: falcon
       POSTGRES_USER: falcon
-      POSTGRES_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD in the stack env}
-      # keeps the DB timezone predictable
+      POSTGRES_PASSWORD: *db_password
       TZ: Asia/Riyadh
     # Performance tuning — adjust to your server's RAM (these suit ~1–2 GB).
     command:
@@ -49,13 +50,8 @@ services:
       start_period: 20s
 
   app:
-    image: falcon-it:latest
-    # ── Alternative: let Portainer build the image (Git-repo stacks only) ──
-    # build:
-    #   context: .
-    #   args:
-    #     NEXT_PUBLIC_SITE_URL: "https://falcon-it.sa"
-    #     NEXT_PUBLIC_WHATSAPP_NUMBER: "966568406006"
+    # ⬇️ غيّر هذا الاسم ليطابق تماماً اسم الإيمدج في Portainer → Images
+    image: falcon-itsa-falcon-web:latest
     container_name: falcon-app
     restart: unless-stopped
     depends_on:
@@ -71,7 +67,7 @@ services:
       PGPORT: "5432"
       PGDATABASE: falcon
       PGUSER: falcon
-      PGPASSWORD: ${DB_PASSWORD:?set DB_PASSWORD in the stack env}
+      PGPASSWORD: *db_password
     volumes:
       # Persists db-config.json + uploaded images across restarts/updates.
       - falcon-app-data:/app/data
