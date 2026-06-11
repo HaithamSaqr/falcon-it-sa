@@ -92,7 +92,7 @@ export default function DemoPage() {
                 )}
                 <div>
                   <label htmlFor="fullName" className={labelClasses}>{t("fullName")} *</label>
-                  <input id="fullName" type="text" className={cn(inputClasses, errors.fullName && "border-red-500")} {...register("fullName")} />
+                  <input id="fullName" suppressHydrationWarning type="text" className={cn(inputClasses, errors.fullName && "border-red-500")} {...register("fullName")} />
                   {errors.fullName && <p className={errorClasses}>{errors.fullName.message}</p>}
                 </div>
 
@@ -104,19 +104,19 @@ export default function DemoPage() {
 
                 <div>
                   <label htmlFor="phone" className={labelClasses}>{t("phone")} *</label>
-                  <input id="phone" type="tel" className={cn(inputClasses, errors.phone && "border-red-500")} {...register("phone")} />
+                  <input id="phone" suppressHydrationWarning type="tel" className={cn(inputClasses, errors.phone && "border-red-500")} {...register("phone")} />
                   {errors.phone && <p className={errorClasses}>{errors.phone.message}</p>}
                 </div>
 
                 <div>
                   <label htmlFor="company" className={labelClasses}>{t("company")} *</label>
-                  <input id="company" type="text" className={cn(inputClasses, errors.company && "border-red-500")} {...register("company")} />
+                  <input id="company" suppressHydrationWarning type="text" className={cn(inputClasses, errors.company && "border-red-500")} {...register("company")} />
                   {errors.company && <p className={errorClasses}>{errors.company.message}</p>}
                 </div>
 
                 <div>
                   <label htmlFor="jobTitle" className={labelClasses}>{t("jobTitle")} *</label>
-                  <select id="jobTitle" className={cn(inputClasses, errors.jobTitle && "border-red-500")} {...register("jobTitle")}>
+                  <select id="jobTitle" suppressHydrationWarning className={cn(inputClasses, errors.jobTitle && "border-red-500")} {...register("jobTitle")}>
                     <option value="">{t("jobTitle")}</option>
                     {JOB_TITLE_KEYS.map((key) => (
                       <option key={key} value={key}>{t(key)}</option>
@@ -127,7 +127,7 @@ export default function DemoPage() {
 
                 <div>
                   <label htmlFor="country" className={labelClasses}>{t("country")} *</label>
-                  <select id="country" className={cn(inputClasses, errors.country && "border-red-500")} {...register("country")}>
+                  <select id="country" suppressHydrationWarning className={cn(inputClasses, errors.country && "border-red-500")} {...register("country")}>
                     <option value="">{t("country")}</option>
                     {COUNTRY_KEYS.map((key) => (
                       <option key={key} value={key}>{t(key)}</option>
@@ -151,7 +151,7 @@ export default function DemoPage() {
 
                 <div>
                   <label htmlFor="industry" className={labelClasses}>{t("industry")} *</label>
-                  <select id="industry" className={cn(inputClasses, errors.industry && "border-red-500")} {...register("industry")}>
+                  <select id="industry" suppressHydrationWarning className={cn(inputClasses, errors.industry && "border-red-500")} {...register("industry")}>
                     <option value="">{t("industry")}</option>
                     {INDUSTRY_KEYS.map((key) => (
                       <option key={key} value={key}>{t(key)}</option>
@@ -162,12 +162,12 @@ export default function DemoPage() {
 
                 <div>
                   <label htmlFor="currentERP" className={labelClasses}>{t("currentERP")}</label>
-                  <input id="currentERP" type="text" className={inputClasses} {...register("currentERP")} />
+                  <input id="currentERP" suppressHydrationWarning type="text" className={inputClasses} {...register("currentERP")} />
                 </div>
 
                 <div>
                   <label htmlFor="message" className={labelClasses}>{t("message")}</label>
-                  <textarea id="message" rows={3} className={cn(inputClasses, "resize-none")} {...register("message")} />
+                  <textarea id="message" suppressHydrationWarning rows={3} className={cn(inputClasses, "resize-none")} {...register("message")} />
                 </div>
 
                 <div className="space-y-3">

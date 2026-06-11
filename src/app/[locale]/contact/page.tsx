@@ -81,6 +81,7 @@ export default function ContactPage() {
                   </label>
                   <input
                     id="name"
+                    suppressHydrationWarning
                     type="text"
                     className={cn(inputClasses, errors.name && "border-red-500")}
                     {...register("name")}
@@ -114,6 +115,7 @@ export default function ContactPage() {
                   </label>
                   <input
                     id="phone"
+                    suppressHydrationWarning
                     type="tel"
                     className={inputClasses}
                     {...register("phone")}
@@ -127,6 +129,7 @@ export default function ContactPage() {
                   </label>
                   <input
                     id="subject"
+                    suppressHydrationWarning
                     type="text"
                     className={cn(inputClasses, errors.subject && "border-red-500")}
                     {...register("subject")}
@@ -143,6 +146,7 @@ export default function ContactPage() {
                   </label>
                   <textarea
                     id="message"
+                    suppressHydrationWarning
                     rows={5}
                     className={cn(
                       inputClasses,

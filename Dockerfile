@@ -1,11 +1,19 @@
+# Target architecture for the produced image.
+# Defaults to linux/amd64 (standard x86_64 Linux servers) so a plain
+# `docker build` on an Apple Silicon / ARM machine still yields an image that
+# runs on amd64 hosts. Override for ARM with `--build-arg IMAGE_PLATFORM=linux/arm64`.
+# (A custom arg name is used on purpose — the reserved TARGETPLATFORM is
+# auto-set to the host platform and would ignore this default.)
+ARG IMAGE_PLATFORM=linux/amd64
+
 # ── Stage 1: Install dependencies ──
-FROM node:22-alpine AS deps
+FROM --platform=${IMAGE_PLATFORM} node:22-alpine AS deps
 WORKDIR /app
 COPY package.json package-lock.json* ./
 RUN npm install
 
 # ── Stage 2: Build ──
-FROM node:22-alpine AS builder
+FROM --platform=${IMAGE_PLATFORM} node:22-alpine AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
@@ -20,7 +28,7 @@ ENV NEXT_TELEMETRY_DISABLED=1
 RUN npm run build
 
 # ── Stage 3: Production image ──
-FROM node:22-alpine AS runner
+FROM --platform=${IMAGE_PLATFORM} node:22-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1

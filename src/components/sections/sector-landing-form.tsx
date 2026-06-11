@@ -248,11 +248,11 @@ export default function SectorLandingForm({ sector, base, overrides, isEgypt, is
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="sm:col-span-2">
               <label className={labelCls}>{isAr ? "الاسم" : "Name"} *</label>
-              <input className={inputCls} value={form.name} placeholder={isAr ? "اسمك الكريم" : "Your name"} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+              <input className={inputCls} suppressHydrationWarning value={form.name} placeholder={isAr ? "اسمك الكريم" : "Your name"} onChange={(e) => setForm({ ...form, name: e.target.value })} />
             </div>
             <div className="sm:col-span-2">
               <label className={labelCls}>{isAr ? "اسم الشركة" : "Company name"} *</label>
-              <input className={inputCls} value={form.company} onChange={(e) => setForm({ ...form, company: e.target.value })} />
+              <input className={inputCls} suppressHydrationWarning value={form.company} onChange={(e) => setForm({ ...form, company: e.target.value })} />
             </div>
             <div>
               <label className={labelCls}>{isAr ? "البريد الإلكتروني" : "Email"} *</label>
@@ -260,7 +260,7 @@ export default function SectorLandingForm({ sector, base, overrides, isEgypt, is
             </div>
             <div>
               <label className={labelCls}>{isAr ? "رقم الهاتف" : "Phone"} *</label>
-              <input className={inputCls} type="tel" dir="ltr" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
+              <input className={inputCls} suppressHydrationWarning type="tel" dir="ltr" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
             </div>
             {lockedSystem ? (
               // Preset from a product page — show the system as a read-only field.
@@ -274,7 +274,7 @@ export default function SectorLandingForm({ sector, base, overrides, isEgypt, is
             ) : (
               <div>
                 <label className={labelCls}>{isAr ? "النظام" : "System"} *</label>
-                <select className={inputCls} value={system} onChange={(e) => setSystem(e.target.value as SectorSystem)}>
+                <select className={inputCls} suppressHydrationWarning value={system} onChange={(e) => setSystem(e.target.value as SectorSystem)}>
                   {sector.systems.length === 0 && <option value="">—</option>}
                   {sector.systems.map((s) => (
                     <option key={s} value={s}>{isAr ? SYSTEM_LABELS[s].ar : SYSTEM_LABELS[s].en}</option>
@@ -284,7 +284,7 @@ export default function SectorLandingForm({ sector, base, overrides, isEgypt, is
             )}
             <div>
               <label className={labelCls}>{isAr ? "عدد المستخدمين" : "Number of users"} *</label>
-              <input className={inputCls} type="number" min={1} value={form.users} onChange={(e) => setForm({ ...form, users: Number(e.target.value) || 1 })} />
+              <input className={inputCls} suppressHydrationWarning type="number" min={1} value={form.users} onChange={(e) => setForm({ ...form, users: Number(e.target.value) || 1 })} />
             </div>
           </div>
 

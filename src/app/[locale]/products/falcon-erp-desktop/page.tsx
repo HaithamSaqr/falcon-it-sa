@@ -456,6 +456,7 @@ function FalconErpDesktopContent({ isArabic }: { isArabic: boolean }) {
             <form className="mx-auto grid max-w-lg gap-4 sm:grid-cols-2">
               <input
                 type="text"
+                suppressHydrationWarning
                 placeholder={tp("formName")}
                 className="rounded-lg border border-white/20 bg-white/5 px-4 py-3 text-white placeholder:text-gray-400 focus:border-primary-500 focus:outline-none sm:col-span-1"
               />
@@ -467,11 +468,13 @@ function FalconErpDesktopContent({ isArabic }: { isArabic: boolean }) {
               />
               <input
                 type="tel"
+                suppressHydrationWarning
                 placeholder={tp("formPhone")}
                 className="rounded-lg border border-white/20 bg-white/5 px-4 py-3 text-white placeholder:text-gray-400 focus:border-primary-500 focus:outline-none sm:col-span-1"
               />
               <input
                 type="text"
+                suppressHydrationWarning
                 placeholder={tp("formCompany")}
                 className="rounded-lg border border-white/20 bg-white/5 px-4 py-3 text-white placeholder:text-gray-400 focus:border-primary-500 focus:outline-none sm:col-span-1"
               />
