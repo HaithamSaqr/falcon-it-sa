@@ -4,6 +4,11 @@ import { useEffect, useState } from "react";
 import type { PricingBase, SectorPricingOverride, Sector, SectorSystem, VolumeDiscountTier } from "@/types/admin";
 
 const SYSTEMS: SectorSystem[] = ["desktop", "cloud", "odoo"];
+const SYSTEM_LABELS: Record<SectorSystem, string> = {
+  desktop: "Falcon Desktop",
+  cloud: "Falcon Cloud",
+  odoo: "Odoo",
+};
 
 function VolumeDiscountEditor({
   tiers,
@@ -215,7 +220,7 @@ export default function AdminPricingPage() {
           <button
             onClick={() => setOverrides((o) => [...o, {
               sectorId: sectors[0]?.id ?? "",
-              system: "cloud",
+              system: sectors[0]?.systems?.[0] ?? "cloud",
               pricePerUser: null,
               operatingCosts: null,
               trainingDays: null,
@@ -238,14 +243,31 @@ export default function AdminPricingPage() {
               <div className="mb-3 flex flex-wrap items-end gap-3">
                 <div className="min-w-[140px] flex-1">
                   <label className={lbl}>Sector</label>
-                  <select className={inp} value={o.sectorId} onChange={(e) => updateOverride(i, "sectorId", e.target.value)}>
+                  <select
+                    className={inp}
+                    value={o.sectorId}
+                    onChange={(e) => {
+                      const sid = e.target.value;
+                      const sys = sectors.find((s) => s.id === sid)?.systems ?? SYSTEMS;
+                      // Keep the system valid for the newly selected sector.
+                      setOverrides((arr) =>
+                        arr.map((x, j) =>
+                          j === i
+                            ? { ...x, sectorId: sid, system: sys.includes(x.system) ? x.system : sys[0] ?? "cloud" }
+                            : x
+                        )
+                      );
+                    }}
+                  >
                     {sectors.map((s) => <option key={s.id} value={s.id}>{s.name.en || s.id}</option>)}
                   </select>
                 </div>
                 <div className="min-w-[110px] flex-1">
                   <label className={lbl}>System</label>
                   <select className={inp} value={o.system} onChange={(e) => updateOverride(i, "system", e.target.value as SectorSystem)}>
-                    {SYSTEMS.map((s) => <option key={s} value={s}>{s}</option>)}
+                    {(sectors.find((s) => s.id === o.sectorId)?.systems ?? SYSTEMS).map((s) => (
+                      <option key={s} value={s}>{SYSTEM_LABELS[s]}</option>
+                    ))}
                   </select>
                 </div>
                 <button

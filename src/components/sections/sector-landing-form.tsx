@@ -24,15 +24,22 @@ interface Props {
   overrides: SectorPricingOverride[];
   isEgypt: boolean;
   isSaudi: boolean;
+  /** Preselected & locked system (when arriving from a product page). */
+  presetSystem?: string;
 }
 
-export default function SectorLandingForm({ sector, base, overrides, isEgypt, isSaudi }: Props) {
+export default function SectorLandingForm({ sector, base, overrides, isEgypt, isSaudi, presetSystem }: Props) {
   const locale = useLocale();
   const isAr = locale === "ar";
   const { company } = useSettings();
 
+  const lockedSystem =
+    presetSystem && sector.systems.includes(presetSystem as SectorSystem)
+      ? (presetSystem as SectorSystem)
+      : null;
+
   const [form, setForm] = useState({ name: "", company: "", email: "", phone: "", users: 5 });
-  const [system, setSystem] = useState<SectorSystem | "">(sector.systems[0] ?? "");
+  const [system, setSystem] = useState<SectorSystem | "">(lockedSystem ?? sector.systems[0] ?? "");
   const [currency, setCurrency] = useState<"USD" | "EGP" | "SAR">(
     isEgypt ? "EGP" : "SAR"
   );
@@ -234,15 +241,26 @@ export default function SectorLandingForm({ sector, base, overrides, isEgypt, is
               <label className={labelCls}>{isAr ? "رقم الهاتف" : "Phone"} *</label>
               <input className={inputCls} type="tel" dir="ltr" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
             </div>
-            <div>
-              <label className={labelCls}>{isAr ? "النظام" : "System"} *</label>
-              <select className={inputCls} value={system} onChange={(e) => setSystem(e.target.value as SectorSystem)}>
-                {sector.systems.length === 0 && <option value="">—</option>}
-                {sector.systems.map((s) => (
-                  <option key={s} value={s}>{isAr ? SYSTEM_LABELS[s].ar : SYSTEM_LABELS[s].en}</option>
-                ))}
-              </select>
-            </div>
+            {lockedSystem ? (
+              // Preset from a product page — show the system as a read-only field.
+              <div>
+                <label className={labelCls}>{isAr ? "النظام" : "System"}</label>
+                <div className={cn(inputCls, "flex items-center gap-2 bg-gray-50 text-text-secondary")}>
+                  <span className="text-primary-600">✓</span>
+                  {isAr ? SYSTEM_LABELS[lockedSystem].ar : SYSTEM_LABELS[lockedSystem].en}
+                </div>
+              </div>
+            ) : (
+              <div>
+                <label className={labelCls}>{isAr ? "النظام" : "System"} *</label>
+                <select className={inputCls} value={system} onChange={(e) => setSystem(e.target.value as SectorSystem)}>
+                  {sector.systems.length === 0 && <option value="">—</option>}
+                  {sector.systems.map((s) => (
+                    <option key={s} value={s}>{isAr ? SYSTEM_LABELS[s].ar : SYSTEM_LABELS[s].en}</option>
+                  ))}
+                </select>
+              </div>
+            )}
             <div>
               <label className={labelCls}>{isAr ? "عدد المستخدمين" : "Number of users"} *</label>
               <input className={inputCls} type="number" min={1} value={form.users} onChange={(e) => setForm({ ...form, users: Number(e.target.value) || 1 })} />
@@ -270,14 +288,14 @@ export default function SectorLandingForm({ sector, base, overrides, isEgypt, is
                 </div>
                 {breakdown.discountPercent > 0 && (
                   <div className="flex items-center justify-between text-sm text-emerald-600">
-                    <span>{isAr ? `خصم أساسي (${breakdown.discountPercent}%)` : `Base discount (${breakdown.discountPercent}%)`}</span>
-                    <span>− {price(breakdown.regular * breakdown.discountPercent / 100)}</span>
+                    <span>{isAr ? `خصم أساسي (${breakdown.discountPercent}% عدا سعر المستخدم)` : `Base discount (${breakdown.discountPercent}%, excl. per-user)`}</span>
+                    <span>− {price((breakdown.hosting + breakdown.operating + breakdown.trainingCost) * breakdown.discountPercent / 100)}</span>
                   </div>
                 )}
                 {breakdown.volumeDiscountPercent > 0 && (
                   <div className="flex items-center justify-between text-sm text-emerald-500">
-                    <span>{isAr ? `خصم الكمية (+${breakdown.volumeDiscountPercent}%)` : `Volume discount (+${breakdown.volumeDiscountPercent}%)`}</span>
-                    <span>− {price(breakdown.regular * breakdown.volumeDiscountPercent / 100)}</span>
+                    <span>{isAr ? `خصم الكمية (${breakdown.volumeDiscountPercent}% على سعر المستخدم)` : `Volume discount (${breakdown.volumeDiscountPercent}% on per-user)`}</span>
+                    <span>− {price(breakdown.users * breakdown.pricePerUser * breakdown.volumeDiscountPercent / 100)}</span>
                   </div>
                 )}
                 {nextTier && (

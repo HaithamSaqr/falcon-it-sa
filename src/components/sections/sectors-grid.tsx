@@ -11,9 +11,13 @@ interface Props {
   sectors: Sector[];
   hasMore?: boolean;
   showHeader?: boolean;
+  /** When set, sector links preselect this system on the landing page. */
+  system?: string;
+  heading?: string;
+  subheading?: string;
 }
 
-export default function SectorsGrid({ sectors, hasMore = false, showHeader = true }: Props) {
+export default function SectorsGrid({ sectors, hasMore = false, showHeader = true, system, heading, subheading }: Props) {
   const t = useTranslations("sectors");
   const locale = useLocale();
   const isAr = locale === "ar";
@@ -21,13 +25,13 @@ export default function SectorsGrid({ sectors, hasMore = false, showHeader = tru
   return (
     <section id="sectors" className="bg-surface py-20 lg:py-28">
       <Container>
-        {showHeader && <SectionHeader title={t("heading")} subtitle={t("subheading")} />}
+        {showHeader && <SectionHeader title={heading ?? t("heading")} subtitle={subheading ?? t("subheading")} />}
 
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {sectors.map((sector) => (
             <Link
               key={sector.id}
-              href={`/sectors/${sector.id}`}
+              href={system ? `/sectors/${sector.id}?system=${system}` : `/sectors/${sector.id}`}
               className={cn(
                 "group relative flex flex-col justify-end overflow-hidden rounded-2xl p-6",
                 "aspect-[4/3] transition-transform duration-300 hover:scale-[1.03]",

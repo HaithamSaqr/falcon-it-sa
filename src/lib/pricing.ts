@@ -60,10 +60,16 @@ export function computePrice(
   const volumeTiers = override?.volumeDiscounts ?? base.volumeDiscounts ?? [];
 
   const trainingCost = base.trainingCostPerDay * trainingDays;
-  const regular = u * pricePerUser + hosting + operating + trainingCost;
+  const userCost = u * pricePerUser;
+  const otherCost = hosting + operating + trainingCost;
+  const regular = userCost + otherCost;
   const volumeDiscountPercent = resolveVolumeDiscount(volumeTiers, u);
-  const totalDiscountPercent = Math.min(100, discountPercent + volumeDiscountPercent);
-  const discount = regular * (totalDiscountPercent / 100);
+  // Volume discount applies ONLY to the per-user cost.
+  // General discount applies to everything EXCEPT the per-user cost
+  // (hosting + operating + training), so the two discounts never overlap.
+  const volumeDiscountAmount = userCost * (Math.min(100, volumeDiscountPercent) / 100);
+  const generalDiscountAmount = otherCost * (Math.min(100, discountPercent) / 100);
+  const discount = volumeDiscountAmount + generalDiscountAmount;
   const total = regular - discount;
 
   return {

@@ -6,6 +6,7 @@ import SectorLandingForm from "@/components/sections/sector-landing-form";
 
 type Props = {
   params: Promise<{ locale: string; slug: string }>;
+  searchParams: Promise<{ system?: string }>;
 };
 
 export async function generateMetadata({ params }: Props) {
@@ -19,8 +20,9 @@ export async function generateMetadata({ params }: Props) {
   };
 }
 
-export default async function SectorPage({ params }: Props) {
+export default async function SectorPage({ params, searchParams }: Props) {
   const { locale, slug } = await params;
+  const { system: presetSystem } = await searchParams;
   setRequestLocale(locale);
 
   const sector = await getSector(slug);
@@ -40,7 +42,20 @@ export default async function SectorPage({ params }: Props) {
   const isEgypt = country === "EG";
   const isSaudi = country === "SA";
 
+  // Only honor a preset system if this sector is actually linked to it.
+  const validPreset =
+    presetSystem && sector.systems.includes(presetSystem as (typeof sector.systems)[number])
+      ? presetSystem
+      : undefined;
+
   return (
-    <SectorLandingForm sector={sector} base={base} overrides={overrides} isEgypt={isEgypt} isSaudi={isSaudi} />
+    <SectorLandingForm
+      sector={sector}
+      base={base}
+      overrides={overrides}
+      isEgypt={isEgypt}
+      isSaudi={isSaudi}
+      presetSystem={validPreset}
+    />
   );
 }

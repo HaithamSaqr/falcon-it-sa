@@ -6,6 +6,7 @@ import Card from "@/components/ui/card";
 import SectionHeader from "@/components/shared/section-header";
 import BrochureButton from "@/components/sections/brochure-button";
 import ProductHero from "@/components/sections/product-hero";
+import ProductSectors from "@/components/sections/product-sectors";
 
 type Props = {
   params: Promise<{ locale: string }>;
@@ -517,6 +518,8 @@ function OdooServicesContent({ isArabic }: { isArabic: boolean }) {
           </div>
         </Container>
       </section>
+
+      <ProductSectors slug="odoo-services" />
 
       <BrochureButton slug="odoo-services" />
     </>
