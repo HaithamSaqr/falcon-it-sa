@@ -336,7 +336,9 @@
     "whatsappMessage": "Hi! I'm interested in Falcon ERP. Can you help?",
     "whatsappChat": "Chat on WhatsApp",
     "callUs": "Call Us Now",
-    "orCallUs": "Or call us directly"
+    "orCallUs": "Or call us directly",
+    "whatsappProduct": "Hi! I'm interested in {name}. Can you help?",
+    "whatsappSector": "Hi! I'm interested in Falcon solutions for the {name} sector. Can you help?"
   },
   "demo": {
     "heading": "Book Your Free Demo",

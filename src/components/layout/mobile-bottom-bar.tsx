@@ -3,19 +3,19 @@
 import { useTranslations } from "next-intl";
 import { usePathname } from "@/i18n/navigation";
 import { useSettings } from "@/components/providers/settings-provider";
+import { useWhatsAppMessage } from "@/hooks/use-whatsapp-message";
 import Button from "@/components/ui/button";
 
 export default function MobileBottomBar() {
   const t = useTranslations();
   const pathname = usePathname();
   const { company } = useSettings();
+  const waMessage = useWhatsAppMessage();
 
   // Hidden on sector landing pages (they have their own CTA flow + minimal footer).
   if (/^\/sectors\/[^/]+/.test(pathname)) return null;
 
-  const whatsappHref = `https://wa.me/${company.whatsapp}?text=${encodeURIComponent(
-    t("common.whatsappMessage"),
-  )}`;
+  const whatsappHref = `https://wa.me/${company.whatsapp}?text=${encodeURIComponent(waMessage)}`;
 
   return (
     <div

@@ -27,10 +27,16 @@ export interface PublicProduct {
   name: BilingualText;
 }
 
+export interface PublicSector {
+  slug: string;
+  name: BilingualText;
+}
+
 interface PublicSettings {
   gulfOnly: boolean;
   loginUrl: string;
   products: PublicProduct[];
+  sectors: PublicSector[];
   company: {
     name: { en: string; ar: string };
     email: string;
@@ -54,6 +60,7 @@ const DEFAULT_SETTINGS: PublicSettings = {
   gulfOnly: false,
   loginUrl: "https://falcon-valley.com",
   products: [],
+  sectors: [],
   company: {
     name: COMPANY.name as unknown as { en: string; ar: string },
     email: COMPANY.email,

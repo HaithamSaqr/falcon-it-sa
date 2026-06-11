@@ -64,6 +64,10 @@ export default function SectorLandingForm({ sector, base, overrides, isEgypt, is
     return computePrice(base, form.users, ov, system || null);
   }, [base, overrides, sector.id, system, form.users]);
 
+  // No discount → show a single price (hide the struck-through "regular" line)
+  // so the customer doesn't look for a missing discount.
+  const hasDiscount = breakdown.discountPercent > 0 || breakdown.volumeDiscountPercent > 0;
+
   // Next volume discount tier hint
   const nextTier = useMemo((): (VolumeDiscountTier & { usersNeeded: number }) | null => {
     const ov = findOverride(overrides, sector.id, system || null);
@@ -110,9 +114,12 @@ export default function SectorLandingForm({ sector, base, overrides, isEgypt, is
         `النظام: ${sysLabel}`,
         `عدد المستخدمين: ${form.users}`,
         `أيام التدريب: ${breakdown.trainingDays}`,
-        `السعر قبل الخصم: ${price(breakdown.regular)}`,
-        `الخصم: ${breakdown.discountPercent}%`,
-        `السعر بعد الخصم: ${price(breakdown.total)} / سنة`,
+        ...(hasDiscount
+          ? [
+            `السعر قبل الخصم: ${price(breakdown.regular)}`,
+            `السعر بعد الخصم: ${price(breakdown.total)} / سنة`,
+          ]
+          : [`السعر: ${price(breakdown.total)} / سنة`]),
         "",
         "السعر يشمل الاستضافة السحابية بالكامل.",
       ]
@@ -126,9 +133,12 @@ export default function SectorLandingForm({ sector, base, overrides, isEgypt, is
         `System: ${sysLabel}`,
         `Users: ${form.users}`,
         `Training days: ${breakdown.trainingDays}`,
-        `Price before discount: ${price(breakdown.regular)}`,
-        `Discount: ${breakdown.discountPercent}%`,
-        `Price after discount: ${price(breakdown.total)} / year`,
+        ...(hasDiscount
+          ? [
+            `Price before discount: ${price(breakdown.regular)}`,
+            `Price after discount: ${price(breakdown.total)} / year`,
+          ]
+          : [`Price: ${price(breakdown.total)} / year`]),
         "",
         "Price includes full cloud hosting.",
       ];
@@ -303,10 +313,12 @@ export default function SectorLandingForm({ sector, base, overrides, isEgypt, is
                 <Row label={isAr ? `التدريب (${breakdown.trainingDays} يوم)` : `Training (${breakdown.trainingDays} days)`} value={price(breakdown.trainingCost)} />
               </div>
               <div className="mt-3 border-t border-cta/20 pt-3 space-y-1.5">
-                <div className="flex items-center justify-between text-sm text-text-secondary">
-                  <span>{isAr ? "السعر العادي" : "Regular price"}</span>
-                  <span className="line-through">{price(breakdown.regular)}</span>
-                </div>
+                {hasDiscount && (
+                  <div className="flex items-center justify-between text-sm text-text-secondary">
+                    <span>{isAr ? "السعر العادي" : "Regular price"}</span>
+                    <span className="line-through">{price(breakdown.regular)}</span>
+                  </div>
+                )}
                 {breakdown.discountPercent > 0 && (
                   <div className="flex items-center justify-between text-sm text-emerald-600">
                     <span>{isAr ? `خصم أساسي (${breakdown.discountPercent}% عدا سعر المستخدم)` : `Base discount (${breakdown.discountPercent}%, excl. per-user)`}</span>
@@ -326,8 +338,8 @@ export default function SectorLandingForm({ sector, base, overrides, isEgypt, is
                       : `Add ${nextTier.usersNeeded} more user${nextTier.usersNeeded === 1 ? "" : "s"} to unlock +${nextTier.discountPercent}% off`}
                   </div>
                 )}
-                <div className="mt-1 flex items-center justify-between border-t border-cta/20 pt-2">
-                  <span className="font-bold text-text-primary">{isAr ? "السعر بعد الخصم" : "Price after discount"}</span>
+                <div className={cn("mt-1 flex items-center justify-between", hasDiscount && "border-t border-cta/20 pt-2")}>
+                  <span className="font-bold text-text-primary">{hasDiscount ? (isAr ? "السعر بعد الخصم" : "Price after discount") : (isAr ? "السعر" : "Price")}</span>
                   <div className="flex items-baseline gap-1.5">
                     <span className="text-2xl font-extrabold text-primary-600">{price(breakdown.total)}</span>
                     <span className="text-sm font-medium text-text-secondary">{isAr ? "/ سنة" : "/ year"}</span>

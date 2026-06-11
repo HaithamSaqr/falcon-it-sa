@@ -2,12 +2,13 @@
 
 import { useTranslations } from "next-intl";
 import { useSettings } from "@/components/providers/settings-provider";
+import { useWhatsAppMessage } from "@/hooks/use-whatsapp-message";
 
 export default function WhatsAppWidget() {
   const t = useTranslations();
   const { company } = useSettings();
 
-  const message = encodeURIComponent(t("common.whatsappMessage"));
+  const message = encodeURIComponent(useWhatsAppMessage());
   const href = `https://wa.me/${company.whatsapp}?text=${message}`;
 
   // Hidden on mobile — the mobile bottom bar already has a WhatsApp button.
