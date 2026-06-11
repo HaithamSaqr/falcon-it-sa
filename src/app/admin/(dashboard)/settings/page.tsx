@@ -16,6 +16,8 @@ export default function SettingsPage() {
   const [settings, setSettings] = useState<SiteSettings | null>(null);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [pwError, setPwError] = useState("");
 
   // Database connection (stored in db-config.json, editable here)
   const [conn, setConn] = useState<DbConn | null>(null);
@@ -170,6 +172,21 @@ export default function SettingsPage() {
 
   async function handleSave() {
     if (!settings) return;
+
+    // Guard the admin password change: require confirmation + min length.
+    const newPw = settings.security?.adminPassword?.trim() || "";
+    setPwError("");
+    if (newPw) {
+      if (newPw.length < 6) {
+        setPwError("Password must be at least 6 characters / كلمة المرور 6 أحرف على الأقل");
+        return;
+      }
+      if (newPw !== confirmPassword) {
+        setPwError("Passwords do not match / كلمتا المرور غير متطابقتين");
+        return;
+      }
+    }
+
     setSaving(true);
     setSaved(false);
     await fetch("/api/admin/settings", {
@@ -179,6 +196,9 @@ export default function SettingsPage() {
     });
     setSaving(false);
     setSaved(true);
+    setConfirmPassword("");
+    // Clear the typed password from local state after saving.
+    set("security.adminPassword", "");
     setTimeout(() => setSaved(false), 3000);
   }
 
@@ -556,14 +576,35 @@ export default function SettingsPage() {
         <h3 className="mb-4 text-sm font-semibold text-slate-700">Security & Rate Limiting</h3>
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
-            <label className={labelClasses}>Admin Password</label>
+            <label className={labelClasses}>New Admin Password</label>
             <input
               value={settings.security?.adminPassword || ""}
               onChange={(e) => set("security.adminPassword", e.target.value)}
               className={inputClasses}
               type="password"
               autoComplete="new-password"
+              placeholder="Leave blank to keep current"
             />
+          </div>
+          <div>
+            <label className={labelClasses}>Confirm New Password</label>
+            <input
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              className={inputClasses}
+              type="password"
+              autoComplete="new-password"
+              placeholder="Re-enter new password"
+            />
+          </div>
+          <div className="sm:col-span-2 -mt-1">
+            {pwError ? (
+              <p className="text-xs font-medium text-red-600">{pwError}</p>
+            ) : (
+              <p className="text-xs text-slate-400">
+                Changes the password for the current admin ({settings.security?.adminUsername || "admin"}). Min 6 characters. You stay logged in.
+              </p>
+            )}
           </div>
           <div>
             <label className={labelClasses}>JWT Secret</label>
