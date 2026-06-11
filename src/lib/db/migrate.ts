@@ -19,6 +19,7 @@ import {
   writeProducts,
   seedBrochures,
   backfillClientTags,
+  seedHome,
   countAdmins,
   createAdmin,
 } from "./store";
@@ -162,6 +163,9 @@ export async function ensureReady(pool: Pool): Promise<void> {
 
   // ── Default brochures for new products (only if not already present) ──
   await seedBrochures(pool, DEFAULT_BROCHURES);
+
+  // ── Home page content (cards + text + backfill new hero columns) ──
+  await seedHome(pool);
 
   // ── Client tags: create definitions for any tags already used by clients ──
   await backfillClientTags(pool);

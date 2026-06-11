@@ -202,7 +202,16 @@ CREATE TABLE IF NOT EXISTS hero_content (
   cta1_en      text NOT NULL DEFAULT '',
   cta1_ar      text NOT NULL DEFAULT '',
   cta2_en      text NOT NULL DEFAULT '',
-  cta2_ar      text NOT NULL DEFAULT ''
+  cta2_ar      text NOT NULL DEFAULT '',
+  eyebrow_en   text NOT NULL DEFAULT '',
+  eyebrow_ar   text NOT NULL DEFAULT '',
+  cta1_url     text NOT NULL DEFAULT '',
+  cta2_url     text NOT NULL DEFAULT '',
+  hero_image   text NOT NULL DEFAULT '',
+  trust1_en    text NOT NULL DEFAULT '',
+  trust1_ar    text NOT NULL DEFAULT '',
+  trust2_en    text NOT NULL DEFAULT '',
+  trust2_ar    text NOT NULL DEFAULT ''
 );
 
 -- Testimonials (one row each)
@@ -235,6 +244,26 @@ CREATE TABLE IF NOT EXISTS stats (
   label_en   text NOT NULL DEFAULT '',
   label_ar   text NOT NULL DEFAULT '',
   sort_order int  NOT NULL DEFAULT 0
+);
+
+-- Home page cards (Why-ERP-Fails + Why-Choose-Falcon). section discriminates the group.
+CREATE TABLE IF NOT EXISTS home_cards (
+  id         text PRIMARY KEY,
+  section    text NOT NULL,
+  icon       text NOT NULL DEFAULT '',
+  title_en   text NOT NULL DEFAULT '',
+  title_ar   text NOT NULL DEFAULT '',
+  desc_en    text NOT NULL DEFAULT '',
+  desc_ar    text NOT NULL DEFAULT '',
+  sort_order int  NOT NULL DEFAULT 0
+);
+CREATE INDEX IF NOT EXISTS home_cards_section_idx ON home_cards (section, sort_order);
+
+-- Home page bilingual text (section headings, CTA banner, newsletter). key/value_en/value_ar.
+CREATE TABLE IF NOT EXISTS home_text (
+  key       text PRIMARY KEY,
+  value_en  text NOT NULL DEFAULT '',
+  value_ar  text NOT NULL DEFAULT ''
 );
 
 -- Integrations (single row, id = 1)
@@ -288,6 +317,15 @@ ALTER TABLE pricing_base ADD COLUMN IF NOT EXISTS system_training_days jsonb NOT
 ALTER TABLE sector_pricing ADD COLUMN IF NOT EXISTS hosting_price numeric;
 ALTER TABLE sector_pricing ADD COLUMN IF NOT EXISTS discount_percent numeric;
 ALTER TABLE sector_pricing ADD COLUMN IF NOT EXISTS volume_discounts jsonb;
+ALTER TABLE hero_content ADD COLUMN IF NOT EXISTS eyebrow_en text NOT NULL DEFAULT '';
+ALTER TABLE hero_content ADD COLUMN IF NOT EXISTS eyebrow_ar text NOT NULL DEFAULT '';
+ALTER TABLE hero_content ADD COLUMN IF NOT EXISTS cta1_url text NOT NULL DEFAULT '';
+ALTER TABLE hero_content ADD COLUMN IF NOT EXISTS cta2_url text NOT NULL DEFAULT '';
+ALTER TABLE hero_content ADD COLUMN IF NOT EXISTS hero_image text NOT NULL DEFAULT '';
+ALTER TABLE hero_content ADD COLUMN IF NOT EXISTS trust1_en text NOT NULL DEFAULT '';
+ALTER TABLE hero_content ADD COLUMN IF NOT EXISTS trust1_ar text NOT NULL DEFAULT '';
+ALTER TABLE hero_content ADD COLUMN IF NOT EXISTS trust2_en text NOT NULL DEFAULT '';
+ALTER TABLE hero_content ADD COLUMN IF NOT EXISTS trust2_ar text NOT NULL DEFAULT '';
 `;
 
 export async function ensureSchema(pool: Pool): Promise<void> {

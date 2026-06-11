@@ -1,12 +1,12 @@
 import { setRequestLocale } from "next-intl/server";
+import { getHome } from "@/lib/data-store";
 import Hero from "@/components/sections/hero";
-import ComplianceBadges from "@/components/sections/compliance-badges";
-import PainPoints from "@/components/sections/pain-points";
-import FeatureShowcase from "@/components/sections/feature-showcase";
+import ClientsStrip from "@/components/sections/clients-strip";
+import WhyErpFails from "@/components/sections/why-erp-fails";
 import ProductTrio from "@/components/sections/product-trio";
+import WhyChooseFalcon from "@/components/sections/why-choose-falcon";
 import CtaBanner from "@/components/sections/cta-banner";
 import SectorsHome from "@/components/sections/sectors-home";
-import ClientsStrip from "@/components/sections/clients-strip";
 import StatsCounter from "@/components/sections/stats-counter";
 import Testimonials from "@/components/sections/testimonials";
 import Faq from "@/components/sections/faq";
@@ -20,20 +20,24 @@ export default async function HomePage({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
 
+  const isAr = locale === "ar";
+  const home = await getHome();
+  const L = (b: { en: string; ar: string }) => (isAr ? b.ar : b.en);
+
   return (
     <>
-      <Hero />
-      <ComplianceBadges />
-      <PainPoints />
-      <FeatureShowcase />
-      <ProductTrio />
-      <CtaBanner />
-      <SectorsHome />
-      <StatsCounter />
+      <Hero data={home.hero} isAr={isAr} />
       <ClientsStrip />
+      <WhyErpFails data={home.whyErpFails} isAr={isAr} />
+      <ProductTrio />
+      <WhyChooseFalcon data={home.whyChoose} isAr={isAr} />
+      <CtaBanner data={home.cta} isAr={isAr} />
+      {/* Sectors we serve — kept from the existing design */}
+      <SectorsHome />
+      <StatsCounter heading={L(home.stats.heading)} stats={home.stats.items} isAr={isAr} />
       <Testimonials />
       <Faq />
-      <Newsletter />
+      <Newsletter heading={L(home.newsletter.heading)} subtitle={L(home.newsletter.subtitle)} />
     </>
   );
 }

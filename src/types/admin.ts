@@ -65,6 +65,56 @@ export interface SiteContent {
   }>;
 }
 
+// ── Home Page Types ─────────────────────────────────────────────────
+export interface CtaLink {
+  label: BilingualText;
+  url: string;
+}
+
+export interface HomeHero {
+  eyebrow: BilingualText;
+  title: BilingualText;
+  subtitle: BilingualText;
+  cta1: CtaLink;
+  cta2: CtaLink;
+  trust1: BilingualText;
+  trust2: BilingualText;
+  image: string;
+}
+
+export interface HomeCard {
+  id: string;
+  icon: string;
+  title: BilingualText;
+  desc: BilingualText;
+}
+
+export interface HomeContent {
+  hero: HomeHero;
+  whyErpFails: {
+    label: BilingualText;
+    heading: BilingualText;
+    subheading: BilingualText;
+    cards: HomeCard[];
+  };
+  whyChoose: {
+    heading: BilingualText;
+    subheading: BilingualText;
+    cards: HomeCard[];
+  };
+  cta: {
+    headline: BilingualText;
+    subtitle: BilingualText;
+    cta1: CtaLink;
+    cta2: CtaLink;
+  };
+  stats: {
+    heading: BilingualText;
+    items: Array<{ value: number; suffix: string; label: BilingualText }>;
+  };
+  newsletter: { heading: BilingualText; subtitle: BilingualText };
+}
+
 // ── Settings Types ──────────────────────────────────────────────────
 export interface Branch {
   id: string;

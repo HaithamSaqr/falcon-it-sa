@@ -14,6 +14,7 @@ import type {
   PricingBase,
   Product,
   ProductBrochure,
+  HomeContent,
 } from "@/types/admin";
 import arMessages from "../../../messages/ar.json";
 import enMessages from "../../../messages/en.json";
@@ -40,6 +41,137 @@ export const DEFAULT_CONTENT: SiteContent = {
     { value: 5000, suffix: "+", label: { en: "Monthly users", ar: "مستخدم شهري" } },
     { value: 1000000, suffix: "+", label: { en: "Transactions processed", ar: "عملية محاسبية" } },
   ],
+};
+
+export const DEFAULT_HOME: HomeContent = {
+  hero: {
+    eyebrow: { en: "Best ERP Solution", ar: "أفضل حل لإدارة الأعمال" },
+    title: {
+      en: "Enterprise ERP Power. Half the Price. Built for the Middle East.",
+      ar: "قوة أنظمة ERP المؤسسية. بنصف التكلفة. مصمم للشرق الأوسط.",
+    },
+    subtitle: {
+      en: "ZATCA-compliant. Arabic-native. On-premise or Cloud. Go live in 4–8 weeks — not 6 months.",
+      ar: "متوافق مع هيئة الزكاة والضريبة. عربي بالكامل. محلي أو سحابي. ابدأ العمل خلال 4-8 أسابيع — وليس 6 أشهر.",
+    },
+    cta1: { label: { en: "Start Free Trial", ar: "ابدأ تجربتك المجانية" }, url: "/contact" },
+    cta2: { label: { en: "Book a Demo", ar: "احجز عرض تجريبي" }, url: "/demo" },
+    trust1: { en: "No credit card required", ar: "لا حاجة لبطاقة ائتمان" },
+    trust2: { en: "Money-back guarantee", ar: "ضمان استرداد الأموال" },
+    image: "/images/screens/falcon-desktop-hero.png",
+  },
+  whyErpFails: {
+    label: { en: "The hidden cost", ar: "التكلفة الخفية" },
+    heading: {
+      en: "You're overpaying for ERP and still not compliant",
+      ar: "تدفع أكثر من اللازم مقابل ERP — وبدون امتثال",
+    },
+    subheading: {
+      en: "Three reasons most Saudi businesses are paying for the wrong system.",
+      ar: "ثلاثة أسباب تجعل معظم الشركات السعودية تدفع لنظام لا يناسبها.",
+    },
+    cards: [
+      {
+        id: "wef-overpay",
+        icon: "💸",
+        title: { en: "You're overpaying for global ERP", ar: "أنت تدفع أكثر من اللازم لأنظمة ERP العالمية" },
+        desc: {
+          en: "SAP and Oracle can cost several times more than Odoo for the same core functions, with implementations that stretch 6–12 months before you see value. You're funding their brand, not your business.",
+          ar: "قد تكلف SAP وOracle أضعاف ما تكلفه Odoo لنفس الوظائف الأساسية، مع تنفيذ يمتد من 6 إلى 12 شهرًا قبل أن ترى أي قيمة. أنت تموّل علامتهم التجارية، لا أعمالك.",
+        },
+      },
+      {
+        id: "wef-zatca",
+        icon: "🛡️",
+        title: { en: "ZATCA is treated as an add-on", ar: "يُعامل امتثال هيئة الزكاة كإضافة لاحقة" },
+        desc: {
+          en: "Most ERPs bolt Fatoora e-invoicing on after the fact. With Phase 2 now mandatory for businesses over SAR 375,000 in turnover, a single non-compliant invoice is a penalty, not a software bug you can fix later.",
+          ar: "معظم أنظمة ERP تُلحق الفوترة الإلكترونية «فاتورة» بعد التنفيذ. ومع إلزامية المرحلة الثانية للمنشآت التي تتجاوز إيراداتها 375,000 ريال، فإن فاتورة واحدة غير ممتثلة تعني غرامة، لا خللاً برمجياً يمكن إصلاحه لاحقاً.",
+        },
+      },
+      {
+        id: "wef-data",
+        icon: "🔒",
+        title: { en: "Your data leaves the Kingdom", ar: "بياناتك تغادر المملكة" },
+        desc: {
+          en: "Cloud-only global ERPs store your financial data on servers outside Saudi Arabia. Under PDPL, that's not just a setting, it's a regulatory exposure most businesses don't realize they've accepted.",
+          ar: "أنظمة ERP السحابية العالمية تخزّن بياناتك المالية على خوادم خارج المملكة العربية السعودية. وبموجب نظام حماية البيانات الشخصية (PDPL)، هذا ليس مجرد إعداد، بل تعرّض تنظيمي لا تدركه معظم الشركات.",
+        },
+      },
+    ],
+  },
+  whyChoose: {
+    heading: { en: "Why businesses choose Falcon", ar: "لماذا تختار الشركات فالكون" },
+    subheading: {
+      en: "Enterprise-grade ERP, built for Saudi compliance — without the global price tag.",
+      ar: "نظام ERP بمستوى المؤسسات، مبني للامتثال السعودي — دون السعر العالمي.",
+    },
+    cards: [
+      {
+        id: "wc-zatca",
+        icon: "✅",
+        title: { en: "ZATCA Compliance", ar: "امتثال هيئة الزكاة (ZATCA)" },
+        desc: {
+          en: "Fatoora e-invoicing is part of how we implement Odoo, not bolted on later. You're Phase 2 ready before you go live.",
+          ar: "الفوترة الإلكترونية «فاتورة» جزء من طريقة تنفيذنا لـ Odoo، وليست إضافة لاحقة. تكون جاهزاً للمرحلة الثانية قبل الإطلاق.",
+        },
+      },
+      {
+        id: "wc-value",
+        icon: "💰",
+        title: { en: "Lower cost", ar: "تكلفة أقل" },
+        desc: {
+          en: "Built on Odoo: the modules global ERPs charge a premium for — accounting, inventory, sales, HR — at a fraction of the cost, live in weeks.",
+          ar: "مبني على Odoo: الوحدات التي تتقاضى عنها أنظمة ERP العالمية مبالغ كبيرة — المحاسبة والمخزون والمبيعات والموارد البشرية — بجزء بسيط من التكلفة، وتنطلق خلال أسابيع.",
+        },
+      },
+      {
+        id: "wc-data",
+        icon: "🇸🇦",
+        title: { en: "Sovereignty", ar: "السيادة على البيانات" },
+        desc: {
+          en: "We deploy so your financial data stays inside the Kingdom. PDPL compliance by default, not by accident.",
+          ar: "ننفّذ النظام بحيث تبقى بياناتك المالية داخل المملكة. امتثال نظام حماية البيانات (PDPL) افتراضياً، لا بالصدفة.",
+        },
+      },
+      {
+        id: "wc-partner",
+        icon: "🤝",
+        title: { en: "Official Odoo Partner", ar: "شريك Odoo الرسمي" },
+        desc: {
+          en: "An officially recognized Odoo partner, not a reseller — certified expertise and implementations done to standard.",
+          ar: "شريك Odoo معترف به رسمياً، لسنا موزعين — خبرة معتمدة وتنفيذ وفق المعايير.",
+        },
+      },
+    ],
+  },
+  cta: {
+    headline: {
+      en: "E-Invoicing built for MENA compliance.",
+      ar: "فوترة إلكترونية مصممة للامتثال في الشرق الأوسط.",
+    },
+    subtitle: {
+      en: "Join 500+ businesses already using Falcon ERP.",
+      ar: "انضم إلى أكثر من 500 شركة تستخدم فالكون ERP.",
+    },
+    cta1: { label: { en: "Get a Quote", ar: "اطلب عرض سعر" }, url: "/contact" },
+    cta2: { label: { en: "Book a Demo", ar: "احجز عرض تجريبي" }, url: "/demo" },
+  },
+  stats: {
+    heading: { en: "Falcon delivers excellence", ar: "فالكون شريك نجاحك وتميّزك" },
+    items: [
+      { value: 500, suffix: "+", label: { en: "SMEs served", ar: "شركة ومؤسسة" } },
+      { value: 5000, suffix: "+", label: { en: "Monthly users", ar: "مستخدم شهري" } },
+      { value: 1000000, suffix: "+", label: { en: "Transactions processed", ar: "عملية محاسبية" } },
+    ],
+  },
+  newsletter: {
+    heading: { en: "Subscribe to Our Newsletter", ar: "انضم إلى قائمة فالكون البريدية" },
+    subtitle: {
+      en: "Get ZATCA updates, ERP insights, and digital transformation news for MENA.",
+      ar: "احصل على تحديثات ZATCA ورؤى ERP وأخبار التحول الرقمي في الشرق الأوسط.",
+    },
+  },
 };
 
 export const DEFAULT_SETTINGS: SiteSettings = {

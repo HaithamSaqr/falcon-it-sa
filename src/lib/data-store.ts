@@ -26,6 +26,7 @@ import type {
   ClientTag,
   Product,
   ProductBrochure,
+  HomeContent,
 } from "@/types/admin";
 import { query, getPool } from "@/lib/db/pool";
 import { isInstalledSync } from "@/lib/db/config";
@@ -38,6 +39,7 @@ import {
   DEFAULT_SECTORS,
   DEFAULT_PRICING_BASE,
   DEFAULT_PRODUCTS,
+  DEFAULT_HOME,
 } from "@/lib/db/defaults";
 import * as store from "@/lib/db/store";
 
@@ -201,6 +203,19 @@ export async function getContent(): Promise<SiteContent> {
 
 export async function updateContent(content: SiteContent): Promise<void> {
   await store.writeContent(await getPool(), content);
+}
+
+export async function getHome(): Promise<HomeContent> {
+  if (!isInstalledSync()) return DEFAULT_HOME;
+  try {
+    return await store.readHome(await getPool());
+  } catch {
+    return DEFAULT_HOME;
+  }
+}
+
+export async function updateHome(content: HomeContent): Promise<void> {
+  await store.writeHome(await getPool(), content);
 }
 
 // ═══════════════════════════════════════════════════════════════════

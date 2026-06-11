@@ -11,7 +11,13 @@ import { newsletterSchema, type NewsletterData } from "@/lib/validations";
 import { api } from "@/lib/api-client";
 import { cn } from "@/lib/utils";
 
-export default function Newsletter() {
+export default function Newsletter({
+  heading,
+  subtitle,
+}: {
+  heading?: string;
+  subtitle?: string;
+} = {}) {
   const t = useTranslations("newsletter");
   const [submitted, setSubmitted] = useState(false);
 
@@ -33,7 +39,7 @@ export default function Newsletter() {
   return (
     <section className="bg-surface py-20 lg:py-28">
       <Container>
-        <SectionHeader title={t("heading")} subtitle={t("subtitle")} />
+        <SectionHeader title={heading || t("heading")} subtitle={subtitle || t("subtitle")} />
 
         <div className="mx-auto max-w-xl">
           {submitted ? (

@@ -24,6 +24,9 @@ import type {
   ClientTag,
   Product,
   ProductBrochure,
+  HomeContent,
+  HomeCard,
+  BilingualText,
 } from "@/types/admin";
 import {
   DEFAULT_SETTINGS,
@@ -31,6 +34,7 @@ import {
   DEFAULT_INTEGRATIONS,
   DEFAULT_SEO,
   DEFAULT_PRICING_BASE,
+  DEFAULT_HOME,
 } from "./defaults";
 
 function newId(prefix: string): string {
@@ -251,12 +255,172 @@ export async function writeContent(pool: Pool, c: SiteContent): Promise<void> {
       );
     }
 
+    // NOTE: stats are owned by the Home Page editor (writeHome), not here.
+
+    await client.query("COMMIT");
+  } catch (e) {
+    await client.query("ROLLBACK");
+    throw e;
+  } finally {
+    client.release();
+  }
+}
+
+// ── Home Page ───────────────────────────────────────────────────────
+function cardRow(r: Record<string, unknown>): HomeCard {
+  return {
+    id: r.id as string,
+    icon: (r.icon as string) || "",
+    title: { en: (r.title_en as string) || "", ar: (r.title_ar as string) || "" },
+    desc: { en: (r.desc_en as string) || "", ar: (r.desc_ar as string) || "" },
+  };
+}
+
+export async function readHome(pool: Pool): Promise<HomeContent> {
+  // Hero (extended hero_content row)
+  const heroRes = await pool.query(`SELECT * FROM hero_content WHERE id = 1`);
+  const h = heroRes.rows[0];
+  const hero: HomeContent["hero"] = h
+    ? {
+        eyebrow: { en: h.eyebrow_en || "", ar: h.eyebrow_ar || "" },
+        title: { en: h.title_en || "", ar: h.title_ar || "" },
+        subtitle: { en: h.subtitle_en || "", ar: h.subtitle_ar || "" },
+        cta1: { label: { en: h.cta1_en || "", ar: h.cta1_ar || "" }, url: h.cta1_url || "" },
+        cta2: { label: { en: h.cta2_en || "", ar: h.cta2_ar || "" }, url: h.cta2_url || "" },
+        trust1: { en: h.trust1_en || "", ar: h.trust1_ar || "" },
+        trust2: { en: h.trust2_en || "", ar: h.trust2_ar || "" },
+        image: h.hero_image || "",
+      }
+    : DEFAULT_HOME.hero;
+
+  // Cards
+  const cardsRes = await pool.query(`SELECT * FROM home_cards ORDER BY section, sort_order, id`);
+  const wefCards = cardsRes.rows.filter((r) => r.section === "why_erp_fails").map(cardRow);
+  const wcCards = cardsRes.rows.filter((r) => r.section === "why_choose").map(cardRow);
+
+  // Text map
+  const txtRes = await pool.query(`SELECT * FROM home_text`);
+  const T: Record<string, BilingualText> = {};
+  for (const r of txtRes.rows) T[r.key] = { en: r.value_en || "", ar: r.value_ar || "" };
+  const g = (k: string, fb: BilingualText): BilingualText => T[k] ?? fb;
+  const url = (k: string, fb: string): string => T[k]?.en ?? fb;
+  const d = DEFAULT_HOME;
+
+  // Stats items live in the dedicated `stats` table.
+  const statsRes = await pool.query(`SELECT * FROM stats ORDER BY sort_order, id`);
+  const statItems = statsRes.rows.map((r) => ({
+    value: Number(r.value),
+    suffix: r.suffix || "",
+    label: { en: r.label_en || "", ar: r.label_ar || "" },
+  }));
+
+  return {
+    hero,
+    whyErpFails: {
+      label: g("wef.label", d.whyErpFails.label),
+      heading: g("wef.heading", d.whyErpFails.heading),
+      subheading: g("wef.subheading", d.whyErpFails.subheading),
+      cards: wefCards.length ? wefCards : d.whyErpFails.cards,
+    },
+    whyChoose: {
+      heading: g("wc.heading", d.whyChoose.heading),
+      subheading: g("wc.subheading", d.whyChoose.subheading),
+      cards: wcCards.length ? wcCards : d.whyChoose.cards,
+    },
+    cta: {
+      headline: g("cta.headline", d.cta.headline),
+      subtitle: g("cta.subtitle", d.cta.subtitle),
+      cta1: { label: g("cta.cta1Label", d.cta.cta1.label), url: url("cta.cta1Url", d.cta.cta1.url) },
+      cta2: { label: g("cta.cta2Label", d.cta.cta2.label), url: url("cta.cta2Url", d.cta.cta2.url) },
+    },
+    stats: {
+      heading: g("stats.heading", d.stats.heading),
+      items: statItems.length ? statItems : d.stats.items,
+    },
+    newsletter: {
+      heading: g("nl.heading", d.newsletter.heading),
+      subtitle: g("nl.subtitle", d.newsletter.subtitle),
+    },
+  };
+}
+
+export async function writeHome(pool: Pool, c: HomeContent): Promise<void> {
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+
+    await client.query(
+      `INSERT INTO hero_content (id, title_en, title_ar, subtitle_en, subtitle_ar,
+         cta1_en, cta1_ar, cta2_en, cta2_ar, eyebrow_en, eyebrow_ar,
+         cta1_url, cta2_url, hero_image, trust1_en, trust1_ar, trust2_en, trust2_ar)
+       VALUES (1,$1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)
+       ON CONFLICT (id) DO UPDATE SET
+         title_en=EXCLUDED.title_en, title_ar=EXCLUDED.title_ar,
+         subtitle_en=EXCLUDED.subtitle_en, subtitle_ar=EXCLUDED.subtitle_ar,
+         cta1_en=EXCLUDED.cta1_en, cta1_ar=EXCLUDED.cta1_ar,
+         cta2_en=EXCLUDED.cta2_en, cta2_ar=EXCLUDED.cta2_ar,
+         eyebrow_en=EXCLUDED.eyebrow_en, eyebrow_ar=EXCLUDED.eyebrow_ar,
+         cta1_url=EXCLUDED.cta1_url, cta2_url=EXCLUDED.cta2_url,
+         hero_image=EXCLUDED.hero_image,
+         trust1_en=EXCLUDED.trust1_en, trust1_ar=EXCLUDED.trust1_ar,
+         trust2_en=EXCLUDED.trust2_en, trust2_ar=EXCLUDED.trust2_ar`,
+      [
+        c.hero.title.en, c.hero.title.ar, c.hero.subtitle.en, c.hero.subtitle.ar,
+        c.hero.cta1.label.en, c.hero.cta1.label.ar, c.hero.cta2.label.en, c.hero.cta2.label.ar,
+        c.hero.eyebrow.en, c.hero.eyebrow.ar, c.hero.cta1.url, c.hero.cta2.url, c.hero.image,
+        c.hero.trust1.en, c.hero.trust1.ar, c.hero.trust2.en, c.hero.trust2.ar,
+      ]
+    );
+
+    await client.query("DELETE FROM home_cards");
+    const insertCards = async (section: string, cards: HomeCard[]) => {
+      for (let i = 0; i < cards.length; i++) {
+        const card = cards[i];
+        await client.query(
+          `INSERT INTO home_cards (id, section, icon, title_en, title_ar, desc_en, desc_ar, sort_order)
+           VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`,
+          [card.id || newId("card"), section, card.icon ?? "", card.title?.en ?? "", card.title?.ar ?? "",
+           card.desc?.en ?? "", card.desc?.ar ?? "", i]
+        );
+      }
+    };
+    await insertCards("why_erp_fails", c.whyErpFails.cards);
+    await insertCards("why_choose", c.whyChoose.cards);
+
+    const setText = async (key: string, v: BilingualText) =>
+      client.query(
+        `INSERT INTO home_text (key, value_en, value_ar) VALUES ($1,$2,$3)
+         ON CONFLICT (key) DO UPDATE SET value_en=EXCLUDED.value_en, value_ar=EXCLUDED.value_ar`,
+        [key, v.en ?? "", v.ar ?? ""]
+      );
+    const setUrl = async (key: string, u: string) =>
+      client.query(
+        `INSERT INTO home_text (key, value_en, value_ar) VALUES ($1,$2,'')
+         ON CONFLICT (key) DO UPDATE SET value_en=EXCLUDED.value_en`,
+        [key, u ?? ""]
+      );
+
+    await setText("wef.label", c.whyErpFails.label);
+    await setText("wef.heading", c.whyErpFails.heading);
+    await setText("wef.subheading", c.whyErpFails.subheading);
+    await setText("wc.heading", c.whyChoose.heading);
+    await setText("wc.subheading", c.whyChoose.subheading);
+    await setText("cta.headline", c.cta.headline);
+    await setText("cta.subtitle", c.cta.subtitle);
+    await setText("cta.cta1Label", c.cta.cta1.label);
+    await setUrl("cta.cta1Url", c.cta.cta1.url);
+    await setText("cta.cta2Label", c.cta.cta2.label);
+    await setUrl("cta.cta2Url", c.cta.cta2.url);
+    await setText("stats.heading", c.stats.heading);
+    await setText("nl.heading", c.newsletter.heading);
+    await setText("nl.subtitle", c.newsletter.subtitle);
+
+    // Stats items (dedicated table).
     await client.query("DELETE FROM stats");
-    for (let i = 0; i < c.stats.length; i++) {
-      const st = c.stats[i];
+    for (let i = 0; i < c.stats.items.length; i++) {
+      const st = c.stats.items[i];
       await client.query(
-        `INSERT INTO stats (value, suffix, label_en, label_ar, sort_order)
-         VALUES ($1,$2,$3,$4,$5)`,
+        `INSERT INTO stats (value, suffix, label_en, label_ar, sort_order) VALUES ($1,$2,$3,$4,$5)`,
         [Math.round(st.value) || 0, st.suffix ?? "", st.label?.en ?? "", st.label?.ar ?? "", i]
       );
     }
@@ -268,6 +432,92 @@ export async function writeContent(pool: Pool, c: SiteContent): Promise<void> {
   } finally {
     client.release();
   }
+}
+
+/**
+ * Idempotent seed for the home-page content. Safe to run on every boot:
+ * seeds cards/text only when missing and backfills the new hero columns
+ * (eyebrow / cta urls / image / trust) only when blank — never clobbers
+ * existing admin-edited values.
+ */
+export async function seedHome(pool: Pool): Promise<void> {
+  const d = DEFAULT_HOME;
+
+  // 1) Cards — seed only if the table is empty.
+  const cardsCount = await pool.query(`SELECT count(*)::int AS n FROM home_cards`);
+  if (cardsCount.rows[0].n === 0) {
+    const all = [
+      ...d.whyErpFails.cards.map((c) => ({ c, section: "why_erp_fails" })),
+      ...d.whyChoose.cards.map((c) => ({ c, section: "why_choose" })),
+    ];
+    for (let i = 0; i < all.length; i++) {
+      const { c, section } = all[i];
+      await pool.query(
+        `INSERT INTO home_cards (id, section, icon, title_en, title_ar, desc_en, desc_ar, sort_order)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`,
+        [c.id || newId("card"), section, c.icon, c.title.en, c.title.ar, c.desc.en, c.desc.ar,
+         section === "why_choose" ? i - d.whyErpFails.cards.length : i]
+      );
+    }
+  }
+
+  // 2) Text — insert missing keys only (keeps any admin edits).
+  const texts: [string, string, string][] = [
+    ["wef.label", d.whyErpFails.label.en, d.whyErpFails.label.ar],
+    ["wef.heading", d.whyErpFails.heading.en, d.whyErpFails.heading.ar],
+    ["wef.subheading", d.whyErpFails.subheading.en, d.whyErpFails.subheading.ar],
+    ["wc.heading", d.whyChoose.heading.en, d.whyChoose.heading.ar],
+    ["wc.subheading", d.whyChoose.subheading.en, d.whyChoose.subheading.ar],
+    ["cta.headline", d.cta.headline.en, d.cta.headline.ar],
+    ["cta.subtitle", d.cta.subtitle.en, d.cta.subtitle.ar],
+    ["cta.cta1Label", d.cta.cta1.label.en, d.cta.cta1.label.ar],
+    ["cta.cta1Url", d.cta.cta1.url, ""],
+    ["cta.cta2Label", d.cta.cta2.label.en, d.cta.cta2.label.ar],
+    ["cta.cta2Url", d.cta.cta2.url, ""],
+    ["stats.heading", d.stats.heading.en, d.stats.heading.ar],
+    ["nl.heading", d.newsletter.heading.en, d.newsletter.heading.ar],
+    ["nl.subtitle", d.newsletter.subtitle.en, d.newsletter.subtitle.ar],
+  ];
+  for (const [key, en, ar] of texts) {
+    await pool.query(
+      `INSERT INTO home_text (key, value_en, value_ar) VALUES ($1,$2,$3) ON CONFLICT (key) DO NOTHING`,
+      [key, en, ar]
+    );
+  }
+
+  // 3) Backfill the new hero columns only where blank.
+  const h = d.hero;
+  await pool.query(
+    `UPDATE hero_content SET
+       eyebrow_en = CASE WHEN eyebrow_en = '' THEN $1 ELSE eyebrow_en END,
+       eyebrow_ar = CASE WHEN eyebrow_ar = '' THEN $2 ELSE eyebrow_ar END,
+       cta1_url   = CASE WHEN cta1_url   = '' THEN $3 ELSE cta1_url   END,
+       cta2_url   = CASE WHEN cta2_url   = '' THEN $4 ELSE cta2_url   END,
+       hero_image = CASE WHEN hero_image = '' THEN $5 ELSE hero_image END,
+       trust1_en  = CASE WHEN trust1_en  = '' THEN $6 ELSE trust1_en  END,
+       trust1_ar  = CASE WHEN trust1_ar  = '' THEN $7 ELSE trust1_ar  END,
+       trust2_en  = CASE WHEN trust2_en  = '' THEN $8 ELSE trust2_en  END,
+       trust2_ar  = CASE WHEN trust2_ar  = '' THEN $9 ELSE trust2_ar  END
+     WHERE id = 1`,
+    [h.eyebrow.en, h.eyebrow.ar, h.cta1.url, h.cta2.url, h.image,
+     h.trust1.en, h.trust1.ar, h.trust2.en, h.trust2.ar]
+  );
+
+  // Also backfill the hero text itself if the row was somehow empty.
+  await pool.query(
+    `UPDATE hero_content SET
+       title_en    = CASE WHEN title_en = '' THEN $1 ELSE title_en END,
+       title_ar    = CASE WHEN title_ar = '' THEN $2 ELSE title_ar END,
+       subtitle_en = CASE WHEN subtitle_en = '' THEN $3 ELSE subtitle_en END,
+       subtitle_ar = CASE WHEN subtitle_ar = '' THEN $4 ELSE subtitle_ar END,
+       cta1_en     = CASE WHEN cta1_en = '' THEN $5 ELSE cta1_en END,
+       cta1_ar     = CASE WHEN cta1_ar = '' THEN $6 ELSE cta1_ar END,
+       cta2_en     = CASE WHEN cta2_en = '' THEN $7 ELSE cta2_en END,
+       cta2_ar     = CASE WHEN cta2_ar = '' THEN $8 ELSE cta2_ar END
+     WHERE id = 1`,
+    [h.title.en, h.title.ar, h.subtitle.en, h.subtitle.ar,
+     h.cta1.label.en, h.cta1.label.ar, h.cta2.label.en, h.cta2.label.ar]
+  );
 }
 
 // ── Integrations ────────────────────────────────────────────────────

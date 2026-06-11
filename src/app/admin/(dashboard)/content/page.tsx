@@ -3,11 +3,11 @@
 import { useEffect, useState } from "react";
 import type { SiteContent } from "@/types/admin";
 
-type Tab = "hero" | "testimonials" | "faqs";
+type Tab = "testimonials" | "faqs";
 
 export default function ContentPage() {
   const [content, setContent] = useState<SiteContent | null>(null);
-  const [activeTab, setActiveTab] = useState<Tab>("hero");
+  const [activeTab, setActiveTab] = useState<Tab>("testimonials");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
@@ -38,7 +38,6 @@ export default function ContentPage() {
   }
 
   const tabs: { key: Tab; label: string }[] = [
-    { key: "hero", label: "Hero Section" },
     { key: "testimonials", label: "Testimonials" },
     { key: "faqs", label: "FAQs" },
   ];
@@ -68,83 +67,6 @@ export default function ContentPage() {
 
       {/* Content */}
       <div className="rounded-xl border border-slate-200 bg-white p-6">
-        {/* Hero */}
-        {activeTab === "hero" && (
-          <div className="space-y-6">
-            <h3 className="text-sm font-semibold text-slate-700">Hero Section (English)</h3>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div>
-                <label className={labelClasses}>Title</label>
-                <input
-                  value={content.hero.en.title}
-                  onChange={(e) => setContent({ ...content, hero: { ...content.hero, en: { ...content.hero.en, title: e.target.value } } })}
-                  className={inputClasses}
-                />
-              </div>
-              <div>
-                <label className={labelClasses}>Subtitle</label>
-                <input
-                  value={content.hero.en.subtitle}
-                  onChange={(e) => setContent({ ...content, hero: { ...content.hero, en: { ...content.hero.en, subtitle: e.target.value } } })}
-                  className={inputClasses}
-                />
-              </div>
-              <div>
-                <label className={labelClasses}>CTA 1 Text</label>
-                <input
-                  value={content.hero.en.cta1Text}
-                  onChange={(e) => setContent({ ...content, hero: { ...content.hero, en: { ...content.hero.en, cta1Text: e.target.value } } })}
-                  className={inputClasses}
-                />
-              </div>
-              <div>
-                <label className={labelClasses}>CTA 2 Text</label>
-                <input
-                  value={content.hero.en.cta2Text}
-                  onChange={(e) => setContent({ ...content, hero: { ...content.hero, en: { ...content.hero.en, cta2Text: e.target.value } } })}
-                  className={inputClasses}
-                />
-              </div>
-            </div>
-
-            <h3 className="mt-8 text-sm font-semibold text-slate-700">Hero Section (Arabic)</h3>
-            <div dir="rtl" className="grid gap-4 sm:grid-cols-2">
-              <div>
-                <label className={`${labelClasses} text-right`}>العنوان</label>
-                <input
-                  value={content.hero.ar.title}
-                  onChange={(e) => setContent({ ...content, hero: { ...content.hero, ar: { ...content.hero.ar, title: e.target.value } } })}
-                  className={inputClasses}
-                />
-              </div>
-              <div>
-                <label className={`${labelClasses} text-right`}>العنوان الفرعي</label>
-                <input
-                  value={content.hero.ar.subtitle}
-                  onChange={(e) => setContent({ ...content, hero: { ...content.hero, ar: { ...content.hero.ar, subtitle: e.target.value } } })}
-                  className={inputClasses}
-                />
-              </div>
-              <div>
-                <label className={`${labelClasses} text-right`}>زر 1</label>
-                <input
-                  value={content.hero.ar.cta1Text}
-                  onChange={(e) => setContent({ ...content, hero: { ...content.hero, ar: { ...content.hero.ar, cta1Text: e.target.value } } })}
-                  className={inputClasses}
-                />
-              </div>
-              <div>
-                <label className={`${labelClasses} text-right`}>زر 2</label>
-                <input
-                  value={content.hero.ar.cta2Text}
-                  onChange={(e) => setContent({ ...content, hero: { ...content.hero, ar: { ...content.hero.ar, cta2Text: e.target.value } } })}
-                  className={inputClasses}
-                />
-              </div>
-            </div>
-          </div>
-        )}
-
         {/* FAQs */}
         {activeTab === "faqs" && (
           <div className="space-y-4">

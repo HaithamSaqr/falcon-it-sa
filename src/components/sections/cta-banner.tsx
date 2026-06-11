@@ -1,43 +1,36 @@
-import { useTranslations } from "next-intl";
 import Button from "@/components/ui/button";
 import Container from "@/components/ui/container";
+import type { HomeContent } from "@/types/admin";
 
-export default function CtaBanner() {
-  const t = useTranslations("ctaBanner");
+export default function CtaBanner({
+  data,
+  isAr,
+}: {
+  data: HomeContent["cta"];
+  isAr: boolean;
+}) {
+  const L = (b: { en: string; ar: string }) => (isAr ? b.ar : b.en);
 
   return (
     <section className="bg-dark py-20 lg:py-28">
       <Container>
         <div className="text-center">
-          <h2 className="text-white">{t("headline")}</h2>
-          <p className="mx-auto mt-4 max-w-2xl text-lg text-text-on-dark/70">
-            {t("subtitle")}
-          </p>
+          <h2 className="text-white">{L(data.headline)}</h2>
+          {L(data.subtitle).trim() && (
+            <p className="mx-auto mt-4 max-w-2xl text-lg text-text-on-dark/70">{L(data.subtitle)}</p>
+          )}
 
-          {/* CTAs */}
           <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
-            <Button variant="cta" size="lg" href="/contact">
-              {t("ctaPrimary")}
-            </Button>
-            <Button variant="dark-outline" size="lg" href="/demo">
-              {t("ctaSecondary")}
-            </Button>
-          </div>
-
-          {/* Trust micro-copy */}
-          <div className="mt-6 flex flex-col items-center gap-2 text-sm text-text-on-dark/60 sm:flex-row sm:justify-center sm:gap-6">
-            <span className="flex items-center gap-1.5">
-              <svg className="h-4 w-4 text-cta" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-              </svg>
-              {t("trustNoCreditCard")}
-            </span>
-            <span className="flex items-center gap-1.5">
-              <svg className="h-4 w-4 text-cta" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-              </svg>
-              {t("trustMoneyBack")}
-            </span>
+            {L(data.cta1.label).trim() && (
+              <Button variant="cta" size="lg" href={data.cta1.url || "/contact"}>
+                {L(data.cta1.label)}
+              </Button>
+            )}
+            {L(data.cta2.label).trim() && (
+              <Button variant="dark-outline" size="lg" href={data.cta2.url || "/demo"}>
+                {L(data.cta2.label)}
+              </Button>
+            )}
           </div>
         </div>
       </Container>

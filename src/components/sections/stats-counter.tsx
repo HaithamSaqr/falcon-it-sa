@@ -1,24 +1,31 @@
-import { useTranslations } from "next-intl";
 import Container from "@/components/ui/container";
 import SectionHeader from "@/components/shared/section-header";
 import AnimatedCounter from "@/components/shared/animated-counter";
-import { STATS } from "@/lib/constants";
+import type { SiteContent } from "@/types/admin";
 
-export default function StatsCounter() {
-  const t = useTranslations("stats");
+export default function StatsCounter({
+  heading,
+  stats,
+  isAr,
+}: {
+  heading: string;
+  stats: SiteContent["stats"];
+  isAr: boolean;
+}) {
+  if (!stats.length) return null;
 
   return (
     <section className="bg-surface py-20 lg:py-28">
       <Container>
-        <SectionHeader title={t("heading")} />
+        {heading.trim() && <SectionHeader title={heading} />}
 
         <div className="grid grid-cols-1 gap-8 sm:grid-cols-3">
-          {STATS.map((stat) => (
+          {stats.map((stat, i) => (
             <AnimatedCounter
-              key={stat.key}
+              key={i}
               value={stat.value}
               suffix={stat.suffix}
-              label={t(stat.key)}
+              label={isAr ? stat.label.ar : stat.label.en}
             />
           ))}
         </div>
