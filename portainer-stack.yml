@@ -1,0 +1,94 @@
+# ───────────────────────────────────────────────────────────────────────────
+# Falcon IT — Portainer stack (app + PostgreSQL on one private network)
+#
+# Deploy:
+#   1) Build the image on the server (amd64):  docker build -t falcon-it:latest .
+#      (or use the `build:` block below if deploying this stack from a Git repo)
+#   2) Portainer → Stacks → Add stack → paste this file.
+#   3) In "Environment variables" set:  DB_PASSWORD = <a strong password>
+#   4) Deploy, then open  http://<server-ip>:3001/setup
+#      The wizard is pre-filled (Host = db). Enter the SAME DB_PASSWORD and
+#      create the admin account. Done — config persists in the data volume.
+# ───────────────────────────────────────────────────────────────────────────
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: falcon-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: falcon
+      POSTGRES_USER: falcon
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD in the stack env}
+      # keeps the DB timezone predictable
+      TZ: Asia/Riyadh
+    # Performance tuning — adjust to your server's RAM (these suit ~1–2 GB).
+    command:
+      - "postgres"
+      - "-c"
+      - "max_connections=100"
+      - "-c"
+      - "shared_buffers=256MB"
+      - "-c"
+      - "effective_cache_size=512MB"
+      - "-c"
+      - "work_mem=8MB"
+      - "-c"
+      - "maintenance_work_mem=64MB"
+      - "-c"
+      - "synchronous_commit=off"   # faster writes; tiny durability trade-off on crash
+    volumes:
+      - falcon-db-data:/var/lib/postgresql/data
+    networks:
+      - falcon-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U falcon -d falcon -h 127.0.0.1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  app:
+    image: falcon-it:latest
+    # ── Alternative: let Portainer build the image (Git-repo stacks only) ──
+    # build:
+    #   context: .
+    #   args:
+    #     NEXT_PUBLIC_SITE_URL: "https://falcon-it.sa"
+    #     NEXT_PUBLIC_WHATSAPP_NUMBER: "966568406006"
+    container_name: falcon-app
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "3001:3000"
+    environment:
+      NODE_ENV: production
+      TZ: Asia/Riyadh
+      # Pre-fill the first-run setup wizard. Host MUST be the db service name.
+      PGHOST: db
+      PGPORT: "5432"
+      PGDATABASE: falcon
+      PGUSER: falcon
+      PGPASSWORD: ${DB_PASSWORD:?set DB_PASSWORD in the stack env}
+    volumes:
+      # Persists db-config.json + uploaded images across restarts/updates.
+      - falcon-app-data:/app/data
+    networks:
+      - falcon-net
+    healthcheck:
+      # Hits a public endpoint that returns 200 even before the wizard runs.
+      test: ["CMD", "node", "-e", "require('http').get('http://127.0.0.1:3000/api/settings/public',r=>process.exit(r.statusCode<400?0:1)).on('error',()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+volumes:
+  falcon-db-data:
+  falcon-app-data:
+
+networks:
+  falcon-net:
+    driver: bridge
