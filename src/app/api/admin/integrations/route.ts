@@ -20,7 +20,11 @@ export async function GET() {
     ...settings,
     odoo: {
       ...settings.odoo,
-      password: maskSecret(settings.odoo.password),
+      apiKey: maskSecret(settings.odoo.apiKey),
+    },
+    ai: {
+      ...settings.ai,
+      apiKey: maskSecret(settings.ai.apiKey),
     },
     email: {
       ...settings.email,
@@ -46,8 +50,11 @@ export async function PUT(request: NextRequest) {
   // Preserve existing secrets if masked values are sent back
   const current = await getIntegrations();
 
-  if (body.odoo?.password?.startsWith("••••")) {
-    body.odoo.password = current.odoo.password;
+  if (body.odoo?.apiKey?.startsWith("••••")) {
+    body.odoo.apiKey = current.odoo.apiKey;
+  }
+  if (body.ai?.apiKey?.startsWith("••••")) {
+    body.ai.apiKey = current.ai.apiKey;
   }
   if (body.email?.apiKey?.startsWith("••••")) {
     body.email.apiKey = current.email.apiKey;

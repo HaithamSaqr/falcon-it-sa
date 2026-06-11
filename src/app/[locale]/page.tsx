@@ -6,7 +6,8 @@ import PainPoints from "@/components/sections/pain-points";
 import FeatureShowcase from "@/components/sections/feature-showcase";
 import ProductTrio from "@/components/sections/product-trio";
 import CtaBanner from "@/components/sections/cta-banner";
-import IndustryGrid from "@/components/sections/industry-grid";
+import SectorsHome from "@/components/sections/sectors-home";
+import ClientsStrip from "@/components/sections/clients-strip";
 import StatsCounter from "@/components/sections/stats-counter";
 import Testimonials from "@/components/sections/testimonials";
 import Faq from "@/components/sections/faq";
@@ -29,8 +30,9 @@ export default async function HomePage({ params }: Props) {
       <FeatureShowcase />
       <ProductTrio />
       <CtaBanner />
-      <IndustryGrid />
+      <SectorsHome />
       <StatsCounter />
+      <ClientsStrip />
       <Testimonials />
       <Faq />
       <Newsletter />

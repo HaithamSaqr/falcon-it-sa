@@ -5,6 +5,7 @@ import type { IntegrationSettings } from "@/types/admin";
 
 const TABS = [
   { key: "odoo", label: "Odoo CRM" },
+  { key: "ai", label: "AI Assistant" },
   { key: "calendar", label: "Calendar" },
   { key: "helpdesk", label: "Helpdesk Portal" },
   { key: "email", label: "Email" },
@@ -146,7 +147,7 @@ export default function IntegrationsPage() {
               <Field label="Odoo URL" value={settings.odoo.url} onChange={(v) => update("odoo", "url", v)} placeholder="https://erp.falcon-v.com" />
               <Field label="Database" value={settings.odoo.db} onChange={(v) => update("odoo", "db", v)} placeholder="falcon_production" />
               <Field label="Username" value={settings.odoo.username} onChange={(v) => update("odoo", "username", v)} placeholder="api@falcon-v.com" />
-              <Field label="Password" value={settings.odoo.password} onChange={(v) => update("odoo", "password", v)} type="password" placeholder="••••••••" />
+              <Field label="API Key" value={settings.odoo.apiKey} onChange={(v) => update("odoo", "apiKey", v)} type="password" placeholder="Odoo API Key" />
             </div>
 
             <div className="mt-6 flex items-center gap-4">
@@ -171,6 +172,47 @@ export default function IntegrationsPage() {
                   </span>
                 </span>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── AI Assistant Tab ── */}
+      {activeTab === "ai" && (
+        <div className="space-y-6">
+          <div className="rounded-xl border border-slate-200 bg-white p-6">
+            <div className="mb-6 flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-semibold text-slate-900">AI Assistant Server</h3>
+                <p className="text-sm text-slate-500">
+                  Connect your AI model server. Used by the smart assistant / chatbot on sector
+                  landing pages.
+                </p>
+              </div>
+              <label className="flex cursor-pointer items-center gap-3">
+                <input
+                  type="checkbox"
+                  checked={settings.ai.enabled}
+                  onChange={(e) => update("ai", "enabled", e.target.checked)}
+                  className="h-4 w-4 rounded border-slate-300 text-cyan-500 focus:ring-cyan-500"
+                />
+                <span className="text-sm text-slate-700">Enabled</span>
+              </label>
+            </div>
+            <div className="grid grid-cols-1 gap-4">
+              <Field
+                label="AI Server URL"
+                value={settings.ai.serverUrl}
+                onChange={(v) => update("ai", "serverUrl", v)}
+                placeholder="https://ai.falcon-v.com/api"
+              />
+              <Field
+                label="API Key (optional)"
+                value={settings.ai.apiKey}
+                onChange={(v) => update("ai", "apiKey", v)}
+                type="password"
+                placeholder="Bearer token / API key"
+              />
             </div>
           </div>
         </div>

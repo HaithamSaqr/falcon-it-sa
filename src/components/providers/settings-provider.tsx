@@ -15,8 +15,16 @@ export interface PublicBranch {
   phone: string;
 }
 
+export interface PublicFooterLink {
+  id: string;
+  section: string;
+  label: BilingualText;
+  url: string;
+}
+
 interface PublicSettings {
   gulfOnly: boolean;
+  loginUrl: string;
   company: {
     name: { en: string; ar: string };
     email: string;
@@ -30,12 +38,15 @@ interface PublicSettings {
     facebook: string;
     instagram: string;
     youtube: string;
+    tiktok: string;
   };
+  footerLinks: PublicFooterLink[];
 }
 
 // Default from constants (used before API response arrives)
 const DEFAULT_SETTINGS: PublicSettings = {
   gulfOnly: false,
+  loginUrl: "https://falcon-valley.com",
   company: {
     name: COMPANY.name as unknown as { en: string; ar: string },
     email: COMPANY.email,
@@ -43,7 +54,8 @@ const DEFAULT_SETTINGS: PublicSettings = {
     whatsapp: COMPANY.whatsapp,
     branches: COMPANY.branches as unknown as PublicBranch[],
   },
-  social: COMPANY.social as unknown as PublicSettings["social"],
+  social: { ...(COMPANY.social as unknown as PublicSettings["social"]), tiktok: "" },
+  footerLinks: [],
 };
 
 const SettingsContext = createContext<PublicSettings>(DEFAULT_SETTINGS);

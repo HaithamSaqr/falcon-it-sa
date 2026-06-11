@@ -12,20 +12,21 @@ export async function POST(request: NextRequest) {
   const body = await request.json().catch(() => null);
   if (!body) return jsonError("Invalid body", 400);
 
-  const { url, db, username, password } = body;
+  const { url, db, username } = body;
+  const apiKey = body.apiKey ?? body.password;
 
-  if (!url || !db || !username || !password) {
+  if (!url || !db || !username || !apiKey) {
     return jsonError("All Odoo fields are required", 400);
   }
 
-  // If password is masked, use stored password
-  let actualPassword = password;
-  if (password.startsWith("••••")) {
+  // If the API key is masked, use the stored one.
+  let actualKey = apiKey;
+  if (String(apiKey).startsWith("••••")) {
     const current = await getIntegrations();
-    actualPassword = current.odoo.password;
+    actualKey = current.odoo.apiKey;
   }
 
-  const result = await testOdooConnection(url, db, username, actualPassword);
+  const result = await testOdooConnection(url, db, username, actualKey);
 
   // Update last test result
   const integrations = await getIntegrations();

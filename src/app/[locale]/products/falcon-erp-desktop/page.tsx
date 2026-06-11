@@ -4,7 +4,7 @@ import Container from "@/components/ui/container";
 import Button from "@/components/ui/button";
 import Card from "@/components/ui/card";
 import SectionHeader from "@/components/shared/section-header";
-import IndustryGrid from "@/components/sections/industry-grid";
+import BrochureButton from "@/components/sections/brochure-button";
 
 type Props = {
   params: Promise<{ locale: string }>;
@@ -411,15 +411,6 @@ function FalconErpDesktopContent({ isArabic }: { isArabic: boolean }) {
         </Container>
       </section>
 
-      {/* Section 6: Who It's For */}
-      <IndustryGrid
-        variant="compact"
-        eyebrow={tp("whoItsForEyebrow")}
-        title={tp("whoItsForTitle")}
-        ctaText={tp("whoItsForCtaText")}
-        ctaHref="/contact"
-      />
-
       {/* NEW: Specific Product FAQ */}
       <section className="py-20 bg-gray-50 border-t border-b border-gray-100">
         <Container>
@@ -545,6 +536,8 @@ function FalconErpDesktopContent({ isArabic }: { isArabic: boolean }) {
           </div>
         </Container>
       </section>
+
+      <BrochureButton slug="falcon-erp-desktop" />
     </>
   );
 }

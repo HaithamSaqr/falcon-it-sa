@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { SiteSettings } from "@/types/admin";
+import type { SiteSettings, SeoSettings, FooterLink } from "@/types/admin";
 
 interface DbConn {
   host: string;
@@ -22,6 +22,12 @@ export default function SettingsPage() {
   const [connSaving, setConnSaving] = useState(false);
   const [connMsg, setConnMsg] = useState<{ ok: boolean; text: string } | null>(null);
 
+  // SEO + footer links (separate tables)
+  const [seo, setSeo] = useState<SeoSettings | null>(null);
+  const [footer, setFooter] = useState<FooterLink[] | null>(null);
+  const [seoSaved, setSeoSaved] = useState(false);
+  const [footerSaved, setFooterSaved] = useState(false);
+
   useEffect(() => {
     fetch("/api/admin/settings")
       .then((r) => r.json())
@@ -33,7 +39,59 @@ export default function SettingsPage() {
       .then((data) => {
         if (data.success) setConn({ ...data.data, password: "" });
       });
+    fetch("/api/admin/seo")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.success) setSeo(data.data);
+      });
+    fetch("/api/admin/footer")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.success) setFooter(data.data);
+      });
   }, []);
+
+  async function handleSaveSeo() {
+    if (!seo) return;
+    await fetch("/api/admin/seo", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(seo),
+    });
+    setSeoSaved(true);
+    setTimeout(() => setSeoSaved(false), 3000);
+  }
+
+  async function handleSaveFooter() {
+    if (!footer) return;
+    await fetch("/api/admin/footer", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(footer),
+    });
+    setFooterSaved(true);
+    setTimeout(() => setFooterSaved(false), 3000);
+  }
+
+  function setSeoField(path: string, value: string) {
+    setSeo((prev) => {
+      if (!prev) return prev;
+      const copy = JSON.parse(JSON.stringify(prev)) as SeoSettings;
+      const keys = path.split(".");
+      let obj = copy as unknown as Record<string, unknown>;
+      for (let i = 0; i < keys.length - 1; i++) obj = obj[keys[i]] as Record<string, unknown>;
+      obj[keys[keys.length - 1]] = value;
+      return copy;
+    });
+  }
+
+  function genFid() {
+    try {
+      return crypto.randomUUID();
+    } catch {
+      return `fl_${Date.now()}_${Math.floor(Math.random() * 1e6)}`;
+    }
+  }
 
   async function handleSaveConnection() {
     if (!conn) return;
@@ -327,10 +385,91 @@ export default function SettingsPage() {
           {Object.entries(settings.social).map(([key, value]) => (
             <div key={key}>
               <label className={labelClasses}>{key}</label>
-              <input value={value} onChange={(e) => set(`social.${key}`, e.target.value)} className={inputClasses} />
+              <input value={value} onChange={(e) => set(`social.${key}`, e.target.value)} className={inputClasses} dir="ltr" />
             </div>
           ))}
         </div>
+      </div>
+
+      {/* Login Button */}
+      <div className="rounded-xl border border-slate-200 bg-white p-6">
+        <h3 className="mb-1 text-sm font-semibold text-slate-700">Login Button</h3>
+        <p className="mb-4 text-xs text-slate-400">The URL the navbar &ldquo;Login&rdquo; button opens.</p>
+        <input
+          value={settings.loginUrl || ""}
+          onChange={(e) => set("loginUrl", e.target.value)}
+          className={inputClasses}
+          dir="ltr"
+          placeholder="https://falcon-valley.com"
+        />
+      </div>
+
+      {/* SEO */}
+      <div className="rounded-xl border border-slate-200 bg-white p-6">
+        <div className="mb-4 flex items-center justify-between">
+          <h3 className="text-sm font-semibold text-slate-700">SEO &amp; Meta Tags</h3>
+          <div className="flex items-center gap-3">
+            {seoSaved && <span className="text-sm text-emerald-600">Saved!</span>}
+            <button onClick={handleSaveSeo} className="rounded-lg bg-cyan-600 px-4 py-1.5 text-xs font-medium text-white hover:bg-cyan-700">Save SEO</button>
+          </div>
+        </div>
+        {seo ? (
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div><label className={labelClasses}>Meta Title (EN)</label><input value={seo.metaTitle.en} onChange={(e) => setSeoField("metaTitle.en", e.target.value)} className={inputClasses} /></div>
+            <div><label className={labelClasses}>Meta Title (AR)</label><input value={seo.metaTitle.ar} onChange={(e) => setSeoField("metaTitle.ar", e.target.value)} className={inputClasses} dir="rtl" /></div>
+            <div className="sm:col-span-2"><label className={labelClasses}>Meta Description (EN)</label><textarea value={seo.metaDescription.en} onChange={(e) => setSeoField("metaDescription.en", e.target.value)} className={inputClasses} rows={2} /></div>
+            <div className="sm:col-span-2"><label className={labelClasses}>Meta Description (AR)</label><textarea value={seo.metaDescription.ar} onChange={(e) => setSeoField("metaDescription.ar", e.target.value)} className={inputClasses} rows={2} dir="rtl" /></div>
+            <div className="sm:col-span-2"><label className={labelClasses}>Keywords (EN) — comma separated</label><textarea value={seo.metaKeywords.en} onChange={(e) => setSeoField("metaKeywords.en", e.target.value)} className={inputClasses} rows={2} /></div>
+            <div className="sm:col-span-2"><label className={labelClasses}>Keywords (AR) — مفصولة بفواصل</label><textarea value={seo.metaKeywords.ar} onChange={(e) => setSeoField("metaKeywords.ar", e.target.value)} className={inputClasses} rows={2} dir="rtl" /></div>
+            <div className="sm:col-span-2"><label className={labelClasses}>OG Image URL</label><input value={seo.ogImage} onChange={(e) => setSeoField("ogImage", e.target.value)} className={inputClasses} dir="ltr" /></div>
+          </div>
+        ) : (
+          <p className="text-sm text-slate-400">Loading...</p>
+        )}
+      </div>
+
+      {/* Footer Links */}
+      <div className="rounded-xl border border-slate-200 bg-white p-6">
+        <div className="mb-4 flex items-center justify-between">
+          <div>
+            <h3 className="text-sm font-semibold text-slate-700">Footer Links</h3>
+            <p className="mt-0.5 text-xs text-slate-400">Edit label &amp; URL for each footer link (bilingual). Section: about / support / legal.</p>
+          </div>
+          <div className="flex items-center gap-2">
+            {footerSaved && <span className="text-sm text-emerald-600">Saved!</span>}
+            <button
+              onClick={() => setFooter((f) => [...(f ?? []), { id: genFid(), section: "about", label: { en: "", ar: "" }, url: "" }])}
+              className="rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-200"
+            >+ Add</button>
+            <button onClick={handleSaveFooter} className="rounded-lg bg-cyan-600 px-4 py-1.5 text-xs font-medium text-white hover:bg-cyan-700">Save Footer</button>
+          </div>
+        </div>
+        {footer ? (
+          <div className="space-y-3">
+            {footer.map((link, i) => (
+              <div key={link.id} className="grid items-end gap-3 rounded-lg border border-slate-100 bg-slate-50/60 p-3 sm:grid-cols-[120px_1fr_1fr_1fr_auto]">
+                <div>
+                  <label className={labelClasses}>Section</label>
+                  <select
+                    value={link.section}
+                    onChange={(e) => setFooter((f) => f!.map((x, j) => (j === i ? { ...x, section: e.target.value as FooterLink["section"] } : x)))}
+                    className={inputClasses}
+                  >
+                    <option value="about">about</option>
+                    <option value="support">support</option>
+                    <option value="legal">legal</option>
+                  </select>
+                </div>
+                <div><label className={labelClasses}>Label EN</label><input value={link.label.en} onChange={(e) => setFooter((f) => f!.map((x, j) => (j === i ? { ...x, label: { ...x.label, en: e.target.value } } : x)))} className={inputClasses} /></div>
+                <div><label className={labelClasses}>Label AR</label><input value={link.label.ar} onChange={(e) => setFooter((f) => f!.map((x, j) => (j === i ? { ...x, label: { ...x.label, ar: e.target.value } } : x)))} className={inputClasses} dir="rtl" /></div>
+                <div><label className={labelClasses}>URL</label><input value={link.url} onChange={(e) => setFooter((f) => f!.map((x, j) => (j === i ? { ...x, url: e.target.value } : x)))} className={inputClasses} dir="ltr" /></div>
+                <button onClick={() => setFooter((f) => f!.filter((_, j) => j !== i))} className="rounded-md px-2 py-2 text-xs font-medium text-red-500 hover:bg-red-50">✕</button>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-slate-400">Loading...</p>
+        )}
       </div>
 
       {/* Security & Rate Limiting */}

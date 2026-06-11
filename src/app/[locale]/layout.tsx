@@ -1,9 +1,11 @@
+import type { Metadata } from "next";
 import { Inter, Tajawal } from "next/font/google";
 import { NextIntlClientProvider, hasLocale } from "next-intl";
 import { getMessages, setRequestLocale } from "next-intl/server";
 import { notFound, redirect } from "next/navigation";
 
 import { isInstalled } from "@/lib/db/config";
+import { getSeo } from "@/lib/data-store";
 import { routing } from "@/i18n/routing";
 import { cn } from "@/lib/utils";
 import Navbar from "@/components/layout/navbar";
@@ -30,6 +32,36 @@ const tajawal = Tajawal({
 
 // Run per-request so the first-run install gate is always evaluated freshly.
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const isAr = locale === "ar";
+  try {
+    const seo = await getSeo();
+    return {
+      title: isAr ? seo.metaTitle.ar : seo.metaTitle.en,
+      description: isAr ? seo.metaDescription.ar : seo.metaDescription.en,
+      keywords: (isAr ? seo.metaKeywords.ar : seo.metaKeywords.en)
+        .split(",")
+        .map((k) => k.trim())
+        .filter(Boolean),
+      openGraph: {
+        title: isAr ? seo.metaTitle.ar : seo.metaTitle.en,
+        description: isAr ? seo.metaDescription.ar : seo.metaDescription.en,
+        images: seo.ogImage ? [{ url: seo.ogImage }] : [],
+        locale: isAr ? "ar_SA" : "en_US",
+        type: "website",
+      },
+      alternates: { languages: { en: "/en", ar: "/ar" } },
+    };
+  } catch {
+    return {};
+  }
+}
 
 export default async function LocaleLayout({
   children,

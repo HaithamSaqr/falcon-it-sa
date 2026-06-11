@@ -17,10 +17,25 @@ import type {
   SiteSettings,
   IntegrationSettings,
   Branch,
+  SeoSettings,
+  FooterLink,
+  Sector,
+  PricingBase,
+  SectorPricingOverride,
+  Client,
+  ProductBrochure,
 } from "@/types/admin";
 import { query, getPool } from "@/lib/db/pool";
 import { isInstalledSync } from "@/lib/db/config";
-import { DEFAULT_CONTENT, DEFAULT_SETTINGS, DEFAULT_INTEGRATIONS } from "@/lib/db/defaults";
+import {
+  DEFAULT_CONTENT,
+  DEFAULT_SETTINGS,
+  DEFAULT_INTEGRATIONS,
+  DEFAULT_SEO,
+  DEFAULT_FOOTER_LINKS,
+  DEFAULT_SECTORS,
+  DEFAULT_PRICING_BASE,
+} from "@/lib/db/defaults";
 import * as store from "@/lib/db/store";
 
 // ═══════════════════════════════════════════════════════════════════
@@ -280,6 +295,133 @@ export async function getIntegrations(): Promise<IntegrationSettings> {
 
 export async function updateIntegrations(settings: IntegrationSettings): Promise<void> {
   await store.writeIntegrations(await getPool(), settings);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// SEO
+// ═══════════════════════════════════════════════════════════════════
+
+export async function getSeo(): Promise<SeoSettings> {
+  if (!isInstalledSync()) return DEFAULT_SEO;
+  try {
+    return await store.readSeo(await getPool());
+  } catch {
+    return DEFAULT_SEO;
+  }
+}
+
+export async function updateSeo(seo: SeoSettings): Promise<void> {
+  await store.writeSeo(await getPool(), seo);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// FOOTER LINKS
+// ═══════════════════════════════════════════════════════════════════
+
+export async function getFooterLinks(): Promise<FooterLink[]> {
+  if (!isInstalledSync()) return DEFAULT_FOOTER_LINKS;
+  try {
+    const links = await store.readFooterLinks(await getPool());
+    return links.length ? links : DEFAULT_FOOTER_LINKS;
+  } catch {
+    return DEFAULT_FOOTER_LINKS;
+  }
+}
+
+export async function updateFooterLinks(links: FooterLink[]): Promise<void> {
+  await store.writeFooterLinks(await getPool(), links);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// SECTORS
+// ═══════════════════════════════════════════════════════════════════
+
+export async function getSectors(onlyEnabled = false): Promise<Sector[]> {
+  if (!isInstalledSync()) {
+    return onlyEnabled ? DEFAULT_SECTORS.filter((s) => s.enabled) : DEFAULT_SECTORS;
+  }
+  try {
+    return await store.readSectors(await getPool(), onlyEnabled);
+  } catch {
+    return DEFAULT_SECTORS;
+  }
+}
+
+export async function getSector(id: string): Promise<Sector | null> {
+  if (!isInstalledSync()) return DEFAULT_SECTORS.find((s) => s.id === id) ?? null;
+  try {
+    return await store.readSector(await getPool(), id);
+  } catch {
+    return DEFAULT_SECTORS.find((s) => s.id === id) ?? null;
+  }
+}
+
+export async function updateSectors(sectors: Sector[]): Promise<void> {
+  await store.writeSectors(await getPool(), sectors);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// PRICING
+// ═══════════════════════════════════════════════════════════════════
+
+export async function getPricingBase(): Promise<PricingBase> {
+  if (!isInstalledSync()) return DEFAULT_PRICING_BASE;
+  try {
+    return await store.readPricingBase(await getPool());
+  } catch {
+    return DEFAULT_PRICING_BASE;
+  }
+}
+
+export async function updatePricingBase(p: PricingBase): Promise<void> {
+  await store.writePricingBase(await getPool(), p);
+}
+
+export async function getSectorPricing(): Promise<SectorPricingOverride[]> {
+  if (!isInstalledSync()) return [];
+  try {
+    return await store.readSectorPricing(await getPool());
+  } catch {
+    return [];
+  }
+}
+
+export async function updateSectorPricing(overrides: SectorPricingOverride[]): Promise<void> {
+  await store.writeSectorPricing(await getPool(), overrides);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// CLIENTS
+// ═══════════════════════════════════════════════════════════════════
+
+export async function getClients(): Promise<Client[]> {
+  if (!isInstalledSync()) return [];
+  try {
+    return await store.readClients(await getPool());
+  } catch {
+    return [];
+  }
+}
+
+export async function updateClients(clients: Client[]): Promise<void> {
+  await store.writeClients(await getPool(), clients);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// BROCHURES
+// ═══════════════════════════════════════════════════════════════════
+
+export async function getBrochure(slug: string): Promise<ProductBrochure | null> {
+  if (!isInstalledSync()) return null;
+  try {
+    return await store.readBrochure(await getPool(), slug);
+  } catch {
+    return null;
+  }
+}
+
+export async function updateBrochure(b: ProductBrochure): Promise<void> {
+  await store.writeBrochure(await getPool(), b);
 }
 
 // ═══════════════════════════════════════════════════════════════════

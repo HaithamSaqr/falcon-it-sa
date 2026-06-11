@@ -1,12 +1,13 @@
-import { getSettings } from "@/lib/data-store";
+import { getSettings, getFooterLinks } from "@/lib/data-store";
 import { jsonSuccess } from "@/lib/api-helpers";
 import { NextResponse } from "next/server";
 
 // GET /api/settings/public — public endpoint for site settings
 export async function GET() {
-  const settings = await getSettings();
+  const [settings, footerLinks] = await Promise.all([getSettings(), getFooterLinks()]);
   const res = jsonSuccess({
     gulfOnly: settings.regional?.gulfOnly ?? false,
+    loginUrl: settings.loginUrl || "https://falcon-valley.com",
     company: {
       name: settings.company.name,
       email: settings.company.email,
@@ -17,6 +18,7 @@ export async function GET() {
       branches: settings.company.branches ?? [],
     },
     social: settings.social,
+    footerLinks,
   });
 
   // Cache for 60s on CDN, revalidate in background

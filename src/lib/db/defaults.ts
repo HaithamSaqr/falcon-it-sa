@@ -4,7 +4,17 @@
  * during first-run setup.
  */
 
-import type { SiteContent, SiteSettings, IntegrationSettings } from "@/types/admin";
+import type {
+  SiteContent,
+  SiteSettings,
+  IntegrationSettings,
+  SeoSettings,
+  FooterLink,
+  Sector,
+  PricingBase,
+} from "@/types/admin";
+import arMessages from "../../../messages/ar.json";
+import enMessages from "../../../messages/en.json";
 
 export const DEFAULT_CONTENT: SiteContent = {
   hero: {
@@ -61,7 +71,9 @@ export const DEFAULT_SETTINGS: SiteSettings = {
     facebook: "https://facebook.com/falconsmartsolutions",
     instagram: "https://instagram.com/falconsmart",
     youtube: "https://www.youtube.com/@Falcon_Valley",
+    tiktok: "",
   },
+  loginUrl: "https://falcon-valley.com",
   regional: {
     gulfOnly: false,
   },
@@ -75,13 +87,112 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   },
 };
 
+// ── Sectors (seeded from the existing 18 sectors + their translations) ──
+const SECTOR_GRADIENTS = [
+  "bg-gradient-to-br from-primary-800 to-primary-600",
+  "bg-gradient-to-tr from-primary-900 to-primary-700",
+  "bg-gradient-to-bl from-primary-700 to-dark-lighter",
+  "bg-gradient-to-r from-dark to-primary-800",
+  "bg-gradient-to-tl from-primary-600 to-dark",
+  "bg-gradient-to-b from-primary-800 to-primary-500/60",
+  "bg-gradient-to-t from-dark-lighter to-primary-700",
+  "bg-gradient-to-br from-dark to-primary-600",
+  "bg-gradient-to-l from-primary-900 to-primary-700",
+];
+
+const SECTOR_SEED: { slug: string; icon: string }[] = [
+  { slug: "retail", icon: "🛍️" },
+  { slug: "manufacturing", icon: "🏭" },
+  { slug: "construction", icon: "🏗️" },
+  { slug: "real-estate", icon: "🏢" },
+  { slug: "hospitality", icon: "🍽️" },
+  { slug: "healthcare", icon: "🏥" },
+  { slug: "education", icon: "🎓" },
+  { slug: "logistics", icon: "🚚" },
+  { slug: "trading", icon: "📦" },
+  { slug: "automotive", icon: "🚗" },
+  { slug: "food-beverage", icon: "🍔" },
+  { slug: "pharma", icon: "💊" },
+  { slug: "professional-services", icon: "💼" },
+  { slug: "agriculture", icon: "🌾" },
+  { slug: "energy", icon: "⚡" },
+  { slug: "fashion", icon: "👗" },
+  { slug: "jewelry", icon: "💎" },
+  { slug: "nonprofit", icon: "🤝" },
+];
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
+const arItems = (arMessages as any).sectors?.items ?? {};
+const enItems = (enMessages as any).sectors?.items ?? {};
+/* eslint-enable @typescript-eslint/no-explicit-any */
+
+export const DEFAULT_SECTORS: Sector[] = SECTOR_SEED.map((s, i) => {
+  const ar = arItems[s.slug] ?? {};
+  const en = enItems[s.slug] ?? {};
+  const name = { en: en.name ?? s.slug, ar: ar.name ?? s.slug };
+  return {
+    id: s.slug,
+    icon: s.icon,
+    gradient: SECTOR_GRADIENTS[i % SECTOR_GRADIENTS.length],
+    name,
+    title: { ...name },
+    description: { en: en.desc ?? "", ar: ar.desc ?? "" },
+    systems: ["desktop", "cloud", "odoo"],
+    featured: i === 0,
+    enabled: true,
+    sortOrder: i,
+  };
+});
+
+export const DEFAULT_PRICING_BASE: PricingBase = {
+  pricePerUser: 50,
+  hostingPrice: 200,
+  operatingCosts: 100,
+  trainingCostPerDay: 80,
+  trainingDays: 3,
+  discountPercent: 10,
+  usdToEgp: 50,
+};
+
+export const DEFAULT_SEO: SeoSettings = {
+  metaTitle: {
+    en: "Falcon Smart Solutions | Enterprise ERP for MENA",
+    ar: "فالكون للحلول الذكية | نظام ERP للمؤسسات في الشرق الأوسط",
+  },
+  metaDescription: {
+    en: "MENA-native ERP platform with ZATCA compliance, Arabic support, and on-premise data sovereignty. Falcon ERP, Falcon Cloud, and Odoo services.",
+    ar: "منصة ERP مصمّمة للشرق الأوسط متوافقة مع هيئة الزكاة والضريبة، بدعم عربي كامل واستضافة محلية أو سحابية. فالكون ERP وفالكون كلاود وخدمات Odoo.",
+  },
+  metaKeywords: {
+    en: "ERP, ERP Saudi Arabia, Odoo, ZATCA e-invoicing, accounting software, cloud ERP, Falcon ERP, MENA ERP, enterprise software",
+    ar: "ERP, نظام تخطيط موارد المؤسسات, اودو, الفاتورة الإلكترونية, برنامج محاسبة, نظام سحابي, فالكون, أنظمة المؤسسات, السعودية",
+  },
+  ogImage: "/images/logos/falcon-logo.png",
+};
+
+export const DEFAULT_FOOTER_LINKS: FooterLink[] = [
+  { id: "about", section: "about", label: { en: "About Us", ar: "من نحن" }, url: "/about" },
+  { id: "blog", section: "about", label: { en: "Blog", ar: "المدونة" }, url: "/blog" },
+  { id: "careers", section: "about", label: { en: "Careers", ar: "الوظائف" }, url: "/careers" },
+  { id: "faq", section: "support", label: { en: "FAQ", ar: "الأسئلة الشائعة" }, url: "/faq" },
+  { id: "help", section: "support", label: { en: "Help Center", ar: "مركز المساعدة" }, url: "/help" },
+  { id: "webinars", section: "support", label: { en: "Webinars", ar: "الندوات" }, url: "/webinars" },
+  { id: "privacy", section: "legal", label: { en: "Privacy Policy", ar: "سياسة الخصوصية" }, url: "/privacy" },
+  { id: "terms", section: "legal", label: { en: "Terms of Service", ar: "الشروط والأحكام" }, url: "/terms" },
+];
+
 export const DEFAULT_INTEGRATIONS: IntegrationSettings = {
   odoo: {
     enabled: false,
     url: process.env.ODOO_URL || "",
     db: process.env.ODOO_DB || "",
     username: process.env.ODOO_USERNAME || "",
-    password: process.env.ODOO_PASSWORD || "",
+    apiKey: process.env.ODOO_API_KEY || process.env.ODOO_PASSWORD || "",
+  },
+  ai: {
+    enabled: false,
+    serverUrl: process.env.AI_SERVER_URL || "",
+    apiKey: process.env.AI_API_KEY || "",
   },
   calendar: {
     enabled: false,

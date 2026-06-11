@@ -11,6 +11,7 @@ import { NAV_ITEMS } from "@/lib/constants";
 import Button from "@/components/ui/button";
 import Container from "@/components/ui/container";
 import LanguageToggle from "@/components/layout/language-toggle";
+import { useSettings } from "@/components/providers/settings-provider";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -127,6 +128,7 @@ function MobileMenu({
   const t = useTranslations();
   const pathname = usePathname();
   const locale = useLocale();
+  const { loginUrl } = useSettings();
   const isRTL = locale === "ar";
 
   return (
@@ -237,7 +239,7 @@ function MobileMenu({
             <LanguageToggle className="w-full justify-center" />
 
             <a
-              href="https://falcon-valley.com"
+              href={loginUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-[var(--radius-button)] border-2 border-primary-500 px-6 text-base font-semibold text-primary-500 transition-all duration-200 hover:bg-primary-500 hover:text-white"
@@ -262,6 +264,7 @@ function MobileMenu({
 export default function Navbar() {
   const t = useTranslations();
   const pathname = usePathname();
+  const { loginUrl } = useSettings();
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 

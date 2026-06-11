@@ -14,8 +14,22 @@ import type {
   SiteSettings,
   SiteContent,
   IntegrationSettings,
+  SeoSettings,
+  FooterLink,
+  Sector,
+  SectorSystem,
+  PricingBase,
+  SectorPricingOverride,
+  Client,
+  ProductBrochure,
 } from "@/types/admin";
-import { DEFAULT_SETTINGS, DEFAULT_CONTENT, DEFAULT_INTEGRATIONS } from "./defaults";
+import {
+  DEFAULT_SETTINGS,
+  DEFAULT_CONTENT,
+  DEFAULT_INTEGRATIONS,
+  DEFAULT_SEO,
+  DEFAULT_PRICING_BASE,
+} from "./defaults";
 
 function newId(prefix: string): string {
   try {
@@ -103,7 +117,9 @@ export async function readSettings(pool: Pool): Promise<SiteSettings> {
       facebook: r.social_facebook,
       instagram: r.social_instagram,
       youtube: r.social_youtube,
+      tiktok: r.social_tiktok ?? "",
     },
+    loginUrl: r.login_url || "https://falcon-valley.com",
     regional: { gulfOnly: r.gulf_only },
     security: {
       adminUsername,
@@ -122,8 +138,8 @@ export async function writeSettings(pool: Pool, s: SiteSettings): Promise<void> 
        id, company_name_en, company_name_ar, company_email, phone_ksa, phone_egypt,
        whatsapp, gulf_only, notif_email_on_new_lead, notif_sales_email,
        social_linkedin, social_twitter, social_facebook, social_instagram, social_youtube,
-       jwt_secret, rate_limit_max, rate_limit_window_ms
-     ) VALUES (1, $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)
+       social_tiktok, login_url, jwt_secret, rate_limit_max, rate_limit_window_ms
+     ) VALUES (1, $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19)
      ON CONFLICT (id) DO UPDATE SET
        company_name_en = EXCLUDED.company_name_en,
        company_name_ar = EXCLUDED.company_name_ar,
@@ -139,6 +155,8 @@ export async function writeSettings(pool: Pool, s: SiteSettings): Promise<void> 
        social_facebook = EXCLUDED.social_facebook,
        social_instagram = EXCLUDED.social_instagram,
        social_youtube = EXCLUDED.social_youtube,
+       social_tiktok = EXCLUDED.social_tiktok,
+       login_url = EXCLUDED.login_url,
        jwt_secret = EXCLUDED.jwt_secret,
        rate_limit_max = EXCLUDED.rate_limit_max,
        rate_limit_window_ms = EXCLUDED.rate_limit_window_ms`,
@@ -147,6 +165,7 @@ export async function writeSettings(pool: Pool, s: SiteSettings): Promise<void> 
       s.company.phone.ksa, s.company.phone.egypt, s.company.whatsapp,
       s.regional.gulfOnly, s.notifications.emailOnNewLead, s.notifications.salesEmail,
       s.social.linkedin, s.social.twitter, s.social.facebook, s.social.instagram, s.social.youtube,
+      s.social.tiktok ?? "", s.loginUrl ?? "https://falcon-valley.com",
       s.security.jwtSecret, s.security.rateLimitMax, s.security.rateLimitWindowMs,
     ]
   );
@@ -260,9 +279,14 @@ export async function readIntegrations(pool: Pool): Promise<IntegrationSettings>
       url: r.odoo_url,
       db: r.odoo_db,
       username: r.odoo_username,
-      password: r.odoo_password,
+      apiKey: r.odoo_api_key ?? "",
       lastTestedAt: r.odoo_last_tested_at ? new Date(r.odoo_last_tested_at).toISOString() : undefined,
       lastTestResult: (r.odoo_last_test_result as "success" | "failed" | null) ?? undefined,
+    },
+    ai: {
+      enabled: r.ai_enabled ?? false,
+      serverUrl: r.ai_server_url ?? "",
+      apiKey: r.ai_api_key ?? "",
     },
     calendar: {
       enabled: r.calendar_enabled,
@@ -298,17 +322,19 @@ export async function readIntegrations(pool: Pool): Promise<IntegrationSettings>
 export async function writeIntegrations(pool: Pool, ig: IntegrationSettings): Promise<void> {
   await pool.query(
     `INSERT INTO integrations (
-       id, odoo_enabled, odoo_url, odoo_db, odoo_username, odoo_password, odoo_last_tested_at, odoo_last_test_result,
+       id, odoo_enabled, odoo_url, odoo_db, odoo_username, odoo_api_key, odoo_last_tested_at, odoo_last_test_result,
+       ai_enabled, ai_server_url, ai_api_key,
        calendar_enabled, calendar_resource_id, calendar_slot_duration, calendar_available_days,
        calendar_start_hour, calendar_end_hour, calendar_buffer_minutes, calendar_max_advance_days,
        email_enabled, email_provider, email_api_key, email_from_email, email_reply_to,
        whatsapp_enabled, whatsapp_api_token, whatsapp_phone_id,
        helpdesk_enabled, helpdesk_default_team_id, helpdesk_allow_rating, helpdesk_allow_new_tickets
-     ) VALUES (1, $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27)
+     ) VALUES (1, $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30)
      ON CONFLICT (id) DO UPDATE SET
        odoo_enabled = EXCLUDED.odoo_enabled, odoo_url = EXCLUDED.odoo_url, odoo_db = EXCLUDED.odoo_db,
-       odoo_username = EXCLUDED.odoo_username, odoo_password = EXCLUDED.odoo_password,
+       odoo_username = EXCLUDED.odoo_username, odoo_api_key = EXCLUDED.odoo_api_key,
        odoo_last_tested_at = EXCLUDED.odoo_last_tested_at, odoo_last_test_result = EXCLUDED.odoo_last_test_result,
+       ai_enabled = EXCLUDED.ai_enabled, ai_server_url = EXCLUDED.ai_server_url, ai_api_key = EXCLUDED.ai_api_key,
        calendar_enabled = EXCLUDED.calendar_enabled, calendar_resource_id = EXCLUDED.calendar_resource_id,
        calendar_slot_duration = EXCLUDED.calendar_slot_duration, calendar_available_days = EXCLUDED.calendar_available_days,
        calendar_start_hour = EXCLUDED.calendar_start_hour, calendar_end_hour = EXCLUDED.calendar_end_hour,
@@ -319,8 +345,9 @@ export async function writeIntegrations(pool: Pool, ig: IntegrationSettings): Pr
        helpdesk_enabled = EXCLUDED.helpdesk_enabled, helpdesk_default_team_id = EXCLUDED.helpdesk_default_team_id,
        helpdesk_allow_rating = EXCLUDED.helpdesk_allow_rating, helpdesk_allow_new_tickets = EXCLUDED.helpdesk_allow_new_tickets`,
     [
-      ig.odoo.enabled, ig.odoo.url, ig.odoo.db, ig.odoo.username, ig.odoo.password,
+      ig.odoo.enabled, ig.odoo.url, ig.odoo.db, ig.odoo.username, ig.odoo.apiKey,
       ig.odoo.lastTestedAt ? new Date(ig.odoo.lastTestedAt) : null, ig.odoo.lastTestResult ?? null,
+      ig.ai.enabled, ig.ai.serverUrl, ig.ai.apiKey,
       ig.calendar.enabled, ig.calendar.resourceId, ig.calendar.slotDuration, ig.calendar.availableDays,
       ig.calendar.startHour, ig.calendar.endHour, ig.calendar.bufferMinutes, ig.calendar.maxAdvanceDays,
       ig.email.enabled, ig.email.provider, ig.email.apiKey, ig.email.fromEmail, ig.email.replyTo,
@@ -328,6 +355,68 @@ export async function writeIntegrations(pool: Pool, ig: IntegrationSettings): Pr
       ig.helpdesk.enabled, ig.helpdesk.defaultTeamId, ig.helpdesk.allowRating, ig.helpdesk.allowNewTickets,
     ]
   );
+}
+
+// ── SEO settings ────────────────────────────────────────────────────
+export async function readSeo(pool: Pool): Promise<SeoSettings> {
+  const res = await pool.query(`SELECT * FROM seo_settings WHERE id = 1`);
+  const r = res.rows[0];
+  if (!r) return DEFAULT_SEO;
+  return {
+    metaTitle: { en: r.meta_title_en, ar: r.meta_title_ar },
+    metaDescription: { en: r.meta_description_en, ar: r.meta_description_ar },
+    metaKeywords: { en: r.meta_keywords_en, ar: r.meta_keywords_ar },
+    ogImage: r.og_image,
+  };
+}
+
+export async function writeSeo(pool: Pool, seo: SeoSettings): Promise<void> {
+  await pool.query(
+    `INSERT INTO seo_settings (id, meta_title_en, meta_title_ar, meta_description_en, meta_description_ar, meta_keywords_en, meta_keywords_ar, og_image)
+     VALUES (1, $1,$2,$3,$4,$5,$6,$7)
+     ON CONFLICT (id) DO UPDATE SET
+       meta_title_en = EXCLUDED.meta_title_en, meta_title_ar = EXCLUDED.meta_title_ar,
+       meta_description_en = EXCLUDED.meta_description_en, meta_description_ar = EXCLUDED.meta_description_ar,
+       meta_keywords_en = EXCLUDED.meta_keywords_en, meta_keywords_ar = EXCLUDED.meta_keywords_ar,
+       og_image = EXCLUDED.og_image`,
+    [
+      seo.metaTitle.en, seo.metaTitle.ar, seo.metaDescription.en, seo.metaDescription.ar,
+      seo.metaKeywords.en, seo.metaKeywords.ar, seo.ogImage,
+    ]
+  );
+}
+
+// ── Footer links ────────────────────────────────────────────────────
+export async function readFooterLinks(pool: Pool): Promise<FooterLink[]> {
+  const res = await pool.query(`SELECT * FROM footer_links ORDER BY section, sort_order, id`);
+  return res.rows.map((r) => ({
+    id: r.id,
+    section: r.section,
+    label: { en: r.label_en, ar: r.label_ar },
+    url: r.url,
+  }));
+}
+
+export async function writeFooterLinks(pool: Pool, links: FooterLink[]): Promise<void> {
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+    await client.query("DELETE FROM footer_links");
+    for (let i = 0; i < links.length; i++) {
+      const l = links[i];
+      await client.query(
+        `INSERT INTO footer_links (id, section, label_en, label_ar, url, sort_order)
+         VALUES ($1,$2,$3,$4,$5,$6)`,
+        [l.id || newId("fl"), l.section, l.label?.en ?? "", l.label?.ar ?? "", l.url ?? "", i]
+      );
+    }
+    await client.query("COMMIT");
+  } catch (e) {
+    await client.query("ROLLBACK");
+    throw e;
+  } finally {
+    client.release();
+  }
 }
 
 // ── Admin users ─────────────────────────────────────────────────────
@@ -365,5 +454,192 @@ export async function updateAdminPassword(pool: Pool, username: string, password
   await pool.query(
     `UPDATE admin_users SET password_hash = $2, updated_at = now() WHERE lower(username) = lower($1)`,
     [username, passwordHash]
+  );
+}
+
+// ── Sectors ─────────────────────────────────────────────────────────
+/* eslint-disable @typescript-eslint/no-explicit-any */
+function rowToSector(r: any): Sector {
+  return {
+    id: r.id,
+    icon: r.icon,
+    gradient: r.gradient,
+    name: { en: r.name_en, ar: r.name_ar },
+    title: { en: r.title_en, ar: r.title_ar },
+    description: { en: r.description_en, ar: r.description_ar },
+    systems: (r.systems ?? []) as SectorSystem[],
+    featured: r.featured,
+    enabled: r.enabled,
+    sortOrder: r.sort_order,
+  };
+}
+/* eslint-enable @typescript-eslint/no-explicit-any */
+
+export async function readSectors(pool: Pool, onlyEnabled = false): Promise<Sector[]> {
+  const res = await pool.query(
+    `SELECT * FROM sectors ${onlyEnabled ? "WHERE enabled = true" : ""} ORDER BY sort_order, id`
+  );
+  return res.rows.map(rowToSector);
+}
+
+export async function readSector(pool: Pool, id: string): Promise<Sector | null> {
+  const res = await pool.query(`SELECT * FROM sectors WHERE id = $1`, [id]);
+  return res.rows[0] ? rowToSector(res.rows[0]) : null;
+}
+
+export async function writeSectors(pool: Pool, sectors: Sector[]): Promise<void> {
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+    await client.query("DELETE FROM sectors");
+    for (let i = 0; i < sectors.length; i++) {
+      const s = sectors[i];
+      await client.query(
+        `INSERT INTO sectors (id, icon, gradient, name_en, name_ar, title_en, title_ar, description_en, description_ar, systems, featured, enabled, sort_order)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)`,
+        [
+          s.id || newId("sec"),
+          s.icon ?? "",
+          s.gradient ?? "",
+          s.name?.en ?? "",
+          s.name?.ar ?? "",
+          s.title?.en ?? "",
+          s.title?.ar ?? "",
+          s.description?.en ?? "",
+          s.description?.ar ?? "",
+          s.systems ?? [],
+          Boolean(s.featured),
+          s.enabled !== false,
+          i,
+        ]
+      );
+    }
+    await client.query("COMMIT");
+  } catch (e) {
+    await client.query("ROLLBACK");
+    throw e;
+  } finally {
+    client.release();
+  }
+}
+
+// ── Base pricing ────────────────────────────────────────────────────
+export async function readPricingBase(pool: Pool): Promise<PricingBase> {
+  const res = await pool.query(`SELECT * FROM pricing_base WHERE id = 1`);
+  const r = res.rows[0];
+  if (!r) return DEFAULT_PRICING_BASE;
+  return {
+    pricePerUser: Number(r.price_per_user),
+    hostingPrice: Number(r.hosting_price),
+    operatingCosts: Number(r.operating_costs),
+    trainingCostPerDay: Number(r.training_cost_per_day),
+    trainingDays: r.training_days,
+    discountPercent: Number(r.discount_percent),
+    usdToEgp: Number(r.usd_to_egp),
+  };
+}
+
+export async function writePricingBase(pool: Pool, p: PricingBase): Promise<void> {
+  await pool.query(
+    `INSERT INTO pricing_base (id, price_per_user, hosting_price, operating_costs, training_cost_per_day, training_days, discount_percent, usd_to_egp)
+     VALUES (1,$1,$2,$3,$4,$5,$6,$7)
+     ON CONFLICT (id) DO UPDATE SET
+       price_per_user = EXCLUDED.price_per_user, hosting_price = EXCLUDED.hosting_price,
+       operating_costs = EXCLUDED.operating_costs, training_cost_per_day = EXCLUDED.training_cost_per_day,
+       training_days = EXCLUDED.training_days, discount_percent = EXCLUDED.discount_percent,
+       usd_to_egp = EXCLUDED.usd_to_egp`,
+    [p.pricePerUser, p.hostingPrice, p.operatingCosts, p.trainingCostPerDay, p.trainingDays, p.discountPercent, p.usdToEgp]
+  );
+}
+
+// ── Per-sector pricing overrides ────────────────────────────────────
+export async function readSectorPricing(pool: Pool): Promise<SectorPricingOverride[]> {
+  const res = await pool.query(`SELECT * FROM sector_pricing ORDER BY sector_id, system`);
+  return res.rows.map((r) => ({
+    sectorId: r.sector_id,
+    system: r.system as SectorSystem,
+    pricePerUser: r.price_per_user == null ? null : Number(r.price_per_user),
+    operatingCosts: r.operating_costs == null ? null : Number(r.operating_costs),
+    trainingDays: r.training_days,
+  }));
+}
+
+export async function writeSectorPricing(pool: Pool, overrides: SectorPricingOverride[]): Promise<void> {
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+    await client.query("DELETE FROM sector_pricing");
+    for (const o of overrides) {
+      await client.query(
+        `INSERT INTO sector_pricing (sector_id, system, price_per_user, operating_costs, training_days)
+         VALUES ($1,$2,$3,$4,$5) ON CONFLICT (sector_id, system) DO NOTHING`,
+        [o.sectorId, o.system, o.pricePerUser, o.operatingCosts, o.trainingDays]
+      );
+    }
+    await client.query("COMMIT");
+  } catch (e) {
+    await client.query("ROLLBACK");
+    throw e;
+  } finally {
+    client.release();
+  }
+}
+
+// ── Clients ─────────────────────────────────────────────────────────
+export async function readClients(pool: Pool): Promise<Client[]> {
+  const res = await pool.query(`SELECT * FROM clients ORDER BY sort_order, id`);
+  return res.rows.map((r) => ({
+    id: r.id,
+    name: { en: r.name_en, ar: r.name_ar },
+    logo: r.logo,
+    tags: r.tags ?? [],
+    sortOrder: r.sort_order,
+  }));
+}
+
+export async function writeClients(pool: Pool, clients: Client[]): Promise<void> {
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+    await client.query("DELETE FROM clients");
+    for (let i = 0; i < clients.length; i++) {
+      const c = clients[i];
+      await client.query(
+        `INSERT INTO clients (id, name_en, name_ar, logo, tags, sort_order)
+         VALUES ($1,$2,$3,$4,$5,$6)`,
+        [c.id || newId("cl"), c.name?.en ?? "", c.name?.ar ?? "", c.logo ?? "", c.tags ?? [], i]
+      );
+    }
+    await client.query("COMMIT");
+  } catch (e) {
+    await client.query("ROLLBACK");
+    throw e;
+  } finally {
+    client.release();
+  }
+}
+
+// ── Product brochures ───────────────────────────────────────────────
+export async function readBrochure(pool: Pool, slug: string): Promise<ProductBrochure | null> {
+  const res = await pool.query(`SELECT * FROM product_brochures WHERE slug = $1`, [slug]);
+  const r = res.rows[0];
+  if (!r) return null;
+  return {
+    slug: r.slug,
+    title: { en: r.title_en, ar: r.title_ar },
+    content: { en: r.content_en, ar: r.content_ar },
+    enabled: r.enabled,
+  };
+}
+
+export async function writeBrochure(pool: Pool, b: ProductBrochure): Promise<void> {
+  await pool.query(
+    `INSERT INTO product_brochures (slug, title_en, title_ar, content_en, content_ar, enabled, updated_at)
+     VALUES ($1,$2,$3,$4,$5,$6, now())
+     ON CONFLICT (slug) DO UPDATE SET
+       title_en = EXCLUDED.title_en, title_ar = EXCLUDED.title_ar,
+       content_en = EXCLUDED.content_en, content_ar = EXCLUDED.content_ar,
+       enabled = EXCLUDED.enabled, updated_at = now()`,
+    [b.slug, b.title?.en ?? "", b.title?.ar ?? "", b.content?.en ?? "", b.content?.ar ?? "", b.enabled]
   );
 }

@@ -92,7 +92,10 @@ export interface SiteSettings {
     facebook: string;
     instagram: string;
     youtube: string;
+    tiktok: string;
   };
+  /** External URL the navbar "Login" button points to. */
+  loginUrl: string;
   regional: {
     gulfOnly: boolean; // Hide Egypt office, phone, address when true
   };
@@ -109,6 +112,70 @@ export interface SiteSettings {
   };
 }
 
+// ── Sector / Pricing / Client / Brochure Types ─────────────────────
+export type SectorSystem = "desktop" | "cloud" | "odoo";
+
+export interface Sector {
+  id: string; // slug
+  icon: string;
+  gradient: string;
+  name: BilingualText;
+  title: BilingualText;
+  description: BilingualText;
+  systems: SectorSystem[];
+  featured: boolean;
+  enabled: boolean;
+  sortOrder: number;
+}
+
+export interface PricingBase {
+  pricePerUser: number;
+  hostingPrice: number;
+  operatingCosts: number;
+  trainingCostPerDay: number;
+  trainingDays: number;
+  discountPercent: number;
+  usdToEgp: number;
+}
+
+export interface SectorPricingOverride {
+  sectorId: string;
+  system: SectorSystem;
+  pricePerUser: number | null;
+  operatingCosts: number | null;
+  trainingDays: number | null;
+}
+
+export interface Client {
+  id: string;
+  name: BilingualText;
+  logo: string;
+  tags: string[];
+  sortOrder: number;
+}
+
+export interface ProductBrochure {
+  slug: string;
+  title: BilingualText;
+  content: BilingualText; // rich HTML
+  enabled: boolean;
+}
+
+// ── SEO + Footer Types ──────────────────────────────────────────────
+export interface SeoSettings {
+  metaTitle: BilingualText;
+  metaDescription: BilingualText;
+  metaKeywords: BilingualText;
+  ogImage: string;
+}
+
+export interface FooterLink {
+  id: string;
+  section: "about" | "support" | "products" | "legal";
+  label: BilingualText;
+  url: string;
+}
+
 // ── Integration Types ───────────────────────────────────────────────
 export interface IntegrationSettings {
   odoo: {
@@ -116,9 +183,14 @@ export interface IntegrationSettings {
     url: string;
     db: string;
     username: string;
-    password: string;
+    apiKey: string;
     lastTestedAt?: string;
     lastTestResult?: "success" | "failed";
+  };
+  ai: {
+    enabled: boolean;
+    serverUrl: string;
+    apiKey: string;
   };
   calendar: {
     enabled: boolean;

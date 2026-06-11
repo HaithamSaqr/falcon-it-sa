@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import type { SiteContent } from "@/types/admin";
 
-type Tab = "hero" | "testimonials" | "faqs" | "stats";
+type Tab = "hero" | "testimonials" | "faqs";
 
 export default function ContentPage() {
   const [content, setContent] = useState<SiteContent | null>(null);
@@ -41,7 +41,6 @@ export default function ContentPage() {
     { key: "hero", label: "Hero Section" },
     { key: "testimonials", label: "Testimonials" },
     { key: "faqs", label: "FAQs" },
-    { key: "stats", label: "Stats" },
   ];
 
   const inputClasses =
@@ -143,67 +142,6 @@ export default function ContentPage() {
                 />
               </div>
             </div>
-          </div>
-        )}
-
-        {/* Stats */}
-        {activeTab === "stats" && (
-          <div className="space-y-4">
-            <h3 className="text-sm font-semibold text-slate-700">Statistics</h3>
-            {content.stats.map((stat, i) => (
-              <div key={i} className="grid gap-3 rounded-lg border border-slate-100 p-4 sm:grid-cols-4">
-                <div>
-                  <label className={labelClasses}>Value</label>
-                  <input
-                    type="number"
-                    value={stat.value}
-                    onChange={(e) => {
-                      const newStats = [...content.stats];
-                      newStats[i] = { ...stat, value: Number(e.target.value) };
-                      setContent({ ...content, stats: newStats });
-                    }}
-                    className={inputClasses}
-                  />
-                </div>
-                <div>
-                  <label className={labelClasses}>Suffix</label>
-                  <input
-                    value={stat.suffix}
-                    onChange={(e) => {
-                      const newStats = [...content.stats];
-                      newStats[i] = { ...stat, suffix: e.target.value };
-                      setContent({ ...content, stats: newStats });
-                    }}
-                    className={inputClasses}
-                  />
-                </div>
-                <div>
-                  <label className={labelClasses}>Label (EN)</label>
-                  <input
-                    value={stat.label.en}
-                    onChange={(e) => {
-                      const newStats = [...content.stats];
-                      newStats[i] = { ...stat, label: { ...stat.label, en: e.target.value } };
-                      setContent({ ...content, stats: newStats });
-                    }}
-                    className={inputClasses}
-                  />
-                </div>
-                <div>
-                  <label className={labelClasses}>Label (AR)</label>
-                  <input
-                    value={stat.label.ar}
-                    onChange={(e) => {
-                      const newStats = [...content.stats];
-                      newStats[i] = { ...stat, label: { ...stat.label, ar: e.target.value } };
-                      setContent({ ...content, stats: newStats });
-                    }}
-                    className={inputClasses}
-                    dir="rtl"
-                  />
-                </div>
-              </div>
-            ))}
           </div>
         )}
 

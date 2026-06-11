@@ -20,12 +20,13 @@ interface OdooConfig {
 async function getOdooConfig(): Promise<OdooConfig> {
   try {
     const integrations = await getIntegrations();
-    if (integrations.odoo.enabled && integrations.odoo.url && integrations.odoo.password) {
+    // Odoo API keys are used in place of the password during XML-RPC auth.
+    if (integrations.odoo.enabled && integrations.odoo.url && integrations.odoo.apiKey) {
       return {
         url: integrations.odoo.url,
         db: integrations.odoo.db,
         username: integrations.odoo.username,
-        password: integrations.odoo.password,
+        password: integrations.odoo.apiKey,
         enabled: true,
       };
     }
@@ -36,7 +37,7 @@ async function getOdooConfig(): Promise<OdooConfig> {
   const url = process.env.ODOO_URL || "";
   const db = process.env.ODOO_DB || "";
   const username = process.env.ODOO_USERNAME || "";
-  const password = process.env.ODOO_PASSWORD || "";
+  const password = process.env.ODOO_API_KEY || process.env.ODOO_PASSWORD || "";
 
   return {
     url,

@@ -12,10 +12,22 @@ import {
   writeIntegrations,
   writeBranches,
   readBranches,
+  writeSeo,
+  writeFooterLinks,
+  writeSectors,
+  writePricingBase,
   countAdmins,
   createAdmin,
 } from "./store";
-import { DEFAULT_SETTINGS, DEFAULT_CONTENT, DEFAULT_INTEGRATIONS } from "./defaults";
+import {
+  DEFAULT_SETTINGS,
+  DEFAULT_CONTENT,
+  DEFAULT_INTEGRATIONS,
+  DEFAULT_SEO,
+  DEFAULT_FOOTER_LINKS,
+  DEFAULT_SECTORS,
+  DEFAULT_PRICING_BASE,
+} from "./defaults";
 import type { SiteSettings, SiteContent, IntegrationSettings } from "@/types/admin";
 
 async function tableExists(pool: Pool, name: string): Promise<boolean> {
@@ -42,6 +54,7 @@ function mergeSettings(s: any): SiteSettings {
     },
     notifications: { ...DEFAULT_SETTINGS.notifications, ...s?.notifications },
     social: { ...DEFAULT_SETTINGS.social, ...s?.social },
+    loginUrl: s?.loginUrl ?? DEFAULT_SETTINGS.loginUrl,
     regional: { ...DEFAULT_SETTINGS.regional, ...s?.regional },
     security: { ...DEFAULT_SETTINGS.security, ...s?.security },
   };
@@ -60,8 +73,12 @@ function mergeContent(c: any): SiteContent {
 }
 
 function mergeIntegrations(ig: any): IntegrationSettings {
+  const odoo = { ...DEFAULT_INTEGRATIONS.odoo, ...ig?.odoo };
+  // Carry a legacy password over to the new apiKey field if needed.
+  if (!odoo.apiKey && ig?.odoo?.password) odoo.apiKey = ig.odoo.password;
   return {
-    odoo: { ...DEFAULT_INTEGRATIONS.odoo, ...ig?.odoo },
+    odoo,
+    ai: { ...DEFAULT_INTEGRATIONS.ai, ...ig?.ai },
     calendar: { ...DEFAULT_INTEGRATIONS.calendar, ...ig?.calendar },
     email: { ...DEFAULT_INTEGRATIONS.email, ...ig?.email },
     whatsapp: { ...DEFAULT_INTEGRATIONS.whatsapp, ...ig?.whatsapp },
@@ -111,6 +128,26 @@ export async function ensureReady(pool: Pool): Promise<void> {
   // ── Integrations (single row) ──
   if ((await rowCount(pool, "integrations")) === 0) {
     await writeIntegrations(pool, mergeIntegrations(legacy.integrations ?? DEFAULT_INTEGRATIONS));
+  }
+
+  // ── SEO (single row) ──
+  if ((await rowCount(pool, "seo_settings")) === 0) {
+    await writeSeo(pool, DEFAULT_SEO);
+  }
+
+  // ── Footer links ──
+  if ((await rowCount(pool, "footer_links")) === 0) {
+    await writeFooterLinks(pool, DEFAULT_FOOTER_LINKS);
+  }
+
+  // ── Sectors ──
+  if ((await rowCount(pool, "sectors")) === 0) {
+    await writeSectors(pool, DEFAULT_SECTORS);
+  }
+
+  // ── Base pricing ──
+  if ((await rowCount(pool, "pricing_base")) === 0) {
+    await writePricingBase(pool, DEFAULT_PRICING_BASE);
   }
 
   // ── Retire the legacy JSON store ──
