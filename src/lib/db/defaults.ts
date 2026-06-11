@@ -269,6 +269,7 @@ export const DEFAULT_PRICING_BASE: PricingBase = {
   trainingDays: 3,
   discountPercent: 10,
   usdToEgp: 50,
+  usdToSar: 3.75,
 };
 
 export const DEFAULT_SEO: SeoSettings = {

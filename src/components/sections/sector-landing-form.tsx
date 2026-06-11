@@ -22,30 +22,34 @@ interface Props {
   base: PricingBase;
   overrides: SectorPricingOverride[];
   isEgypt: boolean;
+  isSaudi: boolean;
 }
 
-export default function SectorLandingForm({ sector, base, overrides, isEgypt }: Props) {
+export default function SectorLandingForm({ sector, base, overrides, isEgypt, isSaudi }: Props) {
   const locale = useLocale();
   const isAr = locale === "ar";
   const { company } = useSettings();
 
   const [form, setForm] = useState({ company: "", email: "", phone: "", users: 5 });
   const [system, setSystem] = useState<SectorSystem | "">(sector.systems[0] ?? "");
-  const [currency, setCurrency] = useState<"USD" | "EGP">(isEgypt ? "EGP" : "USD");
+  const [currency, setCurrency] = useState<"USD" | "EGP" | "SAR">(
+    isEgypt ? "EGP" : "SAR"
+  );
   const [showPrice, setShowPrice] = useState(false);
   const [error, setError] = useState("");
   const [sending, setSending] = useState(false);
 
-  // Geo fallback when proxy headers weren't available server-side.
+  // Geo detection: server-side props cover Vercel/CF; client-side covers everything else.
   useEffect(() => {
-    if (isEgypt) return;
+    if (isEgypt || isSaudi) return;
     fetch("/api/geo")
       .then((r) => r.json())
       .then((d) => {
-        if (d?.data?.country === "EG") setCurrency("EGP");
+        const c = d?.data?.currency as string | undefined;
+        if (c === "EGP" || c === "SAR") setCurrency(c);
       })
       .catch(() => {});
-  }, [isEgypt]);
+  }, [isEgypt, isSaudi]);
 
   const breakdown = useMemo(() => {
     const ov = findOverride(overrides, sector.id, system || null);
@@ -56,7 +60,8 @@ export default function SectorLandingForm({ sector, base, overrides, isEgypt }: 
     Math.round(n).toLocaleString(isAr ? "ar-EG" : "en-US");
   const usd = (n: number) => `$${fmt(n)}`;
   const egp = (n: number) => `${fmt(n * base.usdToEgp)} ${isAr ? "ج.م" : "EGP"}`;
-  const price = (n: number) => (currency === "EGP" ? egp(n) : usd(n));
+  const sar = (n: number) => `${fmt(n * breakdown.usdToSar)} ${isAr ? "ر.س" : "SAR"}`;
+  const price = (n: number) => currency === "EGP" ? egp(n) : currency === "SAR" ? sar(n) : usd(n);
 
   const sectorName = isAr ? sector.name.ar : sector.name.en;
   const sectorTitle = isAr ? sector.title.ar : sector.title.en;
@@ -77,35 +82,35 @@ export default function SectorLandingForm({ sector, base, overrides, isEgypt }: 
     const sysLabel = system ? (isAr ? SYSTEM_LABELS[system].ar : SYSTEM_LABELS[system].en) : "";
     const lines = isAr
       ? [
-          `طلب عرض سعر — قطاع ${sectorName}`,
-          "",
-          `الشركة: ${form.company}`,
-          `البريد: ${form.email}`,
-          `الهاتف: ${form.phone}`,
-          `النظام: ${sysLabel}`,
-          `عدد المستخدمين: ${form.users}`,
-          `أيام التدريب: ${breakdown.trainingDays}`,
-          `السعر قبل الخصم: ${price(breakdown.regular)}`,
-          `الخصم: ${breakdown.discountPercent}%`,
-          `السعر بعد الخصم: ${price(breakdown.total)}`,
-          "",
-          "السعر يشمل الاستضافة السحابية بالكامل.",
-        ]
+        `طلب عرض سعر — قطاع ${sectorName}`,
+        "",
+        `الشركة: ${form.company}`,
+        `البريد: ${form.email}`,
+        `الهاتف: ${form.phone}`,
+        `النظام: ${sysLabel}`,
+        `عدد المستخدمين: ${form.users}`,
+        `أيام التدريب: ${breakdown.trainingDays}`,
+        `السعر قبل الخصم: ${price(breakdown.regular)}`,
+        `الخصم: ${breakdown.discountPercent}%`,
+        `السعر بعد الخصم: ${price(breakdown.total)} / سنة`,
+        "",
+        "السعر يشمل الاستضافة السحابية بالكامل.",
+      ]
       : [
-          `Quote request — ${sectorName} sector`,
-          "",
-          `Company: ${form.company}`,
-          `Email: ${form.email}`,
-          `Phone: ${form.phone}`,
-          `System: ${sysLabel}`,
-          `Users: ${form.users}`,
-          `Training days: ${breakdown.trainingDays}`,
-          `Price before discount: ${price(breakdown.regular)}`,
-          `Discount: ${breakdown.discountPercent}%`,
-          `Price after discount: ${price(breakdown.total)}`,
-          "",
-          "Price includes full cloud hosting.",
-        ];
+        `Quote request — ${sectorName} sector`,
+        "",
+        `Company: ${form.company}`,
+        `Email: ${form.email}`,
+        `Phone: ${form.phone}`,
+        `System: ${sysLabel}`,
+        `Users: ${form.users}`,
+        `Training days: ${breakdown.trainingDays}`,
+        `Price before discount: ${price(breakdown.regular)}`,
+        `Discount: ${breakdown.discountPercent}%`,
+        `Price after discount: ${price(breakdown.total)} / year`,
+        "",
+        "Price includes full cloud hosting.",
+      ];
     return encodeURIComponent(lines.join("\n"));
   }
 
@@ -182,7 +187,7 @@ export default function SectorLandingForm({ sector, base, overrides, isEgypt }: 
         <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-primary-200 bg-primary-50 p-4 text-sm font-medium text-primary-800">
           <span className="flex items-center gap-2"><span className="text-xl">☁️</span>{isAr ? "السعر يشمل الاستضافة السحابية بالكامل" : "Price includes full cloud hosting"}</span>
           <div className="flex overflow-hidden rounded-lg border border-primary-300">
-            {(["USD", "EGP"] as const).map((c) => (
+            {(["USD", "EGP", "SAR"] as const).map((c) => (
               <button key={c} type="button" onClick={() => setCurrency(c)} className={cn("px-3 py-1 text-xs font-semibold", currency === c ? "bg-primary-600 text-white" : "bg-white text-primary-700")}>{c}</button>
             ))}
           </div>
@@ -250,11 +255,20 @@ export default function SectorLandingForm({ sector, base, overrides, isEgypt }: 
                 </div>
                 <div className="mt-1 flex items-center justify-between">
                   <span className="font-bold text-text-primary">{isAr ? "السعر بعد الخصم" : "Price after discount"}</span>
-                  <span className="text-2xl font-extrabold text-primary-600">{price(breakdown.total)}</span>
+                  <div className="flex items-baseline gap-1.5">
+                    <span className="text-2xl font-extrabold text-primary-600">{price(breakdown.total)}</span>
+                    <span className="text-sm font-medium text-text-secondary">{isAr ? "/ سنة" : "/ year"}</span>
+                  </div>
                 </div>
+                <p className="mt-0.5 text-end text-xs text-text-secondary">
+                  {isAr ? "يُدفع سنوياً · شامل الاستضافة السحابية" : "Billed annually · includes full cloud hosting"}
+                </p>
               </div>
-              {isEgypt && currency === "USD" && (
+              {isEgypt && currency !== "EGP" && (
                 <p className="mt-2 text-xs text-text-secondary">≈ {egp(breakdown.total)}</p>
+              )}
+              {isSaudi && currency !== "SAR" && (
+                <p className="mt-2 text-xs text-text-secondary">≈ {sar(breakdown.total)}</p>
               )}
             </div>
           )}

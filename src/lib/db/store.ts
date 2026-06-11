@@ -540,19 +540,20 @@ export async function readPricingBase(pool: Pool): Promise<PricingBase> {
     trainingDays: r.training_days,
     discountPercent: Number(r.discount_percent),
     usdToEgp: Number(r.usd_to_egp),
+    usdToSar: Number(r.usd_to_sar ?? 3.75),
   };
 }
 
 export async function writePricingBase(pool: Pool, p: PricingBase): Promise<void> {
   await pool.query(
-    `INSERT INTO pricing_base (id, price_per_user, hosting_price, operating_costs, training_cost_per_day, training_days, discount_percent, usd_to_egp)
-     VALUES (1,$1,$2,$3,$4,$5,$6,$7)
+    `INSERT INTO pricing_base (id, price_per_user, hosting_price, operating_costs, training_cost_per_day, training_days, discount_percent, usd_to_egp, usd_to_sar)
+     VALUES (1,$1,$2,$3,$4,$5,$6,$7,$8)
      ON CONFLICT (id) DO UPDATE SET
        price_per_user = EXCLUDED.price_per_user, hosting_price = EXCLUDED.hosting_price,
        operating_costs = EXCLUDED.operating_costs, training_cost_per_day = EXCLUDED.training_cost_per_day,
        training_days = EXCLUDED.training_days, discount_percent = EXCLUDED.discount_percent,
-       usd_to_egp = EXCLUDED.usd_to_egp`,
-    [p.pricePerUser, p.hostingPrice, p.operatingCosts, p.trainingCostPerDay, p.trainingDays, p.discountPercent, p.usdToEgp]
+       usd_to_egp = EXCLUDED.usd_to_egp, usd_to_sar = EXCLUDED.usd_to_sar`,
+    [p.pricePerUser, p.hostingPrice, p.operatingCosts, p.trainingCostPerDay, p.trainingDays, p.discountPercent, p.usdToEgp, p.usdToSar]
   );
 }
 

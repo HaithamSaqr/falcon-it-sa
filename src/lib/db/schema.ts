@@ -120,7 +120,8 @@ CREATE TABLE IF NOT EXISTS pricing_base (
   training_cost_per_day numeric NOT NULL DEFAULT 80,
   training_days         int     NOT NULL DEFAULT 3,
   discount_percent      numeric NOT NULL DEFAULT 10,
-  usd_to_egp            numeric NOT NULL DEFAULT 50
+  usd_to_egp            numeric NOT NULL DEFAULT 50,
+  usd_to_sar            numeric NOT NULL DEFAULT 3.75
 );
 
 -- Per-sector / per-system pricing overrides
@@ -276,6 +277,7 @@ ALTER TABLE integrations ADD COLUMN IF NOT EXISTS ai_enabled boolean NOT NULL DE
 ALTER TABLE integrations ADD COLUMN IF NOT EXISTS ai_server_url text NOT NULL DEFAULT '';
 ALTER TABLE integrations ADD COLUMN IF NOT EXISTS ai_api_key text NOT NULL DEFAULT '';
 ALTER TABLE sectors ADD COLUMN IF NOT EXISTS video_url text NOT NULL DEFAULT '';
+ALTER TABLE pricing_base ADD COLUMN IF NOT EXISTS usd_to_sar numeric NOT NULL DEFAULT 3.75;
 `;
 
 export async function ensureSchema(pool: Pool): Promise<void> {

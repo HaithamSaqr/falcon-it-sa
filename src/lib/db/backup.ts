@@ -43,11 +43,19 @@ export async function restoreDatabase(pool: Pool, backup: BackupFile): Promise<{
       const exists = await client.query(`SELECT to_regclass($1) AS t`, [`public.${table}`]);
       if (!exists.rows[0]?.t) continue;
 
+      // Fetch the actual columns present in the current schema.
+      const colRes = await client.query<{ column_name: string }>(
+        `SELECT column_name FROM information_schema.columns WHERE table_schema = 'public' AND table_name = $1`,
+        [table]
+      );
+      const knownCols = new Set(colRes.rows.map((r) => r.column_name));
+
       await client.query(`DELETE FROM "${table}"`);
       tableCount++;
 
       for (const row of rows) {
-        const cols = Object.keys(row);
+        // Filter to only columns that exist in the current schema.
+        const cols = Object.keys(row).filter((c) => knownCols.has(c));
         if (cols.length === 0) continue;
         const values = cols.map((c) => {
           const v = (row as Record<string, unknown>)[c];

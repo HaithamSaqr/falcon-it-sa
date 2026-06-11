@@ -33,8 +33,9 @@ export default async function SectorPage({ params }: Props) {
   const h = await headers();
   const country = (h.get("x-vercel-ip-country") || h.get("cf-ipcountry") || "").toUpperCase();
   const isEgypt = country === "EG";
+  const isSaudi = country === "SA";
 
   return (
-    <SectorLandingForm sector={sector} base={base} overrides={overrides} isEgypt={isEgypt} />
+    <SectorLandingForm sector={sector} base={base} overrides={overrides} isEgypt={isEgypt} isSaudi={isSaudi} />
   );
 }

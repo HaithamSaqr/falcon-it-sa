@@ -54,14 +54,14 @@ export default function AdminPricingPage() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-lg font-semibold text-slate-900">Pricing</h2>
-          <p className="text-sm text-slate-500">Base prices (USD) and per-sector overrides. Formula: users × price/user + hosting + operating + training/day × days.</p>
+          <p className="text-sm text-slate-500">Base prices per year (USD) and per-sector overrides. Formula: users × price/user + hosting + operating + training/day × days.</p>
         </div>
         <button onClick={save} disabled={saving} className="rounded-lg bg-cyan-600 px-5 py-2 text-sm font-medium text-white hover:bg-cyan-700 disabled:opacity-50">{saving ? "Saving..." : "Save"}</button>
       </div>
 
       {/* Base pricing */}
       <div className="rounded-xl border border-slate-200 bg-white p-6">
-        <h3 className="mb-4 text-sm font-semibold text-slate-700">Base Prices (USD)</h3>
+        <h3 className="mb-4 text-sm font-semibold text-slate-700">Base Prices per year (USD)</h3>
         <div className="grid gap-4 sm:grid-cols-3">
           <div><label className={label}>Price / user</label><input type="number" className={input} value={base.pricePerUser} onChange={(e) => setBase({ ...base, pricePerUser: num(+e.target.value) })} /></div>
           <div><label className={label}>Hosting price</label><input type="number" className={input} value={base.hostingPrice} onChange={(e) => setBase({ ...base, hostingPrice: num(+e.target.value) })} /></div>
@@ -70,6 +70,7 @@ export default function AdminPricingPage() {
           <div><label className={label}>Training days (default)</label><input type="number" className={input} value={base.trainingDays} onChange={(e) => setBase({ ...base, trainingDays: num(+e.target.value) })} /></div>
           <div><label className={label}>Discount %</label><input type="number" className={input} value={base.discountPercent} onChange={(e) => setBase({ ...base, discountPercent: num(+e.target.value) })} /></div>
           <div><label className={label}>USD → EGP rate</label><input type="number" className={input} value={base.usdToEgp} onChange={(e) => setBase({ ...base, usdToEgp: num(+e.target.value) })} /></div>
+          <div><label className={label}>USD → SAR rate</label><input type="number" step="0.01" className={input} value={base.usdToSar} onChange={(e) => setBase({ ...base, usdToSar: num(+e.target.value) })} /></div>
         </div>
       </div>
 

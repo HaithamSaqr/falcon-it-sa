@@ -7,7 +7,7 @@
  *
  * Per-sector/per-system overrides replace pricePerUser, operatingCosts and
  * trainingDays when present; everything else falls back to the base.
- * EGP figures are USD × usdToEgp.
+ * EGP figures are USD × usdToEgp. SAR figures are USD × usdToSar.
  */
 
 import type { PricingBase, SectorPricingOverride, SectorSystem } from "@/types/admin";
@@ -25,6 +25,7 @@ export interface PriceBreakdown {
   discount: number;
   total: number;
   usdToEgp: number;
+  usdToSar: number;
 }
 
 export function findOverride(
@@ -63,5 +64,6 @@ export function computePrice(
     discount,
     total,
     usdToEgp: base.usdToEgp,
+    usdToSar: base.usdToSar,
   };
 }

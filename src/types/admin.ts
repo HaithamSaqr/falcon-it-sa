@@ -138,6 +138,7 @@ export interface PricingBase {
   trainingDays: number;
   discountPercent: number;
   usdToEgp: number;
+  usdToSar: number;
 }
 
 export interface SectorPricingOverride {
