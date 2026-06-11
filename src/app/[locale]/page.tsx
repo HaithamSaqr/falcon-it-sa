@@ -1,6 +1,5 @@
 import { setRequestLocale } from "next-intl/server";
 import Hero from "@/components/sections/hero";
-import TrustLogos from "@/components/sections/trust-logos";
 import ComplianceBadges from "@/components/sections/compliance-badges";
 import PainPoints from "@/components/sections/pain-points";
 import FeatureShowcase from "@/components/sections/feature-showcase";
@@ -24,7 +23,6 @@ export default async function HomePage({ params }: Props) {
   return (
     <>
       <Hero />
-      <TrustLogos />
       <ComplianceBadges />
       <PainPoints />
       <FeatureShowcase />

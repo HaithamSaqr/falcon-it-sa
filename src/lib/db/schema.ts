@@ -133,13 +133,21 @@ CREATE TABLE IF NOT EXISTS sector_pricing (
   UNIQUE (sector_id, system)
 );
 
--- Clients (logos + tags)
+-- Clients (logos + tags). The tags column holds client_tags ids.
 CREATE TABLE IF NOT EXISTS clients (
   id         text PRIMARY KEY,
   name_en    text NOT NULL DEFAULT '',
   name_ar    text NOT NULL DEFAULT '',
   logo       text NOT NULL DEFAULT '',
   tags       text[] NOT NULL DEFAULT '{}',
+  sort_order int NOT NULL DEFAULT 0
+);
+
+-- Client tag definitions (bilingual)
+CREATE TABLE IF NOT EXISTS client_tags (
+  id         text PRIMARY KEY,
+  name_en    text NOT NULL DEFAULT '',
+  name_ar    text NOT NULL DEFAULT '',
   sort_order int NOT NULL DEFAULT 0
 );
 

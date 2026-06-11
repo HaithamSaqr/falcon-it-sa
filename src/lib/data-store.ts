@@ -23,6 +23,7 @@ import type {
   PricingBase,
   SectorPricingOverride,
   Client,
+  ClientTag,
   ProductBrochure,
 } from "@/types/admin";
 import { query, getPool } from "@/lib/db/pool";
@@ -405,6 +406,19 @@ export async function getClients(): Promise<Client[]> {
 
 export async function updateClients(clients: Client[]): Promise<void> {
   await store.writeClients(await getPool(), clients);
+}
+
+export async function getClientTags(): Promise<ClientTag[]> {
+  if (!isInstalledSync()) return [];
+  try {
+    return await store.readClientTags(await getPool());
+  } catch {
+    return [];
+  }
+}
+
+export async function updateClientTags(tags: ClientTag[]): Promise<void> {
+  await store.writeClientTags(await getPool(), tags);
 }
 
 // ═══════════════════════════════════════════════════════════════════

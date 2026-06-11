@@ -117,6 +117,57 @@ export default function SettingsPage() {
     }
   }
 
+  async function handleBackup() {
+    setConnMsg(null);
+    try {
+      const res = await fetch("/api/admin/connection/backup");
+      if (!res.ok) {
+        const d = await res.json().catch(() => null);
+        setConnMsg({ ok: false, text: d?.error || "Backup failed" });
+        return;
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `falcon-backup-${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      setConnMsg({ ok: true, text: "Backup downloaded" });
+    } catch {
+      setConnMsg({ ok: false, text: "Backup failed" });
+    }
+  }
+
+  async function handleRestore(file: File) {
+    if (
+      !confirm(
+        "Restore will REPLACE all current data with the backup file. This cannot be undone. Continue?"
+      )
+    )
+      return;
+    setConnMsg(null);
+    setConnSaving(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const res = await fetch("/api/admin/connection/restore", { method: "POST", body: fd });
+      const data = await res.json();
+      if (data.success) {
+        setConnMsg({ ok: true, text: data.message || "Restored successfully — reloading…" });
+        setTimeout(() => window.location.reload(), 1500);
+      } else {
+        setConnMsg({ ok: false, text: data.error || "Restore failed" });
+      }
+    } catch {
+      setConnMsg({ ok: false, text: "Restore failed" });
+    } finally {
+      setConnSaving(false);
+    }
+  }
+
   async function handleSave() {
     if (!settings) return;
     setSaving(true);
@@ -254,6 +305,34 @@ export default function SettingsPage() {
               >
                 {connSaving ? "Testing & saving..." : "Test & Save Connection"}
               </button>
+            </div>
+
+            {/* Backup / Restore */}
+            <div className="mt-5 border-t border-cyan-200 pt-4">
+              <p className="mb-2 text-xs font-semibold uppercase text-slate-500">Backup &amp; Restore</p>
+              <div className="flex flex-wrap items-center gap-3">
+                <button
+                  type="button"
+                  onClick={handleBackup}
+                  className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50"
+                >
+                  ⬇️ Backup database
+                </button>
+                <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-amber-300 bg-amber-50 px-4 py-2 text-sm font-medium text-amber-700 transition-colors hover:bg-amber-100">
+                  ⬆️ Restore from backup
+                  <input
+                    type="file"
+                    accept="application/json,.json"
+                    className="hidden"
+                    onChange={(e) => {
+                      const f = e.target.files?.[0];
+                      if (f) handleRestore(f);
+                      e.target.value = "";
+                    }}
+                  />
+                </label>
+                <span className="text-xs text-slate-400">Downloads a full JSON backup. Restore replaces all data.</span>
+              </div>
             </div>
           </>
         ) : (

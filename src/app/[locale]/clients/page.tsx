@@ -1,5 +1,5 @@
 import { setRequestLocale, getLocale } from "next-intl/server";
-import { getClients } from "@/lib/data-store";
+import { getClients, getClientTags } from "@/lib/data-store";
 import Container from "@/components/ui/container";
 import ClientsGrid from "@/components/sections/clients-grid";
 
@@ -13,7 +13,7 @@ export async function generateMetadata({ params }: Props) {
 export default async function ClientsPage({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const clients = await getClients();
+  const [clients, tags] = await Promise.all([getClients(), getClientTags()]);
   const isAr = (await getLocale()) === "ar";
 
   return (
@@ -25,7 +25,7 @@ export default async function ClientsPage({ params }: Props) {
         {clients.length === 0 ? (
           <p className="text-center text-text-secondary">{isAr ? "لا يوجد عملاء بعد." : "No clients yet."}</p>
         ) : (
-          <ClientsGrid clients={clients} />
+          <ClientsGrid clients={clients} tags={tags} />
         )}
       </Container>
     </section>

@@ -3,29 +3,36 @@
 import { useMemo, useState } from "react";
 import { useLocale } from "next-intl";
 import { cn } from "@/lib/utils";
-import type { Client } from "@/types/admin";
+import type { Client, ClientTag } from "@/types/admin";
 
-export default function ClientsGrid({ clients }: { clients: Client[] }) {
+interface Props {
+  clients: Client[];
+  tags: ClientTag[];
+}
+
+export default function ClientsGrid({ clients, tags }: Props) {
   const locale = useLocale();
   const isAr = locale === "ar";
   const [active, setActive] = useState<string>("all");
 
-  const tags = useMemo(() => {
-    const set = new Set<string>();
-    clients.forEach((c) => c.tags.forEach((t) => set.add(t)));
-    return Array.from(set);
-  }, [clients]);
+  // Only show tag chips for tags actually used by a client.
+  const usedTags = useMemo(() => {
+    const used = new Set<string>();
+    clients.forEach((c) => c.tags.forEach((id) => used.add(id)));
+    return tags.filter((t) => used.has(t.id));
+  }, [clients, tags]);
+
+  const labelFor = (t: ClientTag) => (isAr ? t.name.ar || t.name.en : t.name.en || t.name.ar) || t.id;
 
   const filtered = active === "all" ? clients : clients.filter((c) => c.tags.includes(active));
 
   return (
     <div>
-      {/* Tag filters */}
-      {tags.length > 0 && (
+      {usedTags.length > 0 && (
         <div className="mb-8 flex flex-wrap justify-center gap-2">
-          <FilterChip label={isAr ? "الكل" : "All"} active={active === "all"} onClick={() => setActive("all")} />
-          {tags.map((t) => (
-            <FilterChip key={t} label={t} active={active === t} onClick={() => setActive(t)} />
+          <Chip label={isAr ? "الكل" : "All"} active={active === "all"} onClick={() => setActive("all")} />
+          {usedTags.map((t) => (
+            <Chip key={t.id} label={labelFor(t)} active={active === t.id} onClick={() => setActive(t.id)} />
           ))}
         </div>
       )}
@@ -50,7 +57,7 @@ export default function ClientsGrid({ clients }: { clients: Client[] }) {
   );
 }
 
-function FilterChip({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
+function Chip({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
   return (
     <button
       onClick={onClick}

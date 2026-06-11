@@ -48,6 +48,51 @@ async function getOdooConfig(): Promise<OdooConfig> {
   };
 }
 
+// ── URL resolver (follows redirects so non-canonical hosts work) ────
+// Odoo XML-RPC clients don't follow HTTP redirects, so a URL like
+// "falcon-valley.com" that 301s to "www.falcon-valley.com" would make the
+// parser choke on the redirect's HTML. We resolve the canonical origin once.
+const resolvedUrlCache = new Map<string, string>();
+
+async function resolveOdooUrl(rawUrl: string): Promise<string> {
+  let u = rawUrl.trim().replace(/\/+$/, "");
+  if (!/^https?:\/\//i.test(u)) u = "https://" + u;
+  if (resolvedUrlCache.has(u)) return resolvedUrlCache.get(u)!;
+
+  let resolved = u;
+  try {
+    const res = await fetch(u, {
+      method: "HEAD",
+      redirect: "follow",
+      signal: AbortSignal.timeout(8000),
+    });
+    if (res.url) resolved = new URL(res.url).origin;
+  } catch {
+    try {
+      resolved = new URL(u).origin;
+    } catch {
+      resolved = u;
+    }
+  }
+  resolvedUrlCache.set(u, resolved);
+  return resolved;
+}
+
+/** Translate cryptic XML-RPC parser errors into actionable messages. */
+function friendlyOdooError(message: string): string {
+  const m = (message || "").toLowerCase();
+  if (m.includes("title") || m.includes("unknown xml-rpc tag") || m.includes("<!doctype") || m.includes("<html")) {
+    return "The server returned a web page, not Odoo XML-RPC. Check the URL — it may be redirecting (try adding 'www' or the canonical domain) or isn't an Odoo server.";
+  }
+  if (m.includes("access denied") || m.includes("authenticate") || m.includes("no uid")) {
+    return "Authentication failed. Check the database name, username, and API key.";
+  }
+  if (m.includes("econnrefused") || m.includes("enotfound") || m.includes("timeout") || m.includes("aborted")) {
+    return "Could not reach the Odoo server. Check the URL and that the server is online.";
+  }
+  return message || "Connection failed";
+}
+
 // Legacy sync check (for imports that check isOdooConfigured at module load)
 const ODOO_URL = process.env.ODOO_URL || "";
 const ODOO_DB = process.env.ODOO_DB || "";
@@ -105,9 +150,11 @@ async function createOdooClient(): Promise<OdooInstance> {
     throw new Error("Odoo is not configured");
   }
 
+  const resolvedUrl = await resolveOdooUrl(config.url);
+
   return new Promise((resolve, reject) => {
     const odoo = new xmlrpc({
-      url: config.url,
+      url: resolvedUrl,
       db: config.db,
       username: config.username,
       password: config.password,
@@ -372,8 +419,9 @@ export async function testOdooConnection(
   password: string
 ): Promise<{ success: boolean; message: string }> {
   try {
+    const resolvedUrl = await resolveOdooUrl(url);
     const odoo = new (await import("odoo-xmlrpc")).default({
-      url,
+      url: resolvedUrl,
       db,
       username,
       password,
@@ -382,16 +430,20 @@ export async function testOdooConnection(
     return new Promise((resolve) => {
       odoo.connect((err: Error | null) => {
         if (err) {
-          resolve({ success: false, message: err.message });
+          resolve({ success: false, message: friendlyOdooError(err.message) });
         } else {
-          resolve({ success: true, message: "Connected successfully" });
+          const note =
+            new URL(resolvedUrl).host !== new URL(/^https?:\/\//i.test(url.trim()) ? url.trim() : "https://" + url.trim()).host
+              ? ` (resolved to ${resolvedUrl})`
+              : "";
+          resolve({ success: true, message: "Connected successfully" + note });
         }
       });
     });
   } catch (error) {
     return {
       success: false,
-      message: error instanceof Error ? error.message : "Unknown error",
+      message: friendlyOdooError(error instanceof Error ? error.message : "Unknown error"),
     };
   }
 }

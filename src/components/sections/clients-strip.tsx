@@ -32,7 +32,7 @@ export default async function ClientsStrip() {
           ))}
         </div>
 
-        {clients.length > 12 && (
+        {clients.length > 0 && (
           <div className="mt-10 text-center">
             <Link
               href="/clients"

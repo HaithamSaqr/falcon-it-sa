@@ -21,6 +21,7 @@ import type {
   PricingBase,
   SectorPricingOverride,
   Client,
+  ClientTag,
   ProductBrochure,
 } from "@/types/admin";
 import {
@@ -617,6 +618,47 @@ export async function writeClients(pool: Pool, clients: Client[]): Promise<void>
   } finally {
     client.release();
   }
+}
+
+// ── Client tags ─────────────────────────────────────────────────────
+export async function readClientTags(pool: Pool): Promise<ClientTag[]> {
+  const res = await pool.query(`SELECT * FROM client_tags ORDER BY sort_order, id`);
+  return res.rows.map((r) => ({
+    id: r.id,
+    name: { en: r.name_en, ar: r.name_ar },
+    sortOrder: r.sort_order,
+  }));
+}
+
+export async function writeClientTags(pool: Pool, tags: ClientTag[]): Promise<void> {
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+    await client.query("DELETE FROM client_tags");
+    for (let i = 0; i < tags.length; i++) {
+      const t = tags[i];
+      await client.query(
+        `INSERT INTO client_tags (id, name_en, name_ar, sort_order) VALUES ($1,$2,$3,$4)`,
+        [t.id || newId("tag"), t.name?.en ?? "", t.name?.ar ?? "", i]
+      );
+    }
+    await client.query("COMMIT");
+  } catch (e) {
+    await client.query("ROLLBACK");
+    throw e;
+  } finally {
+    client.release();
+  }
+}
+
+/** Create tag definitions for any tag ids used by clients but not yet defined. */
+export async function backfillClientTags(pool: Pool): Promise<void> {
+  await pool.query(
+    `INSERT INTO client_tags (id, name_en, name_ar, sort_order)
+     SELECT DISTINCT t, t, t, 0
+     FROM clients, unnest(tags) AS t
+     WHERE t <> '' AND NOT EXISTS (SELECT 1 FROM client_tags ct WHERE ct.id = t)`
+  );
 }
 
 // ── Product brochures ───────────────────────────────────────────────

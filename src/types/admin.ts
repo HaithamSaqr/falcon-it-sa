@@ -146,10 +146,17 @@ export interface SectorPricingOverride {
   trainingDays: number | null;
 }
 
+export interface ClientTag {
+  id: string;
+  name: BilingualText;
+  sortOrder: number;
+}
+
 export interface Client {
   id: string;
   name: BilingualText;
   logo: string;
+  /** References to ClientTag ids. */
   tags: string[];
   sortOrder: number;
 }

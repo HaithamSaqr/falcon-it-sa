@@ -16,6 +16,7 @@ import {
   writeFooterLinks,
   writeSectors,
   writePricingBase,
+  backfillClientTags,
   countAdmins,
   createAdmin,
 } from "./store";
@@ -149,6 +150,9 @@ export async function ensureReady(pool: Pool): Promise<void> {
   if ((await rowCount(pool, "pricing_base")) === 0) {
     await writePricingBase(pool, DEFAULT_PRICING_BASE);
   }
+
+  // ── Client tags: create definitions for any tags already used by clients ──
+  await backfillClientTags(pool);
 
   // ── Retire the legacy JSON store ──
   await pool.query(`DROP TABLE IF EXISTS singletons`);
