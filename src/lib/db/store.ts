@@ -738,6 +738,17 @@ export async function readBrochure(pool: Pool, slug: string): Promise<ProductBro
   };
 }
 
+/** Insert default brochures only if a brochure for that slug doesn't exist yet. */
+export async function seedBrochures(pool: Pool, brochures: ProductBrochure[]): Promise<void> {
+  for (const b of brochures) {
+    await pool.query(
+      `INSERT INTO product_brochures (slug, title_en, title_ar, content_en, content_ar, enabled)
+       VALUES ($1,$2,$3,$4,$5,$6) ON CONFLICT (slug) DO NOTHING`,
+      [b.slug, b.title?.en ?? "", b.title?.ar ?? "", b.content?.en ?? "", b.content?.ar ?? "", b.enabled]
+    );
+  }
+}
+
 export async function writeBrochure(pool: Pool, b: ProductBrochure): Promise<void> {
   await pool.query(
     `INSERT INTO product_brochures (slug, title_en, title_ar, content_en, content_ar, enabled, updated_at)

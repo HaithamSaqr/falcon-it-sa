@@ -40,7 +40,8 @@
     "odooPartner": {
       "title": "Official Odoo Partner",
       "description": "Certified Odoo implementation partner"
-    }
+    },
+    "verified": "Verified"
   },
   "painPoints": {
     "heading": "Most MENA businesses overpay for ERP — and don't even get compliance",

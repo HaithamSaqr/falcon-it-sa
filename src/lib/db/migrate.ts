@@ -17,6 +17,7 @@ import {
   writeSectors,
   writePricingBase,
   writeProducts,
+  seedBrochures,
   backfillClientTags,
   countAdmins,
   createAdmin,
@@ -30,6 +31,7 @@ import {
   DEFAULT_SECTORS,
   DEFAULT_PRICING_BASE,
   DEFAULT_PRODUCTS,
+  DEFAULT_BROCHURES,
 } from "./defaults";
 import type { SiteSettings, SiteContent, IntegrationSettings } from "@/types/admin";
 
@@ -157,6 +159,9 @@ export async function ensureReady(pool: Pool): Promise<void> {
   if ((await rowCount(pool, "products")) === 0) {
     await writeProducts(pool, DEFAULT_PRODUCTS);
   }
+
+  // ── Default brochures for new products (only if not already present) ──
+  await seedBrochures(pool, DEFAULT_BROCHURES);
 
   // ── Client tags: create definitions for any tags already used by clients ──
   await backfillClientTags(pool);
