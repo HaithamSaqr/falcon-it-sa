@@ -24,19 +24,22 @@ export default async function BrochurePage({ params }: Props) {
   const content = isAr ? b.content.ar : b.content.en;
 
   return (
-    <article className="py-12 lg:py-20">
-      <Container className="max-w-3xl">
+    <article className="pb-16">
+      {/* Back link + title stay in a readable container */}
+      <Container className="max-w-5xl pt-8">
         <Link href={`/products/${slug}`} className="mb-6 inline-flex items-center gap-1.5 text-sm font-medium text-text-secondary transition-colors hover:text-primary-500">
           <span className="rtl:rotate-180">←</span>
           {isAr ? "العودة للمنتج" : "Back to product"}
         </Link>
         {title && <h1 className="mb-8 text-3xl font-extrabold text-text-primary sm:text-4xl">{title}</h1>}
-        <div
-          className="prose prose-lg max-w-none prose-headings:text-text-primary prose-p:text-text-secondary prose-a:text-primary-600 prose-img:rounded-xl"
-          dir={isAr ? "rtl" : "ltr"}
-          dangerouslySetInnerHTML={{ __html: content || "" }}
-        />
       </Container>
+
+      {/* Pasted HTML renders full-width; plain text children stay in a readable column. */}
+      <div
+        className="brochure-content prose prose-lg w-full max-w-none prose-headings:text-text-primary prose-p:text-text-secondary prose-a:text-primary-600 prose-img:rounded-xl"
+        dir={isAr ? "rtl" : "ltr"}
+        dangerouslySetInnerHTML={{ __html: content || "" }}
+      />
     </article>
   );
 }

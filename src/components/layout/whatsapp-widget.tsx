@@ -10,8 +10,10 @@ export default function WhatsAppWidget() {
   const message = encodeURIComponent(t("common.whatsappMessage"));
   const href = `https://wa.me/${company.whatsapp}?text=${message}`;
 
+  // Hidden on mobile — the mobile bottom bar already has a WhatsApp button.
+  // Shown only on lg+ where there is no bottom bar.
   return (
-    <div className="fixed bottom-6 end-6 z-50">
+    <div className="fixed bottom-6 end-6 z-50 hidden lg:block">
       {/* Pulse ring */}
       <span className="absolute inset-0 animate-ping rounded-full bg-[#25D366]/40" />
 

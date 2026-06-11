@@ -169,6 +169,27 @@
     display: none;
   }
 
+  /* Brochure content: full-width design blocks, readable text column.
+     Direct text children get a centered max-width; direct <div>/<section>
+     blocks (heroes, banners) stay full-bleed edge-to-edge. */
+  .brochure-content > p,
+  .brochure-content > h1,
+  .brochure-content > h2,
+  .brochure-content > h3,
+  .brochure-content > h4,
+  .brochure-content > h5,
+  .brochure-content > h6,
+  .brochure-content > ul,
+  .brochure-content > ol,
+  .brochure-content > blockquote,
+  .brochure-content > pre,
+  .brochure-content > figure,
+  .brochure-content > table {
+    max-width: 56rem;
+    margin-inline: auto;
+    padding-inline: 1.5rem;
+  }
+
   /* Logo marquee (Our Clients strip) */
   .animate-marquee {
     animation: falcon-marquee 35s linear infinite;

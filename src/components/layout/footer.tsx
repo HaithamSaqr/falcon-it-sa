@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations, useLocale } from "next-intl";
-import { Link } from "@/i18n/navigation";
+import { Link, usePathname } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 import { NAV_ITEMS } from "@/lib/constants";
 import { useSettings } from "@/components/providers/settings-provider";
@@ -119,11 +119,47 @@ function FooterColumn({
 /*  Footer (main)                                                      */
 /* ------------------------------------------------------------------ */
 
+/** Compact copyright + legal strip, reused by the minimal landing-page footer. */
+function FooterBottomStrip({
+  t,
+  legalLinks,
+}: {
+  t: ReturnType<typeof useTranslations>;
+  legalLinks: { label: string; href: string }[];
+}) {
+  return (
+    <div className="flex flex-col items-center justify-between gap-3 sm:flex-row">
+      <p className="text-xs text-text-on-dark/40">
+        {t("footer.copyright", { year: new Date().getFullYear() })}
+      </p>
+      <div className="flex gap-6">
+        {legalLinks.map((link, i) => {
+          const isExternal = /^https?:\/\//i.test(link.href);
+          const cls = "text-xs text-text-on-dark/40 transition-colors hover:text-primary-400";
+          return isExternal ? (
+            <a key={i} href={link.href} target="_blank" rel="noopener noreferrer" className={cls}>
+              {link.label}
+            </a>
+          ) : (
+            <Link key={i} href={link.href} className={cls}>
+              {link.label}
+            </Link>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 export default function Footer() {
   const t = useTranslations();
   const locale = useLocale();
+  const pathname = usePathname();
   const { company, social, footerLinks } = useSettings();
   const isAr = locale === "ar";
+
+  // Sector landing pages get a minimal footer (the page is already long).
+  const isLandingPage = /^\/sectors\/[^/]+/.test(pathname);
 
   const linksBy = (section: string) =>
     (footerLinks ?? [])
@@ -133,6 +169,17 @@ export default function Footer() {
   const aboutLinks = linksBy("about");
   const supportLinks = linksBy("support");
   const legalLinks = linksBy("legal");
+
+  // Minimal footer on sector landing pages — just the copyright/legal strip.
+  if (isLandingPage) {
+    return (
+      <footer className="bg-dark">
+        <Container className="py-6">
+          <FooterBottomStrip t={t} legalLinks={legalLinks} />
+        </Container>
+      </footer>
+    );
+  }
 
   const productItems = NAV_ITEMS.find((item) => item.key === "products");
   const productLinks =
