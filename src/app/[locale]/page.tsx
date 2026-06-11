@@ -1,5 +1,5 @@
 import { setRequestLocale } from "next-intl/server";
-import { getHome } from "@/lib/data-store";
+import { getHome, getContent } from "@/lib/data-store";
 import Hero from "@/components/sections/hero";
 import ClientsStrip from "@/components/sections/clients-strip";
 import WhyErpFails from "@/components/sections/why-erp-fails";
@@ -21,7 +21,7 @@ export default async function HomePage({ params }: Props) {
   setRequestLocale(locale);
 
   const isAr = locale === "ar";
-  const home = await getHome();
+  const [home, content] = await Promise.all([getHome(), getContent()]);
   const L = (b: { en: string; ar: string }) => (isAr ? b.ar : b.en);
 
   return (
@@ -35,8 +35,8 @@ export default async function HomePage({ params }: Props) {
       {/* Sectors we serve — kept from the existing design */}
       <SectorsHome />
       <StatsCounter heading={L(home.stats.heading)} stats={home.stats.items} isAr={isAr} />
-      <Testimonials />
-      <Faq />
+      <Testimonials items={content.testimonials} isAr={isAr} />
+      <Faq items={content.faqs} isAr={isAr} />
       <Newsletter heading={L(home.newsletter.heading)} subtitle={L(home.newsletter.subtitle)} />
     </>
   );

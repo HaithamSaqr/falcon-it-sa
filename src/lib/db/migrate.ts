@@ -20,6 +20,7 @@ import {
   seedBrochures,
   backfillClientTags,
   seedHome,
+  seedContentExtras,
   countAdmins,
   createAdmin,
 } from "./store";
@@ -166,6 +167,9 @@ export async function ensureReady(pool: Pool): Promise<void> {
 
   // ── Home page content (cards + text + backfill new hero columns) ──
   await seedHome(pool);
+
+  // ── Testimonials + FAQs (seed defaults only if those tables are empty) ──
+  await seedContentExtras(pool);
 
   // ── Client tags: create definitions for any tags already used by clients ──
   await backfillClientTags(pool);

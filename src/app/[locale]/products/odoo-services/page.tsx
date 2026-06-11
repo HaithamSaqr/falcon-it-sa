@@ -483,6 +483,7 @@ function OdooServicesContent({ isArabic }: { isArabic: boolean }) {
               />
               <input
                 type="email"
+                suppressHydrationWarning
                 placeholder={tp("formEmail")}
                 className="rounded-lg border border-white/20 bg-white/5 px-4 py-3 text-white placeholder:text-gray-400 focus:border-primary-500 focus:outline-none sm:col-span-1"
               />

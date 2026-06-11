@@ -1,4 +1,5 @@
 import { setRequestLocale } from "next-intl/server";
+import { getContent } from "@/lib/data-store";
 import FAQ from "@/components/sections/faq";
 
 type Props = {
@@ -9,5 +10,6 @@ export default async function FAQPage({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
 
-  return <FAQ />;
+  const content = await getContent();
+  return <FAQ items={content.faqs} isAr={locale === "ar"} />;
 }

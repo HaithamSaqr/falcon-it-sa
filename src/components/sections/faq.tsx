@@ -8,11 +8,17 @@ import {
   AccordionTrigger,
   AccordionContent,
 } from "@/components/ui/accordion";
+import type { SiteContent } from "@/types/admin";
 
-const FAQ_KEYS = [1, 2, 3, 4, 5, 6, 7] as const;
-
-export default function Faq() {
+export default function Faq({
+  items,
+  isAr,
+}: {
+  items: SiteContent["faqs"];
+  isAr: boolean;
+}) {
   const t = useTranslations("faq");
+  if (!items.length) return null;
 
   return (
     <section className="bg-white py-20 lg:py-28">
@@ -21,23 +27,17 @@ export default function Faq() {
 
         <div className="mx-auto max-w-3xl">
           <AccordionRoot type="single" collapsible>
-            {FAQ_KEYS.map((num) => (
-              <AccordionItem
-                key={num}
-                value={`faq-${num}`}
-                className="border-b border-gray-200"
-              >
-                <AccordionTrigger>{t(`q${num}`)}</AccordionTrigger>
-                <AccordionContent>{t(`a${num}`)}</AccordionContent>
+            {items.map((faq) => (
+              <AccordionItem key={faq.id} value={faq.id} className="border-b border-gray-200">
+                <AccordionTrigger>{isAr ? faq.question.ar : faq.question.en}</AccordionTrigger>
+                <AccordionContent>{isAr ? faq.answer.ar : faq.answer.en}</AccordionContent>
               </AccordionItem>
             ))}
           </AccordionRoot>
 
           {/* Still have questions */}
           <div className="mt-12 text-center">
-            <p className="mb-4 text-lg font-medium text-text-primary">
-              {t("stillHaveQuestions")}
-            </p>
+            <p className="mb-4 text-lg font-medium text-text-primary">{t("stillHaveQuestions")}</p>
             <Button variant="primary" size="md" href="/contact">
               {t("contactUs")}
             </Button>

@@ -98,7 +98,7 @@ export default function DemoPage() {
 
                 <div>
                   <label htmlFor="email" className={labelClasses}>{t("email")} *</label>
-                  <input id="email" type="email" className={cn(inputClasses, errors.email && "border-red-500")} {...register("email")} />
+                  <input id="email" type="email" suppressHydrationWarning className={cn(inputClasses, errors.email && "border-red-500")} {...register("email")} />
                   {errors.email && <p className={errorClasses}>{errors.email.message}</p>}
                 </div>
 

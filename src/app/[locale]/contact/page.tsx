@@ -98,6 +98,7 @@ export default function ContactPage() {
                   <input
                     id="email"
                     type="email"
+                    suppressHydrationWarning
                     className={cn(inputClasses, errors.email && "border-red-500")}
                     {...register("email")}
                   />

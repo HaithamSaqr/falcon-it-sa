@@ -520,6 +520,36 @@ export async function seedHome(pool: Pool): Promise<void> {
   );
 }
 
+/**
+ * Idempotent seed for testimonials + FAQs. Seeds the default set only when the
+ * respective table is empty, so existing admin-entered content is never touched.
+ */
+export async function seedContentExtras(pool: Pool): Promise<void> {
+  const tCount = await pool.query(`SELECT count(*)::int AS n FROM testimonials`);
+  if (tCount.rows[0].n === 0) {
+    for (let i = 0; i < DEFAULT_CONTENT.testimonials.length; i++) {
+      const t = DEFAULT_CONTENT.testimonials[i];
+      await pool.query(
+        `INSERT INTO testimonials (id, name, role, company, quote_en, quote_ar, image, sort_order)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`,
+        [t.id || newId("ts"), t.name, t.role, t.company, t.quote.en, t.quote.ar, t.image ?? "", i]
+      );
+    }
+  }
+
+  const fCount = await pool.query(`SELECT count(*)::int AS n FROM faqs`);
+  if (fCount.rows[0].n === 0) {
+    for (let i = 0; i < DEFAULT_CONTENT.faqs.length; i++) {
+      const f = DEFAULT_CONTENT.faqs[i];
+      await pool.query(
+        `INSERT INTO faqs (id, question_en, question_ar, answer_en, answer_ar, sort_order)
+         VALUES ($1,$2,$3,$4,$5,$6)`,
+        [f.id || newId("faq"), f.question.en, f.question.ar, f.answer.en, f.answer.ar, i]
+      );
+    }
+  }
+}
+
 // ── Integrations ────────────────────────────────────────────────────
 export async function readIntegrations(pool: Pool): Promise<IntegrationSettings> {
   const res = await pool.query(`SELECT * FROM integrations WHERE id = 1`);

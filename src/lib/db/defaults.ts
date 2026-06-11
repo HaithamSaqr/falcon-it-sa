@@ -34,8 +34,101 @@ export const DEFAULT_CONTENT: SiteContent = {
       cta2Text: "احجز عرض تجريبي",
     },
   },
-  testimonials: [],
-  faqs: [],
+  testimonials: [
+    {
+      id: "ts-1", name: "Ahmed Al-Rashid", role: "CFO", company: "Saudi Emar Developments",
+      quote: {
+        en: "Falcon ERP completely transformed our operations. We migrated from SAP in just 6 weeks and saved 60% on costs. Arabic support and ZATCA compliance were ready from day one.",
+        ar: "فالكون ERP حوّل عملياتنا بالكامل. انتقلنا من SAP خلال 6 أسابيع فقط ووفرنا 60% من التكاليف. الدعم العربي والامتثال مع ZATCA كان جاهزًا من اليوم الأول.",
+      },
+    },
+    {
+      id: "ts-2", name: "Mohammed Hassan", role: "IT Director", company: "Haddad Group",
+      quote: {
+        en: "We were using Excel to manage 8 branches. Falcon Cloud unified everything — inventory, accounting, and HR in one system. Stock reconciliation that took 3 days is now instant.",
+        ar: "كنا نستخدم Excel لإدارة 8 فروع. فالكون كلاود وحّد كل شيء — المخزون، المحاسبة، والموارد البشرية في نظام واحد. تسوية المخزون التي كانت تستغرق 3 أيام أصبحت فورية.",
+      },
+    },
+    {
+      id: "ts-3", name: "Khaled Al-Omari", role: "CEO", company: "Almada Construction",
+      quote: {
+        en: "We tried two Odoo partners before Falcon. The difference was night and day — they understood Saudi market requirements from the start. Localization is flawless and our data stays on our servers in Riyadh.",
+        ar: "جربنا شريكين أودو قبل فالكون. الفرق كان كبير — فهموا متطلبات السوق السعودي من البداية. التعريب ممتاز والبيانات تبقى على خوادمنا في الرياض.",
+      },
+    },
+    {
+      id: "ts-4", name: "Sara Al-Mutairi", role: "Operations Manager", company: "Nile Food Industries",
+      quote: {
+        en: "Falcon's POS system completely changed how we operate. Linking 5 restaurant branches in one system with real-time reports. We reduced waste by 30% in the first 3 months.",
+        ar: "نظام نقاط البيع من فالكون غيّر طريقة عملنا تمامًا. ربط 5 فروع مطاعم في نظام واحد مع تقارير لحظية. تقليل الهدر بنسبة 30% خلال أول 3 أشهر.",
+      },
+    },
+    {
+      id: "ts-5", name: "Abdulrahman Al-Subaie", role: "General Manager", company: "Delta Pharma Egypt",
+      quote: {
+        en: "The transition to Falcon was easier than we expected. Support team available 24/7 in Arabic. ZATCA Phase 2 compliance happened automatically — we didn't have to lift a finger.",
+        ar: "الانتقال إلى فالكون كان أسهل مما توقعنا. فريق الدعم متاح 24/7 وباللغة العربية. امتثال المرحلة الثانية من ZATCA تم تلقائيًا بدون أي تدخل منا.",
+      },
+    },
+  ],
+  faqs: [
+    {
+      id: "faq-1",
+      question: { en: "What's included in the free trial?", ar: "ما المتضمن في التجربة المجانية؟" },
+      answer: {
+        en: "Full access to all Falcon Cloud ERP modules for 14 days. No credit card required. Your data is preserved when you subscribe.",
+        ar: "وصول كامل لجميع وحدات فالكون كلاود ERP لمدة 14 يومًا. لا حاجة لبطاقة ائتمان. يتم حفظ بياناتك عند الاشتراك.",
+      },
+    },
+    {
+      id: "faq-2",
+      question: { en: "How long does implementation take?", ar: "كم يستغرق التنفيذ؟" },
+      answer: {
+        en: "Falcon ERP typically goes live in 4–8 weeks, including data migration, training, and customization. Compare that to 6–12 months with SAP or Oracle.",
+        ar: "فالكون ERP يبدأ العمل عادة خلال 4-8 أسابيع، بما في ذلك نقل البيانات والتدريب والتخصيص. قارن ذلك بـ 6-12 شهرًا مع SAP أو Oracle.",
+      },
+    },
+    {
+      id: "faq-3",
+      question: { en: "Is Falcon ZATCA Phase 2 compliant?", ar: "هل فالكون متوافق مع فاتورة المرحلة الثانية؟" },
+      answer: {
+        en: "Yes. Falcon ERP has native ZATCA Phase 2 e-invoicing built into the core system — not bolted on as an add-on. We're fully certified.",
+        ar: "نعم. فالكون ERP يحتوي على فوترة إلكترونية ZATCA المرحلة الثانية مدمجة في النظام الأساسي — وليست إضافة لاحقة. نحن معتمدون بالكامل.",
+      },
+    },
+    {
+      id: "faq-4",
+      question: { en: "Can I migrate from SAP/Oracle/Odoo?", ar: "هل يمكنني الانتقال من SAP/Oracle/Odoo؟" },
+      answer: {
+        en: "Absolutely. We have a dedicated migration team that handles data extraction, transformation, and validation. Most migrations complete within 2–4 weeks.",
+        ar: "بالتأكيد. لدينا فريق متخصص في نقل البيانات يتولى الاستخراج والتحويل والتحقق. معظم عمليات النقل تكتمل خلال 2-4 أسابيع.",
+      },
+    },
+    {
+      id: "faq-5",
+      question: { en: "Do you support on-premise deployment?", ar: "هل تدعمون النشر المحلي؟" },
+      answer: {
+        en: "Yes, on-premise is our default deployment model. Your data stays on your servers, in your country. We also offer cloud and hybrid options.",
+        ar: "نعم، النشر المحلي هو نموذج النشر الافتراضي لدينا. بياناتك تبقى على خوادمك، في بلدك. نقدم أيضًا خيارات سحابية وهجينة.",
+      },
+    },
+    {
+      id: "faq-6",
+      question: { en: "What industries does Falcon serve?", ar: "ما القطاعات التي يخدمها فالكون؟" },
+      answer: {
+        en: "Falcon has pre-built templates for 9 industries: Retail, Manufacturing, Construction, Real Estate, Hospitality, Healthcare, Education, Logistics, and Trading.",
+        ar: "لدى فالكون قوالب جاهزة لـ 9 قطاعات: التجزئة، التصنيع، المقاولات، العقارات، الضيافة، الرعاية الصحية، التعليم، النقل، والتجارة.",
+      },
+    },
+    {
+      id: "faq-7",
+      question: { en: "What kind of support do you offer?", ar: "ما نوع الدعم الذي تقدمونه؟" },
+      answer: {
+        en: "We offer 5 SLA tiers from Basic (5 hrs/month, 48hr response) to VIP (unlimited hours, 1hr response). All plans include WhatsApp support.",
+        ar: "نقدم 5 مستويات من اتفاقيات مستوى الخدمة من أساسي (5 ساعات/شهر، استجابة 48 ساعة) إلى VIP (ساعات غير محدودة، استجابة ساعة واحدة). جميع الخطط تشمل دعم واتساب.",
+      },
+    },
+  ],
   stats: [
     { value: 500, suffix: "+", label: { en: "SMEs served", ar: "شركة ومؤسسة" } },
     { value: 5000, suffix: "+", label: { en: "Monthly users", ar: "مستخدم شهري" } },

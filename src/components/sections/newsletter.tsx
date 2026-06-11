@@ -56,6 +56,9 @@ export default function Newsletter({
                 <input
                   type="email"
                   placeholder={t("placeholder")}
+                  // Browser autofill extensions inject attributes (autofill-prediction…)
+                  // before hydration; suppress the harmless attribute mismatch warning.
+                  suppressHydrationWarning
                   {...register("email")}
                   className={cn(
                     "h-12 w-full rounded-xl border bg-white px-4 text-text-primary",

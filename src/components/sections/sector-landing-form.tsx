@@ -235,7 +235,7 @@ export default function SectorLandingForm({ sector, base, overrides, isEgypt, is
             </div>
             <div>
               <label className={labelCls}>{isAr ? "البريد الإلكتروني" : "Email"} *</label>
-              <input className={inputCls} type="email" dir="ltr" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
+              <input className={inputCls} type="email" suppressHydrationWarning dir="ltr" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
             </div>
             <div>
               <label className={labelCls}>{isAr ? "رقم الهاتف" : "Phone"} *</label>
