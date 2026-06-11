@@ -123,6 +123,8 @@ export interface Sector {
   title: BilingualText;
   description: BilingualText;
   systems: SectorSystem[];
+  /** Optional video URL (YouTube/Vimeo/embed) shown on the landing page. */
+  videoUrl: string;
   featured: boolean;
   enabled: boolean;
   sortOrder: number;
@@ -158,6 +160,20 @@ export interface Client {
   logo: string;
   /** References to ClientTag ids. */
   tags: string[];
+  sortOrder: number;
+}
+
+export interface Product {
+  slug: string;
+  name: BilingualText;
+  eyebrow: BilingualText;
+  title: BilingualText;
+  description: BilingualText;
+  heroImage: string;
+  cta1: { label: BilingualText; url: string };
+  cta2: { label: BilingualText; url: string };
+  isCustom: boolean;
+  enabled: boolean;
   sortOrder: number;
 }
 

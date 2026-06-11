@@ -8,6 +8,7 @@ import Button from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useSettings } from "@/components/providers/settings-provider";
 import { computePrice, findOverride } from "@/lib/pricing";
+import { toEmbedUrl } from "@/lib/video";
 import type { Sector, PricingBase, SectorPricingOverride, SectorSystem } from "@/types/admin";
 
 const SYSTEM_LABELS: Record<SectorSystem, { en: string; ar: string }> = {
@@ -60,6 +61,7 @@ export default function SectorLandingForm({ sector, base, overrides, isEgypt }: 
   const sectorName = isAr ? sector.name.ar : sector.name.en;
   const sectorTitle = isAr ? sector.title.ar : sector.title.en;
   const sectorDesc = isAr ? sector.description.ar : sector.description.en;
+  const embedUrl = toEmbedUrl(sector.videoUrl);
 
   function validate(): boolean {
     if (form.company.trim().length < 2) return setError(isAr ? "اسم الشركة مطلوب" : "Company name required"), false;
@@ -159,6 +161,22 @@ export default function SectorLandingForm({ sector, base, overrides, isEgypt }: 
             <p className="mx-auto mt-2 max-w-xl text-white/85">{sectorDesc}</p>
           </div>
         </div>
+
+        {/* Embedded video */}
+        {embedUrl && (
+          <div className="mt-4 overflow-hidden rounded-2xl border border-gray-200 shadow-sm">
+            <div className="relative w-full" style={{ aspectRatio: "16 / 9" }}>
+              <iframe
+                src={embedUrl}
+                title={sectorTitle}
+                className="absolute inset-0 h-full w-full"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowFullScreen
+                loading="lazy"
+              />
+            </div>
+          </div>
+        )}
 
         {/* Cloud note + currency toggle */}
         <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-primary-200 bg-primary-50 p-4 text-sm font-medium text-primary-800">

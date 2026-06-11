@@ -24,6 +24,7 @@ import type {
   SectorPricingOverride,
   Client,
   ClientTag,
+  Product,
   ProductBrochure,
 } from "@/types/admin";
 import { query, getPool } from "@/lib/db/pool";
@@ -36,6 +37,7 @@ import {
   DEFAULT_FOOTER_LINKS,
   DEFAULT_SECTORS,
   DEFAULT_PRICING_BASE,
+  DEFAULT_PRODUCTS,
 } from "@/lib/db/defaults";
 import * as store from "@/lib/db/store";
 
@@ -419,6 +421,32 @@ export async function getClientTags(): Promise<ClientTag[]> {
 
 export async function updateClientTags(tags: ClientTag[]): Promise<void> {
   await store.writeClientTags(await getPool(), tags);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// PRODUCTS
+// ═══════════════════════════════════════════════════════════════════
+
+export async function getProducts(onlyEnabled = false): Promise<Product[]> {
+  if (!isInstalledSync()) return onlyEnabled ? DEFAULT_PRODUCTS.filter((p) => p.enabled) : DEFAULT_PRODUCTS;
+  try {
+    return await store.readProducts(await getPool(), onlyEnabled);
+  } catch {
+    return DEFAULT_PRODUCTS;
+  }
+}
+
+export async function getProduct(slug: string): Promise<Product | null> {
+  if (!isInstalledSync()) return DEFAULT_PRODUCTS.find((p) => p.slug === slug) ?? null;
+  try {
+    return await store.readProduct(await getPool(), slug);
+  } catch {
+    return DEFAULT_PRODUCTS.find((p) => p.slug === slug) ?? null;
+  }
+}
+
+export async function updateProducts(products: Product[]): Promise<void> {
+  await store.writeProducts(await getPool(), products);
 }
 
 // ═══════════════════════════════════════════════════════════════════

@@ -16,6 +16,7 @@ import {
   writeFooterLinks,
   writeSectors,
   writePricingBase,
+  writeProducts,
   backfillClientTags,
   countAdmins,
   createAdmin,
@@ -28,6 +29,7 @@ import {
   DEFAULT_FOOTER_LINKS,
   DEFAULT_SECTORS,
   DEFAULT_PRICING_BASE,
+  DEFAULT_PRODUCTS,
 } from "./defaults";
 import type { SiteSettings, SiteContent, IntegrationSettings } from "@/types/admin";
 
@@ -149,6 +151,11 @@ export async function ensureReady(pool: Pool): Promise<void> {
   // ── Base pricing ──
   if ((await rowCount(pool, "pricing_base")) === 0) {
     await writePricingBase(pool, DEFAULT_PRICING_BASE);
+  }
+
+  // ── Products ──
+  if ((await rowCount(pool, "products")) === 0) {
+    await writeProducts(pool, DEFAULT_PRODUCTS);
   }
 
   // ── Client tags: create definitions for any tags already used by clients ──

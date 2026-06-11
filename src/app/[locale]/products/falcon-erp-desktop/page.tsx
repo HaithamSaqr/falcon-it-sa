@@ -5,6 +5,7 @@ import Button from "@/components/ui/button";
 import Card from "@/components/ui/card";
 import SectionHeader from "@/components/shared/section-header";
 import BrochureButton from "@/components/sections/brochure-button";
+import ProductHero from "@/components/sections/product-hero";
 
 type Props = {
   params: Promise<{ locale: string }>;
@@ -43,50 +44,8 @@ function FalconErpDesktopContent({ isArabic }: { isArabic: boolean }) {
 
   return (
     <>
-      {/* Section 1: Hero */}
-      <section className="bg-dark py-20 lg:py-28">
-        <Container>
-          <div className="grid items-center gap-12 lg:grid-cols-2">
-            <div>
-              <span className="mb-4 inline-block rounded-full bg-primary-500/10 px-4 py-1.5 text-sm font-semibold text-primary-500">
-                {tp("badge")}
-              </span>
-              <h1 className="mb-6 text-4xl font-extrabold text-white sm:text-5xl lg:text-6xl">
-                {tp("heroTitle")}
-              </h1>
-              <p className="mb-8 text-xl text-gray-300">
-                {tp("heroSubtitle")}
-              </p>
-              <div className="mb-8 flex flex-wrap items-center gap-4">
-                <Button variant="cta" size="lg" href="/contact">
-                  {tp("heroCtaPrimary")}
-                </Button>
-                <Button variant="dark-outline" size="lg" href="/demo">
-                  {tp("heroCtaSecondary")}
-                </Button>
-              </div>
-              <div className="flex flex-wrap items-center gap-6 text-sm text-gray-400">
-                <span className="flex items-center gap-2">
-                  <span className="text-cta">&#10003;</span> {tp("heroTrust1")}
-                </span>
-                <span className="flex items-center gap-2">
-                  <span className="text-cta">&#10003;</span> {tp("heroTrust2")}
-                </span>
-                <span className="flex items-center gap-2">
-                  <span className="text-cta">&#10003;</span> {tp("heroTrust3")}
-                </span>
-              </div>
-            </div>
-            <div className="hidden lg:block">
-              <div className="flex aspect-[4/3] items-center justify-center rounded-2xl bg-gradient-to-br from-primary-500/20 to-primary-900/40 p-8">
-                <span className="text-lg font-medium text-primary-500/80">
-                  {tp("screenshotAlt")}
-                </span>
-              </div>
-            </div>
-          </div>
-        </Container>
-      </section>
+      {/* Section 1: Hero (editable from admin → Products) */}
+      <ProductHero slug="falcon-erp-desktop" />
 
       {/* Section 2: Problem / Pain Agitation */}
       <section className="py-20 lg:py-28">

@@ -52,6 +52,7 @@ export default function AdminSectorsPage() {
         title: { en: "", ar: "" },
         description: { en: "", ar: "" },
         systems: ["cloud"],
+        videoUrl: "",
         featured: false,
         enabled: true,
         sortOrder: prev?.length ?? 0,
@@ -126,6 +127,7 @@ export default function AdminSectorsPage() {
             <div><label className={label}>Title (AR)</label><input className={input} value={s.title.ar} onChange={(e) => patch(i, (x) => ({ ...x, title: { ...x.title, ar: e.target.value } }))} dir="rtl" /></div>
             <div className="sm:col-span-2"><label className={label}>Description (EN)</label><textarea className={input} rows={2} value={s.description.en} onChange={(e) => patch(i, (x) => ({ ...x, description: { ...x.description, en: e.target.value } }))} /></div>
             <div className="sm:col-span-2"><label className={label}>Description (AR)</label><textarea className={input} rows={2} value={s.description.ar} onChange={(e) => patch(i, (x) => ({ ...x, description: { ...x.description, ar: e.target.value } }))} dir="rtl" /></div>
+            <div className="sm:col-span-2 lg:col-span-4"><label className={label}>Video URL (YouTube / Vimeo — shown embedded on the landing page)</label><input className={input} value={s.videoUrl} onChange={(e) => patch(i, (x) => ({ ...x, videoUrl: e.target.value }))} dir="ltr" placeholder="https://www.youtube.com/watch?v=..." /></div>
           </div>
         </div>
       ))}

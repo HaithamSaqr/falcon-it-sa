@@ -12,7 +12,10 @@
     "startTrial": "ابدأ تجربتك المجانية",
     "language": "English",
     "openMenu": "فتح القائمة",
-    "mobileMenu": "القائمة"
+    "mobileMenu": "القائمة",
+    "serverManagement": "إدارة السيرفرات",
+    "dataManagement": "إدارة البيانات",
+    "applications": "تطبيقات"
   },
   "hero": {
     "label": "أفضل حل لإدارة الأعمال",

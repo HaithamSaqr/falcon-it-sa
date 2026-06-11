@@ -22,6 +22,7 @@ import type {
   SectorPricingOverride,
   Client,
   ClientTag,
+  Product,
   ProductBrochure,
 } from "@/types/admin";
 import {
@@ -469,6 +470,7 @@ function rowToSector(r: any): Sector {
     title: { en: r.title_en, ar: r.title_ar },
     description: { en: r.description_en, ar: r.description_ar },
     systems: (r.systems ?? []) as SectorSystem[],
+    videoUrl: r.video_url ?? "",
     featured: r.featured,
     enabled: r.enabled,
     sortOrder: r.sort_order,
@@ -496,8 +498,8 @@ export async function writeSectors(pool: Pool, sectors: Sector[]): Promise<void>
     for (let i = 0; i < sectors.length; i++) {
       const s = sectors[i];
       await client.query(
-        `INSERT INTO sectors (id, icon, gradient, name_en, name_ar, title_en, title_ar, description_en, description_ar, systems, featured, enabled, sort_order)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)`,
+        `INSERT INTO sectors (id, icon, gradient, name_en, name_ar, title_en, title_ar, description_en, description_ar, systems, video_url, featured, enabled, sort_order)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)`,
         [
           s.id || newId("sec"),
           s.icon ?? "",
@@ -509,6 +511,7 @@ export async function writeSectors(pool: Pool, sectors: Sector[]): Promise<void>
           s.description?.en ?? "",
           s.description?.ar ?? "",
           s.systems ?? [],
+          s.videoUrl ?? "",
           Boolean(s.featured),
           s.enabled !== false,
           i,
@@ -659,6 +662,67 @@ export async function backfillClientTags(pool: Pool): Promise<void> {
      FROM clients, unnest(tags) AS t
      WHERE t <> '' AND NOT EXISTS (SELECT 1 FROM client_tags ct WHERE ct.id = t)`
   );
+}
+
+// ── Products ────────────────────────────────────────────────────────
+/* eslint-disable @typescript-eslint/no-explicit-any */
+function rowToProduct(r: any): Product {
+  return {
+    slug: r.slug,
+    name: { en: r.name_en, ar: r.name_ar },
+    eyebrow: { en: r.eyebrow_en, ar: r.eyebrow_ar },
+    title: { en: r.title_en, ar: r.title_ar },
+    description: { en: r.description_en, ar: r.description_ar },
+    heroImage: r.hero_image,
+    cta1: { label: { en: r.cta1_label_en, ar: r.cta1_label_ar }, url: r.cta1_url },
+    cta2: { label: { en: r.cta2_label_en, ar: r.cta2_label_ar }, url: r.cta2_url },
+    isCustom: r.is_custom,
+    enabled: r.enabled,
+    sortOrder: r.sort_order,
+  };
+}
+/* eslint-enable @typescript-eslint/no-explicit-any */
+
+export async function readProducts(pool: Pool, onlyEnabled = false): Promise<Product[]> {
+  const res = await pool.query(
+    `SELECT * FROM products ${onlyEnabled ? "WHERE enabled = true" : ""} ORDER BY sort_order, slug`
+  );
+  return res.rows.map(rowToProduct);
+}
+
+export async function readProduct(pool: Pool, slug: string): Promise<Product | null> {
+  const res = await pool.query(`SELECT * FROM products WHERE slug = $1`, [slug]);
+  return res.rows[0] ? rowToProduct(res.rows[0]) : null;
+}
+
+export async function writeProducts(pool: Pool, products: Product[]): Promise<void> {
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+    await client.query("DELETE FROM products");
+    for (let i = 0; i < products.length; i++) {
+      const p = products[i];
+      await client.query(
+        `INSERT INTO products (slug, name_en, name_ar, eyebrow_en, eyebrow_ar, title_en, title_ar,
+           description_en, description_ar, hero_image, cta1_label_en, cta1_label_ar, cta1_url,
+           cta2_label_en, cta2_label_ar, cta2_url, is_custom, enabled, sort_order)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19)`,
+        [
+          p.slug, p.name?.en ?? "", p.name?.ar ?? "", p.eyebrow?.en ?? "", p.eyebrow?.ar ?? "",
+          p.title?.en ?? "", p.title?.ar ?? "", p.description?.en ?? "", p.description?.ar ?? "",
+          p.heroImage ?? "", p.cta1?.label?.en ?? "", p.cta1?.label?.ar ?? "", p.cta1?.url ?? "/demo",
+          p.cta2?.label?.en ?? "", p.cta2?.label?.ar ?? "", p.cta2?.url ?? "/contact",
+          Boolean(p.isCustom), p.enabled !== false, i,
+        ]
+      );
+    }
+    await client.query("COMMIT");
+  } catch (e) {
+    await client.query("ROLLBACK");
+    throw e;
+  } finally {
+    client.release();
+  }
 }
 
 // ── Product brochures ───────────────────────────────────────────────

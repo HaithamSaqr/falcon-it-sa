@@ -105,6 +105,7 @@ CREATE TABLE IF NOT EXISTS sectors (
   description_en text NOT NULL DEFAULT '',
   description_ar text NOT NULL DEFAULT '',
   systems        text[] NOT NULL DEFAULT '{}',
+  video_url      text NOT NULL DEFAULT '',
   featured       boolean NOT NULL DEFAULT false,
   enabled        boolean NOT NULL DEFAULT true,
   sort_order     int NOT NULL DEFAULT 0
@@ -149,6 +150,29 @@ CREATE TABLE IF NOT EXISTS client_tags (
   name_en    text NOT NULL DEFAULT '',
   name_ar    text NOT NULL DEFAULT '',
   sort_order int NOT NULL DEFAULT 0
+);
+
+-- Products (hero + meta, admin-managed)
+CREATE TABLE IF NOT EXISTS products (
+  slug            text PRIMARY KEY,
+  name_en         text NOT NULL DEFAULT '',
+  name_ar         text NOT NULL DEFAULT '',
+  eyebrow_en      text NOT NULL DEFAULT '',
+  eyebrow_ar      text NOT NULL DEFAULT '',
+  title_en        text NOT NULL DEFAULT '',
+  title_ar        text NOT NULL DEFAULT '',
+  description_en  text NOT NULL DEFAULT '',
+  description_ar  text NOT NULL DEFAULT '',
+  hero_image      text NOT NULL DEFAULT '',
+  cta1_label_en   text NOT NULL DEFAULT '',
+  cta1_label_ar   text NOT NULL DEFAULT '',
+  cta1_url        text NOT NULL DEFAULT '/demo',
+  cta2_label_en   text NOT NULL DEFAULT '',
+  cta2_label_ar   text NOT NULL DEFAULT '',
+  cta2_url        text NOT NULL DEFAULT '/contact',
+  is_custom       boolean NOT NULL DEFAULT false,
+  enabled         boolean NOT NULL DEFAULT true,
+  sort_order      int NOT NULL DEFAULT 0
 );
 
 -- Product brochures (rich HTML content per product slug)
@@ -251,6 +275,7 @@ ALTER TABLE integrations ADD COLUMN IF NOT EXISTS odoo_api_key text NOT NULL DEF
 ALTER TABLE integrations ADD COLUMN IF NOT EXISTS ai_enabled boolean NOT NULL DEFAULT false;
 ALTER TABLE integrations ADD COLUMN IF NOT EXISTS ai_server_url text NOT NULL DEFAULT '';
 ALTER TABLE integrations ADD COLUMN IF NOT EXISTS ai_api_key text NOT NULL DEFAULT '';
+ALTER TABLE sectors ADD COLUMN IF NOT EXISTS video_url text NOT NULL DEFAULT '';
 `;
 
 export async function ensureSchema(pool: Pool): Promise<void> {

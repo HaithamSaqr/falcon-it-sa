@@ -12,6 +12,7 @@ import type {
   FooterLink,
   Sector,
   PricingBase,
+  Product,
 } from "@/types/admin";
 import arMessages from "../../../messages/ar.json";
 import enMessages from "../../../messages/en.json";
@@ -138,11 +139,95 @@ export const DEFAULT_SECTORS: Sector[] = SECTOR_SEED.map((s, i) => {
     title: { ...name },
     description: { en: en.desc ?? "", ar: ar.desc ?? "" },
     systems: ["desktop", "cloud", "odoo"],
+    videoUrl: "",
     featured: i === 0,
     enabled: true,
     sortOrder: i,
   };
 });
+
+// ── Products ────────────────────────────────────────────────────────
+/* eslint-disable @typescript-eslint/no-explicit-any */
+const arM = arMessages as any;
+const enM = enMessages as any;
+/* eslint-enable @typescript-eslint/no-explicit-any */
+
+function seededProduct(
+  slug: string,
+  ns: string,
+  navKey: string,
+  i: number
+): Product {
+  const a = arM[ns] ?? {};
+  const e = enM[ns] ?? {};
+  return {
+    slug,
+    name: { en: enM.nav?.[navKey] ?? slug, ar: arM.nav?.[navKey] ?? slug },
+    eyebrow: { en: e.badge ?? "", ar: a.badge ?? "" },
+    title: { en: e.heroTitle ?? "", ar: a.heroTitle ?? "" },
+    description: { en: e.heroSubtitle ?? "", ar: a.heroSubtitle ?? "" },
+    heroImage: "",
+    cta1: { label: { en: e.heroCtaPrimary ?? "Get Started", ar: a.heroCtaPrimary ?? "ابدأ الآن" }, url: "/contact" },
+    cta2: { label: { en: e.heroCtaSecondary ?? "Book a Demo", ar: a.heroCtaSecondary ?? "احجز عرضاً" }, url: "/demo" },
+    isCustom: false,
+    enabled: true,
+    sortOrder: i,
+  };
+}
+
+export const DEFAULT_PRODUCTS: Product[] = [
+  seededProduct("falcon-erp-desktop", "desktopPage", "falconDesktop", 0),
+  seededProduct("falcon-cloud", "cloudPage", "falconCloud", 1),
+  seededProduct("odoo-services", "odooPage", "odooServices", 2),
+  {
+    slug: "server-management",
+    name: { en: "Server Management", ar: "إدارة السيرفرات" },
+    eyebrow: { en: "Infrastructure", ar: "البنية التحتية" },
+    title: { en: "Servers that never sleep.", ar: "خوادم لا تتوقف أبداً." },
+    description: {
+      en: "End-to-end management of your servers — provisioning, monitoring, security hardening, backups and 24/7 support. Keep your infrastructure fast, secure and always online.",
+      ar: "إدارة متكاملة لخوادمك — التجهيز والمراقبة وتعزيز الأمان والنسخ الاحتياطي والدعم على مدار الساعة. أبقِ بنيتك التحتية سريعة وآمنة ومتاحة دائماً.",
+    },
+    heroImage: "",
+    cta1: { label: { en: "Request a Quote", ar: "اطلب عرض سعر" }, url: "/contact" },
+    cta2: { label: { en: "Book a Demo", ar: "احجز عرضاً" }, url: "/demo" },
+    isCustom: true,
+    enabled: true,
+    sortOrder: 3,
+  },
+  {
+    slug: "data-management",
+    name: { en: "Data Management", ar: "إدارة البيانات" },
+    eyebrow: { en: "Data & Analytics", ar: "البيانات والتحليلات" },
+    title: { en: "Your data, organized and protected.", ar: "بياناتك، منظّمة ومحمية." },
+    description: {
+      en: "Centralize, secure and analyze your business data. Reliable backups, migrations, integrations and dashboards that turn raw data into decisions.",
+      ar: "وحّد بياناتك وأمّنها وحلّلها. نسخ احتياطي موثوق وعمليات ترحيل وتكاملات ولوحات تحليلية تحوّل البيانات الخام إلى قرارات.",
+    },
+    heroImage: "",
+    cta1: { label: { en: "Request a Quote", ar: "اطلب عرض سعر" }, url: "/contact" },
+    cta2: { label: { en: "Book a Demo", ar: "احجز عرضاً" }, url: "/demo" },
+    isCustom: true,
+    enabled: true,
+    sortOrder: 4,
+  },
+  {
+    slug: "applications",
+    name: { en: "Applications", ar: "تطبيقات" },
+    eyebrow: { en: "Custom Software", ar: "برمجيات مخصصة" },
+    title: { en: "Apps built around your business.", ar: "تطبيقات مصمّمة حول أعمالك." },
+    description: {
+      en: "Custom web and mobile applications tailored to your workflows — from internal tools to customer-facing products, designed, built and maintained by our team.",
+      ar: "تطبيقات ويب وجوال مخصصة مصمّمة لسير عملك — من الأدوات الداخلية إلى المنتجات الموجهة للعملاء، نصمّمها ونبنيها وندعمها بفريقنا.",
+    },
+    heroImage: "",
+    cta1: { label: { en: "Request a Quote", ar: "اطلب عرض سعر" }, url: "/contact" },
+    cta2: { label: { en: "Book a Demo", ar: "احجز عرضاً" }, url: "/demo" },
+    isCustom: true,
+    enabled: true,
+    sortOrder: 5,
+  },
+];
 
 export const DEFAULT_PRICING_BASE: PricingBase = {
   pricePerUser: 50,

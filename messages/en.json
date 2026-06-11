@@ -12,7 +12,10 @@
     "startTrial": "Start Free Trial",
     "language": "العربية",
     "openMenu": "Open menu",
-    "mobileMenu": "Mobile Menu"
+    "mobileMenu": "Mobile Menu",
+    "serverManagement": "Server Management",
+    "dataManagement": "Data Management",
+    "applications": "Applications"
   },
   "hero": {
     "label": "Best ERP Solution",

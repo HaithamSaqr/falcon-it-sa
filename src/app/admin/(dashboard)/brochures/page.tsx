@@ -8,6 +8,9 @@ const PRODUCTS = [
   { slug: "falcon-erp-desktop", label: "Falcon ERP Desktop" },
   { slug: "falcon-cloud", label: "Falcon Cloud" },
   { slug: "odoo-services", label: "Odoo Services" },
+  { slug: "server-management", label: "Server Management" },
+  { slug: "data-management", label: "Data Management" },
+  { slug: "applications", label: "Applications" },
 ];
 
 export default function AdminBrochuresPage() {
