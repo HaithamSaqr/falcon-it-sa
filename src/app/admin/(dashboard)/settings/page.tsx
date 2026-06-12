@@ -12,6 +12,20 @@ interface DbConn {
   hasPassword?: boolean;
 }
 
+// Country options for WhatsApp routing (value = ISO-2 code returned by /api/geo).
+const WA_COUNTRIES: { code: string; label: string }[] = [
+  { code: "SA", label: "🇸🇦 Saudi Arabia" },
+  { code: "EG", label: "🇪🇬 Egypt" },
+  { code: "AE", label: "🇦🇪 UAE (Dubai)" },
+  { code: "KW", label: "🇰🇼 Kuwait" },
+  { code: "QA", label: "🇶🇦 Qatar" },
+  { code: "BH", label: "🇧🇭 Bahrain" },
+  { code: "OM", label: "🇴🇲 Oman" },
+  { code: "JO", label: "🇯🇴 Jordan" },
+  { code: "US", label: "🇺🇸 United States" },
+  { code: "GB", label: "🇬🇧 United Kingdom" },
+];
+
 export default function SettingsPage() {
   const [settings, setSettings] = useState<SiteSettings | null>(null);
   const [saving, setSaving] = useState(false);
@@ -23,6 +37,10 @@ export default function SettingsPage() {
   const [conn, setConn] = useState<DbConn | null>(null);
   const [connSaving, setConnSaving] = useState(false);
   const [connMsg, setConnMsg] = useState<{ ok: boolean; text: string } | null>(null);
+
+  // Images (uploads) backup/restore
+  const [imgSaving, setImgSaving] = useState(false);
+  const [imgMsg, setImgMsg] = useState<{ ok: boolean; text: string } | null>(null);
 
   // SEO + footer links (separate tables)
   const [seo, setSeo] = useState<SeoSettings | null>(null);
@@ -167,6 +185,51 @@ export default function SettingsPage() {
       setConnMsg({ ok: false, text: "Restore failed" });
     } finally {
       setConnSaving(false);
+    }
+  }
+
+  async function handleImagesBackup() {
+    setImgMsg(null);
+    try {
+      const res = await fetch("/api/admin/uploads/backup");
+      if (!res.ok) {
+        const d = await res.json().catch(() => null);
+        setImgMsg({ ok: false, text: d?.error || "Images backup failed" });
+        return;
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `falcon-images-${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      setImgMsg({ ok: true, text: "Images backup downloaded" });
+    } catch {
+      setImgMsg({ ok: false, text: "Images backup failed" });
+    }
+  }
+
+  async function handleImagesRestore(file: File) {
+    if (!confirm("Restore images from this file? Existing images with the same name will be overwritten.")) return;
+    setImgMsg(null);
+    setImgSaving(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const res = await fetch("/api/admin/uploads/restore", { method: "POST", body: fd });
+      const data = await res.json();
+      if (data.success) {
+        setImgMsg({ ok: true, text: data.message || "Images restored" });
+      } else {
+        setImgMsg({ ok: false, text: data.error || "Images restore failed" });
+      }
+    } catch {
+      setImgMsg({ ok: false, text: "Images restore failed" });
+    } finally {
+      setImgSaving(false);
     }
   }
 
@@ -360,6 +423,43 @@ export default function SettingsPage() {
         )}
       </div>
 
+      {/* Images Backup & Restore */}
+      <div className="rounded-xl border border-slate-200 bg-white p-6">
+        <h3 className="mb-1 text-sm font-semibold text-slate-700">Images Backup &amp; Restore</h3>
+        <p className="mb-3 text-xs text-slate-400">
+          Backup / restore all uploaded images (logos, product &amp; hero images). Handy when moving the site to another server.
+        </p>
+        {imgMsg && (
+          <div className={`mb-3 rounded-lg px-3 py-2 text-sm ${imgMsg.ok ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-600"}`}>
+            {imgMsg.text}
+          </div>
+        )}
+        <div className="flex flex-wrap items-center gap-3">
+          <button
+            type="button"
+            onClick={handleImagesBackup}
+            className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50"
+          >
+            🖼 Backup images
+          </button>
+          <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-amber-300 bg-amber-50 px-4 py-2 text-sm font-medium text-amber-700 transition-colors hover:bg-amber-100">
+            {imgSaving ? "Restoring…" : "⬆️ Restore images"}
+            <input
+              type="file"
+              accept="application/json,.json"
+              className="hidden"
+              disabled={imgSaving}
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (f) handleImagesRestore(f);
+                e.target.value = "";
+              }}
+            />
+          </label>
+          <span className="text-xs text-slate-400">JSON bundle of all images. Restore adds them back (overwrites same names).</span>
+        </div>
+      </div>
+
       {/* Company Info */}
       <div className="rounded-xl border border-slate-200 bg-white p-6">
         <h3 className="mb-4 text-sm font-semibold text-slate-700">Company Information</h3>
@@ -388,6 +488,156 @@ export default function SettingsPage() {
             <label className={labelClasses}>Phone (Egypt)</label>
             <input value={settings.company.phone.egypt} onChange={(e) => set("company.phone.egypt", e.target.value)} className={inputClasses} />
           </div>
+        </div>
+      </div>
+
+      {/* WhatsApp Routing */}
+      {(() => {
+        const routing = settings.whatsappRouting ?? { domains: [], countries: [] };
+        const updateRouting = (next: typeof routing) => set("whatsappRouting", next);
+        return (
+          <div className="rounded-xl border border-slate-200 bg-white p-6 space-y-6">
+            <div>
+              <h3 className="text-sm font-semibold text-slate-700">WhatsApp Routing</h3>
+              <p className="mt-1 text-xs text-slate-400">
+                Pick which WhatsApp number receives messages. Priority: <b>visitor country</b> (by IP) → <b>domain</b> → the default number above.
+              </p>
+            </div>
+
+            {/* Layer 1 — by domain */}
+            <div>
+              <div className="mb-2 flex items-center justify-between">
+                <p className="text-xs font-semibold uppercase text-slate-500">Layer 1 · By domain / subdomain</p>
+                <button
+                  type="button"
+                  onClick={() => updateRouting({ ...routing, domains: [...routing.domains, { id: crypto.randomUUID(), domain: "", number: "" }] })}
+                  className="rounded-lg bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700 hover:bg-slate-200"
+                >
+                  + Add domain
+                </button>
+              </div>
+              <div className="space-y-2">
+                {routing.domains.map((d, i) => (
+                  <div key={d.id} className="flex flex-wrap items-center gap-2">
+                    <input
+                      value={d.domain}
+                      onChange={(e) => updateRouting({ ...routing, domains: routing.domains.map((x, j) => (j === i ? { ...x, domain: e.target.value } : x)) })}
+                      className={`${inputClasses} flex-1 min-w-[160px]`}
+                      placeholder="falcon-it.com.eg"
+                      dir="ltr"
+                    />
+                    <input
+                      value={d.number}
+                      onChange={(e) => updateRouting({ ...routing, domains: routing.domains.map((x, j) => (j === i ? { ...x, number: e.target.value } : x)) })}
+                      className={`${inputClasses} w-44`}
+                      placeholder="20100xxxxxxx"
+                      dir="ltr"
+                    />
+                    <button type="button" onClick={() => updateRouting({ ...routing, domains: routing.domains.filter((_, j) => j !== i) })} className="rounded-md px-2 py-2 text-xs font-medium text-red-500 hover:bg-red-50">✕</button>
+                  </div>
+                ))}
+                {routing.domains.length === 0 && <p className="text-xs text-slate-400">No domain rules. The default number is used.</p>}
+              </div>
+            </div>
+
+            {/* Layer 2 — by country */}
+            <div>
+              <div className="mb-2 flex items-center justify-between">
+                <p className="text-xs font-semibold uppercase text-slate-500">Layer 2 · By visitor country (overrides domain)</p>
+                <button
+                  type="button"
+                  onClick={() => updateRouting({ ...routing, countries: [...routing.countries, { id: crypto.randomUUID(), country: "SA", number: "" }] })}
+                  className="rounded-lg bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700 hover:bg-slate-200"
+                >
+                  + Add country
+                </button>
+              </div>
+              <div className="space-y-2">
+                {routing.countries.map((c, i) => (
+                  <div key={c.id} className="flex flex-wrap items-center gap-2">
+                    <select
+                      value={c.country}
+                      onChange={(e) => updateRouting({ ...routing, countries: routing.countries.map((x, j) => (j === i ? { ...x, country: e.target.value } : x)) })}
+                      className={`${inputClasses} w-56`}
+                    >
+                      {WA_COUNTRIES.every((o) => o.code !== c.country) && c.country && <option value={c.country}>{c.country}</option>}
+                      {WA_COUNTRIES.map((o) => <option key={o.code} value={o.code}>{o.label}</option>)}
+                    </select>
+                    <input
+                      value={c.number}
+                      onChange={(e) => updateRouting({ ...routing, countries: routing.countries.map((x, j) => (j === i ? { ...x, number: e.target.value } : x)) })}
+                      className={`${inputClasses} w-44`}
+                      placeholder="9665xxxxxxxx"
+                      dir="ltr"
+                    />
+                    <button type="button" onClick={() => updateRouting({ ...routing, countries: routing.countries.filter((_, j) => j !== i) })} className="rounded-md px-2 py-2 text-xs font-medium text-red-500 hover:bg-red-50">✕</button>
+                  </div>
+                ))}
+                {routing.countries.length === 0 && <p className="text-xs text-slate-400">No country rules.</p>}
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* Landing Page CTA */}
+      <div className="rounded-xl border border-slate-200 bg-white p-6">
+        <h3 className="text-sm font-semibold text-slate-700">Landing Page CTA</h3>
+        <p className="mt-1 mb-4 text-xs text-slate-400">
+          How the sector landing-page button completes the request: send via WhatsApp, or open an external link (e.g. your SaaS checkout) carrying the quote details.
+        </p>
+        <div className="flex flex-wrap gap-3">
+          {(["whatsapp", "url"] as const).map((m) => (
+            <button
+              key={m}
+              type="button"
+              onClick={() => set("landingCta.mode", m)}
+              className={`rounded-lg border px-4 py-2 text-sm font-medium transition-colors ${
+                (settings.landingCta?.mode ?? "whatsapp") === m
+                  ? "border-cyan-500 bg-cyan-50 text-cyan-700"
+                  : "border-slate-300 text-slate-600 hover:bg-slate-50"
+              }`}
+            >
+              {m === "whatsapp" ? "💬 WhatsApp" : "🔗 External link (SaaS)"}
+            </button>
+          ))}
+        </div>
+        {settings.landingCta?.mode === "url" && (
+          <div className="mt-4">
+            <label className={labelClasses}>Checkout / SaaS base URL</label>
+            <input
+              value={settings.landingCta?.url || ""}
+              onChange={(e) => set("landingCta.url", e.target.value)}
+              className={inputClasses}
+              dir="ltr"
+              placeholder="https://app.falcon-it.sa/checkout"
+            />
+            <p className="mt-1.5 text-xs text-slate-400">
+              Order details are appended as query params:&nbsp;
+              <code className="rounded bg-slate-100 px-1 text-[11px]">?sector=&amp;sectorName=&amp;system=&amp;users=&amp;price=&amp;priceRegular=&amp;currency=&amp;trainingDays=&amp;name=&amp;company=&amp;email=&amp;phone=</code>
+            </p>
+          </div>
+        )}
+
+        {/* Editable button caption + helper text (blank → default per mode) */}
+        <div className="mt-5 grid gap-4 border-t border-slate-100 pt-4 sm:grid-cols-2">
+          <div>
+            <label className={labelClasses}>Button caption (EN)</label>
+            <input value={settings.landingCta?.label?.en || ""} onChange={(e) => set("landingCta.label.en", e.target.value)} className={inputClasses} placeholder="Send request to AI assistant" />
+          </div>
+          <div>
+            <label className={labelClasses}>Button caption (AR)</label>
+            <input value={settings.landingCta?.label?.ar || ""} onChange={(e) => set("landingCta.label.ar", e.target.value)} className={inputClasses} dir="rtl" placeholder="أرسل الطلب إلى المساعد الذكي" />
+          </div>
+          <div>
+            <label className={labelClasses}>Helper text (EN)</label>
+            <input value={settings.landingCta?.note?.en || ""} onChange={(e) => set("landingCta.note.en", e.target.value)} className={inputClasses} placeholder="Our AI assistant will reach out…" />
+          </div>
+          <div>
+            <label className={labelClasses}>Helper text (AR)</label>
+            <input value={settings.landingCta?.note?.ar || ""} onChange={(e) => set("landingCta.note.ar", e.target.value)} className={inputClasses} dir="rtl" placeholder="سيتواصل معك مساعدنا الذكي…" />
+          </div>
+          <p className="text-xs text-slate-400 sm:col-span-2">Caption: blank = default for the mode. Helper text: blank = the line under the button is hidden.</p>
         </div>
       </div>
 

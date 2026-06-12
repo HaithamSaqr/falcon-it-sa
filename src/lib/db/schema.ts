@@ -47,6 +47,22 @@ CREATE TABLE IF NOT EXISTS branches (
   created_at timestamptz NOT NULL DEFAULT now()
 );
 
+-- WhatsApp number routing — Layer 1: per domain/subdomain.
+CREATE TABLE IF NOT EXISTS whatsapp_domain_numbers (
+  id         text PRIMARY KEY,
+  domain     text NOT NULL DEFAULT '',
+  number     text NOT NULL DEFAULT '',
+  sort_order int  NOT NULL DEFAULT 0
+);
+
+-- WhatsApp number routing — Layer 2: per visitor country (ISO-2 from IP).
+CREATE TABLE IF NOT EXISTS whatsapp_country_numbers (
+  id         text PRIMARY KEY,
+  country    text NOT NULL DEFAULT '',
+  number     text NOT NULL DEFAULT '',
+  sort_order int  NOT NULL DEFAULT 0
+);
+
 -- Site settings (single row, id = 1)
 CREATE TABLE IF NOT EXISTS site_settings (
   id                     int PRIMARY KEY DEFAULT 1 CHECK (id = 1),
@@ -328,6 +344,12 @@ ALTER TABLE hero_content ADD COLUMN IF NOT EXISTS trust1_ar text NOT NULL DEFAUL
 ALTER TABLE hero_content ADD COLUMN IF NOT EXISTS trust2_en text NOT NULL DEFAULT '';
 ALTER TABLE hero_content ADD COLUMN IF NOT EXISTS trust2_ar text NOT NULL DEFAULT '';
 ALTER TABLE products ADD COLUMN IF NOT EXISTS card_image text NOT NULL DEFAULT '';
+ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS landing_cta_mode text NOT NULL DEFAULT 'whatsapp';
+ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS landing_cta_url text NOT NULL DEFAULT '';
+ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS landing_cta_label_en text NOT NULL DEFAULT '';
+ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS landing_cta_label_ar text NOT NULL DEFAULT '';
+ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS landing_cta_note_en text NOT NULL DEFAULT '';
+ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS landing_cta_note_ar text NOT NULL DEFAULT '';
 `;
 
 export async function ensureSchema(pool: Pool): Promise<void> {

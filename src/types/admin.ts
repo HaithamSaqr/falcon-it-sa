@@ -146,6 +146,27 @@ export interface SiteSettings {
   };
   /** External URL the navbar "Login" button points to. */
   loginUrl: string;
+  /**
+   * WhatsApp number routing. Resolution precedence at request time:
+   * visitor country (by IP) → request domain → company.whatsapp (default).
+   */
+  whatsappRouting: {
+    domains: { id: string; domain: string; number: string }[];
+    countries: { id: string; country: string; number: string }[];
+  };
+  /**
+   * Sector landing page CTA. "whatsapp" sends the request via WhatsApp;
+   * "url" opens an external link (e.g. a SaaS checkout) with the quote
+   * details appended as query params.
+   */
+  landingCta: {
+    mode: "whatsapp" | "url";
+    url: string;
+    /** Optional button caption override (blank → sensible default per mode). */
+    label: BilingualText;
+    /** Optional helper text under the button (blank → default per mode). */
+    note: BilingualText;
+  };
   regional: {
     gulfOnly: boolean; // Hide Egypt office, phone, address when true
   };

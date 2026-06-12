@@ -13,6 +13,8 @@ export async function GET() {
   const res = jsonSuccess({
     gulfOnly: settings.regional?.gulfOnly ?? false,
     loginUrl: settings.loginUrl || "https://falcon-valley.com",
+    whatsappRouting: settings.whatsappRouting ?? { domains: [], countries: [] },
+    landingCta: settings.landingCta ?? { mode: "whatsapp", url: "", label: { en: "", ar: "" }, note: { en: "", ar: "" } },
     products: products.map((p) => ({ slug: p.slug, name: p.name })),
     sectors: sectors.map((s) => ({ slug: s.id, name: s.name })),
     company: {

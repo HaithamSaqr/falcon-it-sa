@@ -90,10 +90,61 @@ export async function writeBranches(pool: Pool, branches: Branch[]): Promise<voi
 }
 
 // ── Settings ────────────────────────────────────────────────────────
+type WaDomain = { id: string; domain: string; number: string };
+type WaCountry = { id: string; country: string; number: string };
+
+export async function readWhatsappRouting(
+  pool: Pool
+): Promise<{ domains: WaDomain[]; countries: WaCountry[] }> {
+  const d = await pool.query(
+    `SELECT id, domain, number FROM whatsapp_domain_numbers ORDER BY sort_order, id`
+  );
+  const c = await pool.query(
+    `SELECT id, country, number FROM whatsapp_country_numbers ORDER BY sort_order, id`
+  );
+  return {
+    domains: d.rows.map((r) => ({ id: r.id, domain: r.domain, number: r.number })),
+    countries: c.rows.map((r) => ({ id: r.id, country: r.country, number: r.number })),
+  };
+}
+
+export async function writeWhatsappRouting(
+  pool: Pool,
+  routing: { domains: WaDomain[]; countries: WaCountry[] }
+): Promise<void> {
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+    await client.query("DELETE FROM whatsapp_domain_numbers");
+    const domains = (routing?.domains ?? []).filter((x) => x.domain?.trim() && x.number?.trim());
+    for (let i = 0; i < domains.length; i++) {
+      await client.query(
+        `INSERT INTO whatsapp_domain_numbers (id, domain, number, sort_order) VALUES ($1,$2,$3,$4)`,
+        [domains[i].id || newId("wad"), domains[i].domain.trim(), domains[i].number.trim(), i]
+      );
+    }
+    await client.query("DELETE FROM whatsapp_country_numbers");
+    const countries = (routing?.countries ?? []).filter((x) => x.country?.trim() && x.number?.trim());
+    for (let i = 0; i < countries.length; i++) {
+      await client.query(
+        `INSERT INTO whatsapp_country_numbers (id, country, number, sort_order) VALUES ($1,$2,$3,$4)`,
+        [countries[i].id || newId("wac"), countries[i].country.trim().toUpperCase(), countries[i].number.trim(), i]
+      );
+    }
+    await client.query("COMMIT");
+  } catch (e) {
+    await client.query("ROLLBACK");
+    throw e;
+  } finally {
+    client.release();
+  }
+}
+
 export async function readSettings(pool: Pool): Promise<SiteSettings> {
   const res = await pool.query(`SELECT * FROM site_settings WHERE id = 1`);
   const r = res.rows[0];
   const branches = await readBranches(pool);
+  const whatsappRouting = await readWhatsappRouting(pool);
   const admin = await pool.query(`SELECT username FROM admin_users ORDER BY id LIMIT 1`);
   const adminUsername = admin.rows[0]?.username ?? "";
 
@@ -101,9 +152,17 @@ export async function readSettings(pool: Pool): Promise<SiteSettings> {
     return {
       ...DEFAULT_SETTINGS,
       company: { ...DEFAULT_SETTINGS.company, branches },
+      whatsappRouting,
       security: { ...DEFAULT_SETTINGS.security, adminUsername },
     };
   }
+
+  const landingCta: SiteSettings["landingCta"] = {
+    mode: r.landing_cta_mode === "url" ? "url" : "whatsapp",
+    url: r.landing_cta_url || "",
+    label: { en: r.landing_cta_label_en || "", ar: r.landing_cta_label_ar || "" },
+    note: { en: r.landing_cta_note_en || "", ar: r.landing_cta_note_ar || "" },
+  };
 
   return {
     company: {
@@ -126,6 +185,8 @@ export async function readSettings(pool: Pool): Promise<SiteSettings> {
       tiktok: r.social_tiktok ?? "",
     },
     loginUrl: r.login_url || "https://falcon-valley.com",
+    whatsappRouting,
+    landingCta,
     regional: { gulfOnly: r.gulf_only },
     security: {
       adminUsername,
@@ -144,8 +205,10 @@ export async function writeSettings(pool: Pool, s: SiteSettings): Promise<void> 
        id, company_name_en, company_name_ar, company_email, phone_ksa, phone_egypt,
        whatsapp, gulf_only, notif_email_on_new_lead, notif_sales_email,
        social_linkedin, social_twitter, social_facebook, social_instagram, social_youtube,
-       social_tiktok, login_url, jwt_secret, rate_limit_max, rate_limit_window_ms
-     ) VALUES (1, $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19)
+       social_tiktok, login_url, jwt_secret, rate_limit_max, rate_limit_window_ms,
+       landing_cta_mode, landing_cta_url,
+       landing_cta_label_en, landing_cta_label_ar, landing_cta_note_en, landing_cta_note_ar
+     ) VALUES (1, $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25)
      ON CONFLICT (id) DO UPDATE SET
        company_name_en = EXCLUDED.company_name_en,
        company_name_ar = EXCLUDED.company_name_ar,
@@ -165,7 +228,13 @@ export async function writeSettings(pool: Pool, s: SiteSettings): Promise<void> 
        login_url = EXCLUDED.login_url,
        jwt_secret = EXCLUDED.jwt_secret,
        rate_limit_max = EXCLUDED.rate_limit_max,
-       rate_limit_window_ms = EXCLUDED.rate_limit_window_ms`,
+       rate_limit_window_ms = EXCLUDED.rate_limit_window_ms,
+       landing_cta_mode = EXCLUDED.landing_cta_mode,
+       landing_cta_url = EXCLUDED.landing_cta_url,
+       landing_cta_label_en = EXCLUDED.landing_cta_label_en,
+       landing_cta_label_ar = EXCLUDED.landing_cta_label_ar,
+       landing_cta_note_en = EXCLUDED.landing_cta_note_en,
+       landing_cta_note_ar = EXCLUDED.landing_cta_note_ar`,
     [
       s.company.name.en, s.company.name.ar, s.company.email,
       s.company.phone.ksa, s.company.phone.egypt, s.company.whatsapp,
@@ -173,9 +242,13 @@ export async function writeSettings(pool: Pool, s: SiteSettings): Promise<void> 
       s.social.linkedin, s.social.twitter, s.social.facebook, s.social.instagram, s.social.youtube,
       s.social.tiktok ?? "", s.loginUrl ?? "https://falcon-valley.com",
       s.security.jwtSecret, s.security.rateLimitMax, s.security.rateLimitWindowMs,
+      s.landingCta?.mode === "url" ? "url" : "whatsapp", s.landingCta?.url ?? "",
+      s.landingCta?.label?.en ?? "", s.landingCta?.label?.ar ?? "",
+      s.landingCta?.note?.en ?? "", s.landingCta?.note?.ar ?? "",
     ]
   );
   await writeBranches(pool, s.company.branches ?? []);
+  await writeWhatsappRouting(pool, s.whatsappRouting ?? { domains: [], countries: [] });
 }
 
 // ── Content ─────────────────────────────────────────────────────────

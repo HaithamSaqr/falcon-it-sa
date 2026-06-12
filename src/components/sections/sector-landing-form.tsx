@@ -31,7 +31,13 @@ interface Props {
 export default function SectorLandingForm({ sector, base, overrides, isEgypt, isSaudi, presetSystem }: Props) {
   const locale = useLocale();
   const isAr = locale === "ar";
-  const { company } = useSettings();
+  const { company, landingCta } = useSettings();
+  const urlMode = landingCta?.mode === "url" && !!landingCta?.url;
+  const ctaLabelOverride = (isAr ? landingCta?.label?.ar : landingCta?.label?.en)?.trim() || "";
+  const ctaNoteOverride = (isAr ? landingCta?.note?.ar : landingCta?.note?.en)?.trim() || "";
+  // Once the admin customizes the caption/note, an empty note hides the line
+  // entirely (instead of falling back to the default subtitle).
+  const ctaCustomized = ctaLabelOverride !== "" || ctaNoteOverride !== "";
 
   const lockedSystem =
     presetSystem && sector.systems.includes(presetSystem as SectorSystem)
@@ -149,17 +155,18 @@ export default function SectorLandingForm({ sector, base, overrides, isEgypt, is
     if (!validate()) return;
     setSending(true);
     setShowPrice(true);
-    try {
-      // computePrice returns USD; convert every amount to the selected currency
-      // so the lead + Odoo opportunity match exactly what the user sees.
-      const rate = currency === "EGP" ? base.usdToEgp : currency === "SAR" ? breakdown.usdToSar : 1;
-      const conv = (n: number) => Math.round(n * rate);
-      const userTotal = breakdown.users * breakdown.pricePerUser;
-      const baseDiscountAmt =
-        ((breakdown.hosting + breakdown.operating + breakdown.trainingCost) * breakdown.discountPercent) / 100;
-      const volumeDiscountAmt = (userTotal * breakdown.volumeDiscountPercent) / 100;
-      const sysLabel = system ? (isAr ? SYSTEM_LABELS[system].ar : SYSTEM_LABELS[system].en) : "";
 
+    // computePrice returns USD; convert every amount to the selected currency
+    // so the lead / Odoo / SaaS link match exactly what the user sees.
+    const rate = currency === "EGP" ? base.usdToEgp : currency === "SAR" ? breakdown.usdToSar : 1;
+    const conv = (n: number) => Math.round(n * rate);
+    const userTotal = breakdown.users * breakdown.pricePerUser;
+    const baseDiscountAmt =
+      ((breakdown.hosting + breakdown.operating + breakdown.trainingCost) * breakdown.discountPercent) / 100;
+    const volumeDiscountAmt = (userTotal * breakdown.volumeDiscountPercent) / 100;
+    const sysLabel = system ? (isAr ? SYSTEM_LABELS[system].ar : SYSTEM_LABELS[system].en) : "";
+
+    try {
       await fetch("/api/leads/sector", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -194,6 +201,31 @@ export default function SectorLandingForm({ sector, base, overrides, isEgypt, is
     } finally {
       setSending(false);
     }
+
+    // CTA mode: external link (e.g. SaaS checkout) carrying the quote details…
+    if (landingCta?.mode === "url" && landingCta.url) {
+      try {
+        const u = new URL(landingCta.url);
+        u.searchParams.set("sector", sector.id);
+        u.searchParams.set("sectorName", sectorName);
+        u.searchParams.set("system", system || "");
+        u.searchParams.set("users", String(form.users));
+        u.searchParams.set("price", String(conv(breakdown.total)));
+        u.searchParams.set("priceRegular", String(conv(breakdown.regular)));
+        u.searchParams.set("currency", currency);
+        u.searchParams.set("trainingDays", String(breakdown.trainingDays));
+        u.searchParams.set("name", form.name);
+        u.searchParams.set("company", form.company);
+        u.searchParams.set("email", form.email);
+        u.searchParams.set("phone", form.phone);
+        window.open(u.toString(), "_blank", "noopener,noreferrer");
+        return;
+      } catch {
+        /* invalid URL → fall back to WhatsApp below */
+      }
+    }
+
+    // …or send via WhatsApp (default).
     const wa = (company.whatsapp || "966568406006").replace(/\D/g, "");
     window.open(`https://wa.me/${wa}?text=${buildWhatsApp()}`, "_blank", "noopener,noreferrer");
   }
@@ -358,13 +390,24 @@ export default function SectorLandingForm({ sector, base, overrides, isEgypt, is
             </div>
           )}
 
-          {/* Send to AI assistant */}
+          {/* CTA — WhatsApp (default) or external link / SaaS checkout */}
           <Button type="button" variant="cta" size="lg" onClick={handleSendToAI} disabled={sending} className="w-full">
-            🤖 {sending ? (isAr ? "جارٍ الإرسال…" : "Sending…") : isAr ? "أرسل الطلب إلى المساعد الذكي" : "Send request to AI assistant"}
+            {urlMode ? "🛒 " : "🤖 "}
+            {sending
+              ? isAr ? "جارٍ المتابعة…" : "Processing…"
+              : ctaLabelOverride ||
+                (urlMode
+                  ? isAr ? "أكمل طلبك الآن" : "Continue to your order"
+                  : isAr ? "أرسل الطلب إلى المساعد الذكي" : "Send request to AI assistant")}
           </Button>
-          <p className="text-center text-xs text-text-secondary">
-            {isAr ? "سيتواصل معك مساعدنا الذكي بكامل تفاصيل عرض السعر." : "Our AI assistant will reach out with your full quote details."}
-          </p>
+          {(ctaNoteOverride || !ctaCustomized) && (
+            <p className="text-center text-xs text-text-secondary">
+              {ctaNoteOverride ||
+                (urlMode
+                  ? isAr ? "سيتم نقلك لإكمال طلبك واشتراكك مع تفاصيل عرض السعر." : "You'll be taken to complete your order with the quote details."
+                  : isAr ? "سيتواصل معك مساعدنا الذكي بكامل تفاصيل عرض السعر." : "Our AI assistant will reach out with your full quote details.")}
+            </p>
+          )}
         </div>
       </Container>
     </section>
