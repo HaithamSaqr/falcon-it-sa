@@ -584,4 +584,11 @@ export const DEFAULT_INTEGRATIONS: IntegrationSettings = {
     allowRating: true,
     allowNewTickets: true,
   },
+  google: {
+    enabled: false,
+    verification: "",
+    gtmId: "",
+    ga4Id: "",
+    adsId: "",
+  },
 };

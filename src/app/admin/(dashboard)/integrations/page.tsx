@@ -6,6 +6,7 @@ import type { IntegrationSettings } from "@/types/admin";
 const TABS = [
   { key: "odoo", label: "Odoo CRM" },
   { key: "ai", label: "AI Assistant" },
+  { key: "google", label: "Google" },
   { key: "calendar", label: "Calendar" },
   { key: "helpdesk", label: "Helpdesk Portal" },
   { key: "email", label: "Email" },
@@ -213,6 +214,64 @@ export default function IntegrationsPage() {
                 type="password"
                 placeholder="Bearer token / API key"
               />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Google Tab ── */}
+      {activeTab === "google" && (
+        <div className="space-y-6">
+          <div className="rounded-xl border border-slate-200 bg-white p-6">
+            <div className="mb-6 flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-semibold text-slate-900">Google Integration</h3>
+                <p className="text-sm text-slate-500">
+                  Verify site ownership (Search Console) and add Google tags (Tag Manager / Analytics / Ads).
+                  Tags are injected on every public page when enabled.
+                </p>
+              </div>
+              <label className="flex cursor-pointer items-center gap-3">
+                <input
+                  type="checkbox"
+                  checked={settings.google.enabled}
+                  onChange={(e) => update("google", "enabled", e.target.checked)}
+                  className="h-4 w-4 rounded border-slate-300 text-cyan-500 focus:ring-cyan-500"
+                />
+                <span className="text-sm text-slate-700">Enabled</span>
+              </label>
+            </div>
+            <div className="grid grid-cols-1 gap-4">
+              <Field
+                label="Site verification (meta tag content)"
+                value={settings.google.verification}
+                onChange={(v) => update("google", "verification", v)}
+                placeholder="e.g. Xy12abc... (the content value only)"
+              />
+              <p className="-mt-2 text-xs text-slate-400">
+                In Search Console choose the <b>HTML tag</b> method and paste only the <code className="rounded bg-slate-100 px-1">content</code> value here.
+              </p>
+              <Field
+                label="Google Tag Manager ID"
+                value={settings.google.gtmId}
+                onChange={(v) => update("google", "gtmId", v)}
+                placeholder="GTM-XXXXXXX"
+              />
+              <Field
+                label="Google Analytics 4 ID"
+                value={settings.google.ga4Id}
+                onChange={(v) => update("google", "ga4Id", v)}
+                placeholder="G-XXXXXXXXXX"
+              />
+              <Field
+                label="Google Ads ID (conversions)"
+                value={settings.google.adsId}
+                onChange={(v) => update("google", "adsId", v)}
+                placeholder="AW-XXXXXXXXX"
+              />
+              <p className="text-xs text-slate-400">
+                Tip: if you use Tag Manager, you can manage Analytics &amp; Ads inside GTM and leave the GA4/Ads fields blank.
+              </p>
             </div>
           </div>
         </div>

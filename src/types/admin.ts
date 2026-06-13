@@ -345,6 +345,18 @@ export interface IntegrationSettings {
     allowRating: boolean;
     allowNewTickets: boolean;
   };
+  /** Google integration: ownership verification + tags (GTM / GA4 / Ads). */
+  google: {
+    enabled: boolean;
+    /** content of <meta name="google-site-verification">. */
+    verification: string;
+    /** Google Tag Manager container id (GTM-XXXXXX). */
+    gtmId: string;
+    /** Google Analytics 4 measurement id (G-XXXXXXX). */
+    ga4Id: string;
+    /** Google Ads conversion id (AW-XXXXXXXXX). */
+    adsId: string;
+  };
 }
 
 export interface CalendarSlot {

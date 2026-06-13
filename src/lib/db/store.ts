@@ -694,6 +694,13 @@ export async function readIntegrations(pool: Pool): Promise<IntegrationSettings>
       allowRating: r.helpdesk_allow_rating,
       allowNewTickets: r.helpdesk_allow_new_tickets,
     },
+    google: {
+      enabled: r.google_enabled ?? false,
+      verification: r.google_verification ?? "",
+      gtmId: r.google_gtm_id ?? "",
+      ga4Id: r.google_ga4_id ?? "",
+      adsId: r.google_ads_id ?? "",
+    },
   };
 }
 
@@ -706,8 +713,9 @@ export async function writeIntegrations(pool: Pool, ig: IntegrationSettings): Pr
        calendar_start_hour, calendar_end_hour, calendar_buffer_minutes, calendar_max_advance_days,
        email_enabled, email_provider, email_api_key, email_from_email, email_reply_to,
        whatsapp_enabled, whatsapp_api_token, whatsapp_phone_id,
-       helpdesk_enabled, helpdesk_default_team_id, helpdesk_allow_rating, helpdesk_allow_new_tickets
-     ) VALUES (1, $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30)
+       helpdesk_enabled, helpdesk_default_team_id, helpdesk_allow_rating, helpdesk_allow_new_tickets,
+       google_enabled, google_verification, google_gtm_id, google_ga4_id, google_ads_id
+     ) VALUES (1, $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31,$32,$33,$34,$35)
      ON CONFLICT (id) DO UPDATE SET
        odoo_enabled = EXCLUDED.odoo_enabled, odoo_url = EXCLUDED.odoo_url, odoo_db = EXCLUDED.odoo_db,
        odoo_username = EXCLUDED.odoo_username, odoo_api_key = EXCLUDED.odoo_api_key,
@@ -721,7 +729,9 @@ export async function writeIntegrations(pool: Pool, ig: IntegrationSettings): Pr
        email_from_email = EXCLUDED.email_from_email, email_reply_to = EXCLUDED.email_reply_to,
        whatsapp_enabled = EXCLUDED.whatsapp_enabled, whatsapp_api_token = EXCLUDED.whatsapp_api_token, whatsapp_phone_id = EXCLUDED.whatsapp_phone_id,
        helpdesk_enabled = EXCLUDED.helpdesk_enabled, helpdesk_default_team_id = EXCLUDED.helpdesk_default_team_id,
-       helpdesk_allow_rating = EXCLUDED.helpdesk_allow_rating, helpdesk_allow_new_tickets = EXCLUDED.helpdesk_allow_new_tickets`,
+       helpdesk_allow_rating = EXCLUDED.helpdesk_allow_rating, helpdesk_allow_new_tickets = EXCLUDED.helpdesk_allow_new_tickets,
+       google_enabled = EXCLUDED.google_enabled, google_verification = EXCLUDED.google_verification,
+       google_gtm_id = EXCLUDED.google_gtm_id, google_ga4_id = EXCLUDED.google_ga4_id, google_ads_id = EXCLUDED.google_ads_id`,
     [
       ig.odoo.enabled, ig.odoo.url, ig.odoo.db, ig.odoo.username, ig.odoo.apiKey,
       ig.odoo.lastTestedAt ? new Date(ig.odoo.lastTestedAt) : null, ig.odoo.lastTestResult ?? null,
@@ -731,6 +741,8 @@ export async function writeIntegrations(pool: Pool, ig: IntegrationSettings): Pr
       ig.email.enabled, ig.email.provider, ig.email.apiKey, ig.email.fromEmail, ig.email.replyTo,
       ig.whatsapp.enabled, ig.whatsapp.apiToken, ig.whatsapp.phoneId,
       ig.helpdesk.enabled, ig.helpdesk.defaultTeamId, ig.helpdesk.allowRating, ig.helpdesk.allowNewTickets,
+      ig.google?.enabled ?? false, ig.google?.verification ?? "", ig.google?.gtmId ?? "",
+      ig.google?.ga4Id ?? "", ig.google?.adsId ?? "",
     ]
   );
 }
