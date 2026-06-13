@@ -52,23 +52,66 @@ export default function SectorLandingForm({ sector, base, overrides, isEgypt, is
   const [showPrice, setShowPrice] = useState(false);
   const [error, setError] = useState("");
   const [sending, setSending] = useState(false);
+  // Resolved landing video — starts as the default (matches SSR), then routes
+  // by country → domain after mount. Precedence: country → domain → default.
+  const [resolvedVideo, setResolvedVideo] = useState(sector.videoUrl);
+  // Per-sector CTA override (null → use the global Landing CTA / WhatsApp number).
+  const [sectorCta, setSectorCta] = useState<{ kind: "whatsapp" | "url"; value: string } | null>(null);
 
   // Geo detection: server-side props cover Vercel/CF; client-side covers everything else.
   useEffect(() => {
-    if (isEgypt || isSaudi) return;
-    fetch("/api/geo")
-      .then((r) => r.json())
-      .then((d) => {
-        const c = d?.data?.currency as string | undefined;
-        if (c === "EGP" || c === "SAR") setCurrency(c);
-      })
-      .catch(() => {});
-  }, [isEgypt, isSaudi]);
+    const host = window.location.hostname.toLowerCase();
+    const matchDomain = (dom: string) => {
+      const d = dom.toLowerCase().replace(/^https?:\/\//, "").replace(/\/.*$/, "").trim();
+      return !!d && (host === d || host.endsWith("." + d));
+    };
+
+    const domainVideo = (sector.videoDomains ?? []).find((v) => matchDomain(v.domain))?.videoUrl || "";
+    const ctaDomainHit = (sector.ctaDomains ?? []).find((v) => matchDomain(v.domain)) || null;
+
+    const resolve = (code: string) => {
+      const up = code.toUpperCase();
+      // Video: country → domain → default
+      const cv = up ? (sector.videoCountries ?? []).find((v) => v.country.toUpperCase() === up)?.videoUrl : "";
+      setResolvedVideo((cv || domainVideo || sector.videoUrl) || "");
+      // CTA override: country → domain → none (none → use global)
+      const ctaCountryHit = up ? (sector.ctaCountries ?? []).find((v) => v.country.toUpperCase() === up) : null;
+      const hit = ctaCountryHit || ctaDomainHit;
+      setSectorCta(hit ? { kind: hit.kind, value: hit.value } : null);
+    };
+
+    if (isSaudi) resolve("SA");
+    else if (isEgypt) resolve("EG");
+    else {
+      resolve(""); // domain-only first
+      fetch("/api/geo")
+        .then((r) => r.json())
+        .then((d) => {
+          const cur = d?.data?.currency as string | undefined;
+          if (cur === "EGP" || cur === "SAR") setCurrency(cur);
+          resolve(String(d?.data?.country || ""));
+        })
+        .catch(() => {});
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isEgypt, isSaudi, sector.id]);
+
+  // Effective CTA (sector override wins over the global default).
+  const effectiveUrlMode = sectorCta ? sectorCta.kind === "url" : urlMode;
+  const effectiveUrl = sectorCta?.kind === "url" ? sectorCta.value : (landingCta?.url || "");
+  const effectiveWhatsapp = (sectorCta?.kind === "whatsapp" ? sectorCta.value : company.whatsapp) || "966568406006";
 
   const breakdown = useMemo(() => {
     const ov = findOverride(overrides, sector.id, system || null);
     return computePrice(base, form.users, ov, system || null);
   }, [base, overrides, sector.id, system, form.users]);
+
+  // "Price includes full cloud hosting" note — only when the matching pricing
+  // override has it enabled in /admin/pricing.
+  const showCloudHosting = useMemo(
+    () => !!findOverride(overrides, sector.id, system || null)?.includesCloudHosting,
+    [overrides, sector.id, system]
+  );
 
   // No discount → show a single price (hide the struck-through "regular" line)
   // so the customer doesn't look for a missing discount.
@@ -94,7 +137,7 @@ export default function SectorLandingForm({ sector, base, overrides, isEgypt, is
   const sectorName = isAr ? sector.name.ar : sector.name.en;
   const sectorTitle = isAr ? sector.title.ar : sector.title.en;
   const sectorDesc = isAr ? sector.description.ar : sector.description.en;
-  const embedUrl = toEmbedUrl(sector.videoUrl);
+  const embedUrl = toEmbedUrl(resolvedVideo);
 
   function validate(): boolean {
     if (form.name.trim().length < 2) return setError(isAr ? "الاسم مطلوب" : "Name required"), false;
@@ -126,8 +169,7 @@ export default function SectorLandingForm({ sector, base, overrides, isEgypt, is
             `السعر بعد الخصم: ${price(breakdown.total)} / سنة`,
           ]
           : [`السعر: ${price(breakdown.total)} / سنة`]),
-        "",
-        "السعر يشمل الاستضافة السحابية بالكامل.",
+        ...(showCloudHosting ? ["", "السعر يشمل الاستضافة السحابية بالكامل."] : []),
       ]
       : [
         `Quote request — ${sectorName} sector`,
@@ -145,8 +187,7 @@ export default function SectorLandingForm({ sector, base, overrides, isEgypt, is
             `Price after discount: ${price(breakdown.total)} / year`,
           ]
           : [`Price: ${price(breakdown.total)} / year`]),
-        "",
-        "Price includes full cloud hosting.",
+        ...(showCloudHosting ? ["", "Price includes full cloud hosting."] : []),
       ];
     return encodeURIComponent(lines.join("\n"));
   }
@@ -202,10 +243,10 @@ export default function SectorLandingForm({ sector, base, overrides, isEgypt, is
       setSending(false);
     }
 
-    // CTA mode: external link (e.g. SaaS checkout) carrying the quote details…
-    if (landingCta?.mode === "url" && landingCta.url) {
+    // CTA: external link (sector override or global SaaS checkout) with details…
+    if (effectiveUrlMode && effectiveUrl) {
       try {
-        const u = new URL(landingCta.url);
+        const u = new URL(effectiveUrl);
         u.searchParams.set("sector", sector.id);
         u.searchParams.set("sectorName", sectorName);
         u.searchParams.set("system", system || "");
@@ -225,8 +266,8 @@ export default function SectorLandingForm({ sector, base, overrides, isEgypt, is
       }
     }
 
-    // …or send via WhatsApp (default).
-    const wa = (company.whatsapp || "966568406006").replace(/\D/g, "");
+    // …or send via WhatsApp (sector override number or the global default).
+    const wa = effectiveWhatsapp.replace(/\D/g, "");
     window.open(`https://wa.me/${wa}?text=${buildWhatsApp()}`, "_blank", "noopener,noreferrer");
   }
 
@@ -268,9 +309,11 @@ export default function SectorLandingForm({ sector, base, overrides, isEgypt, is
           </div>
         )}
 
-        {/* Cloud note + currency toggle */}
-        <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-primary-200 bg-primary-50 p-4 text-sm font-medium text-primary-800">
-          <span className="flex items-center gap-2"><span className="text-xl">☁️</span>{isAr ? "السعر يشمل الاستضافة السحابية بالكامل" : "Price includes full cloud hosting"}</span>
+        {/* Cloud note (only when enabled on the pricing override) + currency toggle */}
+        <div className={cn("mt-4 flex flex-wrap items-center gap-3", showCloudHosting ? "justify-between rounded-xl border border-primary-200 bg-primary-50 p-4 text-sm font-medium text-primary-800" : "justify-end")}>
+          {showCloudHosting && (
+            <span className="flex items-center gap-2"><span className="text-xl">☁️</span>{isAr ? "السعر يشمل الاستضافة السحابية بالكامل" : "Price includes full cloud hosting"}</span>
+          )}
           <div className="flex overflow-hidden rounded-lg border border-primary-300">
             {(["USD", "EGP", "SAR"] as const).map((c) => (
               <button key={c} type="button" onClick={() => setCurrency(c)} className={cn("px-3 py-1 text-xs font-semibold", currency === c ? "bg-primary-600 text-white" : "bg-white text-primary-700")}>{c}</button>
@@ -378,7 +421,9 @@ export default function SectorLandingForm({ sector, base, overrides, isEgypt, is
                   </div>
                 </div>
                 <p className="text-end text-xs text-text-secondary">
-                  {isAr ? "يُدفع سنوياً · شامل الاستضافة السحابية" : "Billed annually · includes full cloud hosting"}
+                  {isAr
+                    ? showCloudHosting ? "يُدفع سنوياً · شامل الاستضافة السحابية" : "يُدفع سنوياً"
+                    : showCloudHosting ? "Billed annually · includes full cloud hosting" : "Billed annually"}
                 </p>
               </div>
               {isEgypt && currency !== "EGP" && (
@@ -392,18 +437,18 @@ export default function SectorLandingForm({ sector, base, overrides, isEgypt, is
 
           {/* CTA — WhatsApp (default) or external link / SaaS checkout */}
           <Button type="button" variant="cta" size="lg" onClick={handleSendToAI} disabled={sending} className="w-full">
-            {urlMode ? "🛒 " : "🤖 "}
+            {effectiveUrlMode ? "🛒 " : "🤖 "}
             {sending
               ? isAr ? "جارٍ المتابعة…" : "Processing…"
               : ctaLabelOverride ||
-                (urlMode
+                (effectiveUrlMode
                   ? isAr ? "أكمل طلبك الآن" : "Continue to your order"
                   : isAr ? "أرسل الطلب إلى المساعد الذكي" : "Send request to AI assistant")}
           </Button>
           {(ctaNoteOverride || !ctaCustomized) && (
             <p className="text-center text-xs text-text-secondary">
               {ctaNoteOverride ||
-                (urlMode
+                (effectiveUrlMode
                   ? isAr ? "سيتم نقلك لإكمال طلبك واشتراكك مع تفاصيل عرض السعر." : "You'll be taken to complete your order with the quote details."
                   : isAr ? "سيتواصل معك مساعدنا الذكي بكامل تفاصيل عرض السعر." : "Our AI assistant will reach out with your full quote details.")}
             </p>

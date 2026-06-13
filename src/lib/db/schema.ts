@@ -147,6 +147,29 @@ CREATE TABLE IF NOT EXISTS sector_video_countries (
 );
 CREATE INDEX IF NOT EXISTS sector_video_countries_sid ON sector_video_countries (sector_id);
 
+-- Per-sector CTA override (overrides the global Landing CTA / WhatsApp Routing).
+-- kind = 'whatsapp' (value = number) or 'url' (value = link). Layer 1: by domain.
+CREATE TABLE IF NOT EXISTS sector_cta_domains (
+  id         text PRIMARY KEY,
+  sector_id  text NOT NULL,
+  domain     text NOT NULL DEFAULT '',
+  kind       text NOT NULL DEFAULT 'whatsapp',
+  value      text NOT NULL DEFAULT '',
+  sort_order int  NOT NULL DEFAULT 0
+);
+CREATE INDEX IF NOT EXISTS sector_cta_domains_sid ON sector_cta_domains (sector_id);
+
+-- Per-sector CTA override — Layer 2: by visitor country (overrides domain).
+CREATE TABLE IF NOT EXISTS sector_cta_countries (
+  id         text PRIMARY KEY,
+  sector_id  text NOT NULL,
+  country    text NOT NULL DEFAULT '',
+  kind       text NOT NULL DEFAULT 'whatsapp',
+  value      text NOT NULL DEFAULT '',
+  sort_order int  NOT NULL DEFAULT 0
+);
+CREATE INDEX IF NOT EXISTS sector_cta_countries_sid ON sector_cta_countries (sector_id);
+
 -- Base pricing (single row, id = 1) — values in USD
 CREATE TABLE IF NOT EXISTS pricing_base (
   id                    int PRIMARY KEY DEFAULT 1 CHECK (id = 1),
@@ -173,6 +196,7 @@ CREATE TABLE IF NOT EXISTS sector_pricing (
   hosting_price   numeric,
   discount_percent numeric,
   volume_discounts jsonb,
+  includes_cloud_hosting boolean NOT NULL DEFAULT false,
   UNIQUE (sector_id, system)
 );
 
@@ -354,6 +378,7 @@ ALTER TABLE pricing_base ADD COLUMN IF NOT EXISTS system_training_days jsonb NOT
 ALTER TABLE sector_pricing ADD COLUMN IF NOT EXISTS hosting_price numeric;
 ALTER TABLE sector_pricing ADD COLUMN IF NOT EXISTS discount_percent numeric;
 ALTER TABLE sector_pricing ADD COLUMN IF NOT EXISTS volume_discounts jsonb;
+ALTER TABLE sector_pricing ADD COLUMN IF NOT EXISTS includes_cloud_hosting boolean NOT NULL DEFAULT false;
 ALTER TABLE hero_content ADD COLUMN IF NOT EXISTS eyebrow_en text NOT NULL DEFAULT '';
 ALTER TABLE hero_content ADD COLUMN IF NOT EXISTS eyebrow_ar text NOT NULL DEFAULT '';
 ALTER TABLE hero_content ADD COLUMN IF NOT EXISTS cta1_url text NOT NULL DEFAULT '';

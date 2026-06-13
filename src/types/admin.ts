@@ -199,6 +199,13 @@ export interface Sector {
   /** Video overrides by domain (Layer 1) and visitor country (Layer 2). */
   videoDomains: { id: string; domain: string; videoUrl: string }[];
   videoCountries: { id: string; country: string; videoUrl: string }[];
+  /**
+   * Per-sector CTA override (overrides the global Landing CTA / WhatsApp
+   * Routing). kind "whatsapp" → value is a number; kind "url" → value is a link.
+   * Resolution: country → domain → global default.
+   */
+  ctaDomains: { id: string; domain: string; kind: "whatsapp" | "url"; value: string }[];
+  ctaCountries: { id: string; country: string; kind: "whatsapp" | "url"; value: string }[];
   featured: boolean;
   enabled: boolean;
   sortOrder: number;
@@ -231,6 +238,8 @@ export interface SectorPricingOverride {
   hostingPrice: number | null;
   discountPercent: number | null;
   volumeDiscounts: VolumeDiscountTier[] | null;
+  /** Show the "Price includes full cloud hosting" note on the landing page. */
+  includesCloudHosting: boolean;
 }
 
 export interface ClientTag {

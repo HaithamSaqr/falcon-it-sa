@@ -16,6 +16,20 @@ const GRADIENTS = [
   "bg-gradient-to-r from-dark to-primary-800",
 ];
 
+// Country options for per-sector video routing (ISO-2 codes from /api/geo).
+const VIDEO_COUNTRIES: { code: string; label: string }[] = [
+  { code: "SA", label: "🇸🇦 Saudi Arabia" },
+  { code: "EG", label: "🇪🇬 Egypt" },
+  { code: "AE", label: "🇦🇪 UAE (Dubai)" },
+  { code: "KW", label: "🇰🇼 Kuwait" },
+  { code: "QA", label: "🇶🇦 Qatar" },
+  { code: "BH", label: "🇧🇭 Bahrain" },
+  { code: "OM", label: "🇴🇲 Oman" },
+  { code: "JO", label: "🇯🇴 Jordan" },
+  { code: "US", label: "🇺🇸 United States" },
+  { code: "GB", label: "🇬🇧 United Kingdom" },
+];
+
 function genId() {
   try {
     return crypto.randomUUID();
@@ -53,6 +67,10 @@ export default function AdminSectorsPage() {
         description: { en: "", ar: "" },
         systems: ["cloud"],
         videoUrl: "",
+        videoDomains: [],
+        videoCountries: [],
+        ctaDomains: [],
+        ctaCountries: [],
         featured: false,
         enabled: true,
         sortOrder: prev?.length ?? 0,
@@ -127,7 +145,99 @@ export default function AdminSectorsPage() {
             <div><label className={label}>Title (AR)</label><input className={input} value={s.title.ar} onChange={(e) => patch(i, (x) => ({ ...x, title: { ...x.title, ar: e.target.value } }))} dir="rtl" /></div>
             <div className="sm:col-span-2"><label className={label}>Description (EN)</label><textarea className={input} rows={2} value={s.description.en} onChange={(e) => patch(i, (x) => ({ ...x, description: { ...x.description, en: e.target.value } }))} /></div>
             <div className="sm:col-span-2"><label className={label}>Description (AR)</label><textarea className={input} rows={2} value={s.description.ar} onChange={(e) => patch(i, (x) => ({ ...x, description: { ...x.description, ar: e.target.value } }))} dir="rtl" /></div>
-            <div className="sm:col-span-2 lg:col-span-4"><label className={label}>Video URL (YouTube / Vimeo — shown embedded on the landing page)</label><input className={input} value={s.videoUrl} onChange={(e) => patch(i, (x) => ({ ...x, videoUrl: e.target.value }))} dir="ltr" placeholder="https://www.youtube.com/watch?v=..." /></div>
+            <div className="sm:col-span-2 lg:col-span-4"><label className={label}>Default Video URL (YouTube / Vimeo — shown embedded on the landing page)</label><input className={input} value={s.videoUrl} onChange={(e) => patch(i, (x) => ({ ...x, videoUrl: e.target.value }))} dir="ltr" placeholder="https://www.youtube.com/watch?v=..." /></div>
+
+            {/* Video routing per sector — by domain / by country */}
+            <div className="sm:col-span-2 lg:col-span-4 rounded-lg border border-slate-200 bg-slate-50/60 p-3 space-y-4">
+              <p className="text-xs text-slate-500">Video routing (optional). Priority: <b>visitor country</b> → <b>domain</b> → the default video above.</p>
+
+              {/* By domain */}
+              <div>
+                <div className="mb-1.5 flex items-center justify-between">
+                  <span className="text-[11px] font-semibold uppercase text-slate-400">By domain</span>
+                  <button type="button" onClick={() => patch(i, (x) => ({ ...x, videoDomains: [...(x.videoDomains ?? []), { id: genId(), domain: "", videoUrl: "" }] }))} className="rounded bg-slate-200 px-2 py-0.5 text-xs font-medium text-slate-700 hover:bg-slate-300">+ Domain</button>
+                </div>
+                <div className="space-y-1.5">
+                  {(s.videoDomains ?? []).map((v, k) => (
+                    <div key={v.id} className="flex flex-wrap items-center gap-1.5">
+                      <input className={`${input} w-40`} value={v.domain} onChange={(e) => patch(i, (x) => ({ ...x, videoDomains: x.videoDomains.map((y, m) => (m === k ? { ...y, domain: e.target.value } : y)) }))} dir="ltr" placeholder="falcon-it.com.eg" />
+                      <input className={`${input} flex-1 min-w-[180px]`} value={v.videoUrl} onChange={(e) => patch(i, (x) => ({ ...x, videoDomains: x.videoDomains.map((y, m) => (m === k ? { ...y, videoUrl: e.target.value } : y)) }))} dir="ltr" placeholder="https://youtube.com/watch?v=..." />
+                      <button type="button" onClick={() => patch(i, (x) => ({ ...x, videoDomains: x.videoDomains.filter((_, m) => m !== k) }))} className="px-2 py-1 text-xs text-red-500 hover:bg-red-50 rounded">✕</button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* By country */}
+              <div>
+                <div className="mb-1.5 flex items-center justify-between">
+                  <span className="text-[11px] font-semibold uppercase text-slate-400">By visitor country (overrides domain)</span>
+                  <button type="button" onClick={() => patch(i, (x) => ({ ...x, videoCountries: [...(x.videoCountries ?? []), { id: genId(), country: "SA", videoUrl: "" }] }))} className="rounded bg-slate-200 px-2 py-0.5 text-xs font-medium text-slate-700 hover:bg-slate-300">+ Country</button>
+                </div>
+                <div className="space-y-1.5">
+                  {(s.videoCountries ?? []).map((v, k) => (
+                    <div key={v.id} className="flex flex-wrap items-center gap-1.5">
+                      <select className={`${input} w-44`} value={v.country} onChange={(e) => patch(i, (x) => ({ ...x, videoCountries: x.videoCountries.map((y, m) => (m === k ? { ...y, country: e.target.value } : y)) }))}>
+                        {VIDEO_COUNTRIES.every((o) => o.code !== v.country) && v.country && <option value={v.country}>{v.country}</option>}
+                        {VIDEO_COUNTRIES.map((o) => <option key={o.code} value={o.code}>{o.label}</option>)}
+                      </select>
+                      <input className={`${input} flex-1 min-w-[180px]`} value={v.videoUrl} onChange={(e) => patch(i, (x) => ({ ...x, videoCountries: x.videoCountries.map((y, m) => (m === k ? { ...y, videoUrl: e.target.value } : y)) }))} dir="ltr" placeholder="https://youtube.com/watch?v=..." />
+                      <button type="button" onClick={() => patch(i, (x) => ({ ...x, videoCountries: x.videoCountries.filter((_, m) => m !== k) }))} className="px-2 py-1 text-xs text-red-500 hover:bg-red-50 rounded">✕</button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Per-sector CTA override (overrides global WhatsApp Routing / Landing CTA) */}
+            <div className="sm:col-span-2 lg:col-span-4 rounded-lg border border-amber-200 bg-amber-50/40 p-3 space-y-4">
+              <p className="text-xs text-slate-500">CTA override (optional). Set a WhatsApp number or a link per domain/country — overrides the global Settings. Priority: <b>visitor country</b> → <b>domain</b> → global default.</p>
+
+              {/* By domain */}
+              <div>
+                <div className="mb-1.5 flex items-center justify-between">
+                  <span className="text-[11px] font-semibold uppercase text-slate-400">By domain</span>
+                  <button type="button" onClick={() => patch(i, (x) => ({ ...x, ctaDomains: [...(x.ctaDomains ?? []), { id: genId(), domain: "", kind: "whatsapp", value: "" }] }))} className="rounded bg-slate-200 px-2 py-0.5 text-xs font-medium text-slate-700 hover:bg-slate-300">+ Domain</button>
+                </div>
+                <div className="space-y-1.5">
+                  {(s.ctaDomains ?? []).map((v, k) => (
+                    <div key={v.id} className="flex flex-wrap items-center gap-1.5">
+                      <input className={`${input} w-36`} value={v.domain} onChange={(e) => patch(i, (x) => ({ ...x, ctaDomains: x.ctaDomains.map((y, m) => (m === k ? { ...y, domain: e.target.value } : y)) }))} dir="ltr" placeholder="falcon-it.com.eg" />
+                      <select className={`${input} w-28`} value={v.kind} onChange={(e) => patch(i, (x) => ({ ...x, ctaDomains: x.ctaDomains.map((y, m) => (m === k ? { ...y, kind: e.target.value as "whatsapp" | "url" } : y)) }))}>
+                        <option value="whatsapp">WhatsApp</option>
+                        <option value="url">Link</option>
+                      </select>
+                      <input className={`${input} flex-1 min-w-[160px]`} value={v.value} onChange={(e) => patch(i, (x) => ({ ...x, ctaDomains: x.ctaDomains.map((y, m) => (m === k ? { ...y, value: e.target.value } : y)) }))} dir="ltr" placeholder={v.kind === "url" ? "https://app.../checkout" : "9665xxxxxxxx"} />
+                      <button type="button" onClick={() => patch(i, (x) => ({ ...x, ctaDomains: x.ctaDomains.filter((_, m) => m !== k) }))} className="px-2 py-1 text-xs text-red-500 hover:bg-red-50 rounded">✕</button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* By country */}
+              <div>
+                <div className="mb-1.5 flex items-center justify-between">
+                  <span className="text-[11px] font-semibold uppercase text-slate-400">By visitor country (overrides domain)</span>
+                  <button type="button" onClick={() => patch(i, (x) => ({ ...x, ctaCountries: [...(x.ctaCountries ?? []), { id: genId(), country: "SA", kind: "whatsapp", value: "" }] }))} className="rounded bg-slate-200 px-2 py-0.5 text-xs font-medium text-slate-700 hover:bg-slate-300">+ Country</button>
+                </div>
+                <div className="space-y-1.5">
+                  {(s.ctaCountries ?? []).map((v, k) => (
+                    <div key={v.id} className="flex flex-wrap items-center gap-1.5">
+                      <select className={`${input} w-40`} value={v.country} onChange={(e) => patch(i, (x) => ({ ...x, ctaCountries: x.ctaCountries.map((y, m) => (m === k ? { ...y, country: e.target.value } : y)) }))}>
+                        {VIDEO_COUNTRIES.every((o) => o.code !== v.country) && v.country && <option value={v.country}>{v.country}</option>}
+                        {VIDEO_COUNTRIES.map((o) => <option key={o.code} value={o.code}>{o.label}</option>)}
+                      </select>
+                      <select className={`${input} w-28`} value={v.kind} onChange={(e) => patch(i, (x) => ({ ...x, ctaCountries: x.ctaCountries.map((y, m) => (m === k ? { ...y, kind: e.target.value as "whatsapp" | "url" } : y)) }))}>
+                        <option value="whatsapp">WhatsApp</option>
+                        <option value="url">Link</option>
+                      </select>
+                      <input className={`${input} flex-1 min-w-[160px]`} value={v.value} onChange={(e) => patch(i, (x) => ({ ...x, ctaCountries: x.ctaCountries.map((y, m) => (m === k ? { ...y, value: e.target.value } : y)) }))} dir="ltr" placeholder={v.kind === "url" ? "https://app.../checkout" : "9665xxxxxxxx"} />
+                      <button type="button" onClick={() => patch(i, (x) => ({ ...x, ctaCountries: x.ctaCountries.filter((_, m) => m !== k) }))} className="px-2 py-1 text-xs text-red-500 hover:bg-red-50 rounded">✕</button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       ))}

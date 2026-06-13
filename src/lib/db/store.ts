@@ -845,37 +845,46 @@ function rowToSector(r: any): Sector {
     videoUrl: r.video_url ?? "",
     videoDomains: [],
     videoCountries: [],
+    ctaDomains: [],
+    ctaCountries: [],
     featured: r.featured,
     enabled: r.enabled,
     sortOrder: r.sort_order,
   };
 }
 
-/** Load per-sector video routing rules, grouped by sector_id. */
-async function readSectorVideoRules(
+/** Load per-sector routing rules (video + CTA), grouped by sector_id. */
+async function readSectorRoutingRules(
   pool: Pool,
   sectorId?: string
 ): Promise<{
-  domains: Map<string, Sector["videoDomains"]>;
-  countries: Map<string, Sector["videoCountries"]>;
+  videoDomains: Map<string, Sector["videoDomains"]>;
+  videoCountries: Map<string, Sector["videoCountries"]>;
+  ctaDomains: Map<string, Sector["ctaDomains"]>;
+  ctaCountries: Map<string, Sector["ctaCountries"]>;
 }> {
   const where = sectorId ? "WHERE sector_id = $1" : "";
   const args = sectorId ? [sectorId] : [];
-  const dRes = await pool.query(`SELECT * FROM sector_video_domains ${where} ORDER BY sort_order, id`, args);
-  const cRes = await pool.query(`SELECT * FROM sector_video_countries ${where} ORDER BY sort_order, id`, args);
-  const domains = new Map<string, Sector["videoDomains"]>();
-  const countries = new Map<string, Sector["videoCountries"]>();
-  for (const r of dRes.rows) {
-    const arr = domains.get(r.sector_id) ?? [];
-    arr.push({ id: r.id, domain: r.domain, videoUrl: r.video_url });
-    domains.set(r.sector_id, arr);
-  }
-  for (const r of cRes.rows) {
-    const arr = countries.get(r.sector_id) ?? [];
-    arr.push({ id: r.id, country: r.country, videoUrl: r.video_url });
-    countries.set(r.sector_id, arr);
-  }
-  return { domains, countries };
+  const [vd, vc, cd, cc] = await Promise.all([
+    pool.query(`SELECT * FROM sector_video_domains ${where} ORDER BY sort_order, id`, args),
+    pool.query(`SELECT * FROM sector_video_countries ${where} ORDER BY sort_order, id`, args),
+    pool.query(`SELECT * FROM sector_cta_domains ${where} ORDER BY sort_order, id`, args),
+    pool.query(`SELECT * FROM sector_cta_countries ${where} ORDER BY sort_order, id`, args),
+  ]);
+  const videoDomains = new Map<string, Sector["videoDomains"]>();
+  const videoCountries = new Map<string, Sector["videoCountries"]>();
+  const ctaDomains = new Map<string, Sector["ctaDomains"]>();
+  const ctaCountries = new Map<string, Sector["ctaCountries"]>();
+  const push = <T>(map: Map<string, T[]>, key: string, item: T) => {
+    const arr = map.get(key) ?? [];
+    arr.push(item);
+    map.set(key, arr);
+  };
+  for (const r of vd.rows) push(videoDomains, r.sector_id, { id: r.id, domain: r.domain, videoUrl: r.video_url });
+  for (const r of vc.rows) push(videoCountries, r.sector_id, { id: r.id, country: r.country, videoUrl: r.video_url });
+  for (const r of cd.rows) push(ctaDomains, r.sector_id, { id: r.id, domain: r.domain, kind: r.kind === "url" ? "url" : "whatsapp", value: r.value });
+  for (const r of cc.rows) push(ctaCountries, r.sector_id, { id: r.id, country: r.country, kind: r.kind === "url" ? "url" : "whatsapp", value: r.value });
+  return { videoDomains, videoCountries, ctaDomains, ctaCountries };
 }
 /* eslint-enable @typescript-eslint/no-explicit-any */
 
@@ -884,10 +893,12 @@ export async function readSectors(pool: Pool, onlyEnabled = false): Promise<Sect
     `SELECT * FROM sectors ${onlyEnabled ? "WHERE enabled = true" : ""} ORDER BY sort_order, id`
   );
   const sectors = res.rows.map(rowToSector);
-  const { domains, countries } = await readSectorVideoRules(pool);
+  const rules = await readSectorRoutingRules(pool);
   for (const s of sectors) {
-    s.videoDomains = domains.get(s.id) ?? [];
-    s.videoCountries = countries.get(s.id) ?? [];
+    s.videoDomains = rules.videoDomains.get(s.id) ?? [];
+    s.videoCountries = rules.videoCountries.get(s.id) ?? [];
+    s.ctaDomains = rules.ctaDomains.get(s.id) ?? [];
+    s.ctaCountries = rules.ctaCountries.get(s.id) ?? [];
   }
   return sectors;
 }
@@ -896,9 +907,11 @@ export async function readSector(pool: Pool, id: string): Promise<Sector | null>
   const res = await pool.query(`SELECT * FROM sectors WHERE id = $1`, [id]);
   if (!res.rows[0]) return null;
   const sector = rowToSector(res.rows[0]);
-  const { domains, countries } = await readSectorVideoRules(pool, id);
-  sector.videoDomains = domains.get(id) ?? [];
-  sector.videoCountries = countries.get(id) ?? [];
+  const rules = await readSectorRoutingRules(pool, id);
+  sector.videoDomains = rules.videoDomains.get(id) ?? [];
+  sector.videoCountries = rules.videoCountries.get(id) ?? [];
+  sector.ctaDomains = rules.ctaDomains.get(id) ?? [];
+  sector.ctaCountries = rules.ctaCountries.get(id) ?? [];
   return sector;
 }
 
@@ -909,6 +922,8 @@ export async function writeSectors(pool: Pool, sectors: Sector[]): Promise<void>
     await client.query("DELETE FROM sectors");
     await client.query("DELETE FROM sector_video_domains");
     await client.query("DELETE FROM sector_video_countries");
+    await client.query("DELETE FROM sector_cta_domains");
+    await client.query("DELETE FROM sector_cta_countries");
     for (let i = 0; i < sectors.length; i++) {
       const s = sectors[i];
       const sectorId = s.id || newId("sec");
@@ -945,6 +960,21 @@ export async function writeSectors(pool: Pool, sectors: Sector[]): Promise<void>
         await client.query(
           `INSERT INTO sector_video_countries (id, sector_id, country, video_url, sort_order) VALUES ($1,$2,$3,$4,$5)`,
           [vCountries[j].id || newId("svc"), sectorId, vCountries[j].country.trim().toUpperCase(), vCountries[j].videoUrl.trim(), j]
+        );
+      }
+
+      const ctaD = (s.ctaDomains ?? []).filter((v) => v.domain?.trim() && v.value?.trim());
+      for (let j = 0; j < ctaD.length; j++) {
+        await client.query(
+          `INSERT INTO sector_cta_domains (id, sector_id, domain, kind, value, sort_order) VALUES ($1,$2,$3,$4,$5,$6)`,
+          [ctaD[j].id || newId("scd"), sectorId, ctaD[j].domain.trim(), ctaD[j].kind === "url" ? "url" : "whatsapp", ctaD[j].value.trim(), j]
+        );
+      }
+      const ctaC = (s.ctaCountries ?? []).filter((v) => v.country?.trim() && v.value?.trim());
+      for (let j = 0; j < ctaC.length; j++) {
+        await client.query(
+          `INSERT INTO sector_cta_countries (id, sector_id, country, kind, value, sort_order) VALUES ($1,$2,$3,$4,$5,$6)`,
+          [ctaC[j].id || newId("scc"), sectorId, ctaC[j].country.trim().toUpperCase(), ctaC[j].kind === "url" ? "url" : "whatsapp", ctaC[j].value.trim(), j]
         );
       }
     }
@@ -997,6 +1027,7 @@ export async function readSectorPricing(pool: Pool): Promise<SectorPricingOverri
   await pool.query(`ALTER TABLE sector_pricing ADD COLUMN IF NOT EXISTS hosting_price numeric`);
   await pool.query(`ALTER TABLE sector_pricing ADD COLUMN IF NOT EXISTS discount_percent numeric`);
   await pool.query(`ALTER TABLE sector_pricing ADD COLUMN IF NOT EXISTS volume_discounts jsonb`);
+  await pool.query(`ALTER TABLE sector_pricing ADD COLUMN IF NOT EXISTS includes_cloud_hosting boolean NOT NULL DEFAULT false`);
   const res = await pool.query(`SELECT * FROM sector_pricing ORDER BY sector_id, system`);
   return res.rows.map((r) => ({
     sectorId: r.sector_id,
@@ -1007,6 +1038,7 @@ export async function readSectorPricing(pool: Pool): Promise<SectorPricingOverri
     hostingPrice: r.hosting_price == null ? null : Number(r.hosting_price),
     discountPercent: r.discount_percent == null ? null : Number(r.discount_percent),
     volumeDiscounts: Array.isArray(r.volume_discounts) ? r.volume_discounts : null,
+    includesCloudHosting: Boolean(r.includes_cloud_hosting),
   }));
 }
 
@@ -1018,13 +1050,15 @@ export async function writeSectorPricing(pool: Pool, overrides: SectorPricingOve
     await client.query(`ALTER TABLE sector_pricing ADD COLUMN IF NOT EXISTS hosting_price numeric`);
     await client.query(`ALTER TABLE sector_pricing ADD COLUMN IF NOT EXISTS discount_percent numeric`);
     await client.query(`ALTER TABLE sector_pricing ADD COLUMN IF NOT EXISTS volume_discounts jsonb`);
+    await client.query(`ALTER TABLE sector_pricing ADD COLUMN IF NOT EXISTS includes_cloud_hosting boolean NOT NULL DEFAULT false`);
     await client.query("DELETE FROM sector_pricing");
     for (const o of overrides) {
       await client.query(
-        `INSERT INTO sector_pricing (sector_id, system, price_per_user, operating_costs, training_days, hosting_price, discount_percent, volume_discounts)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8) ON CONFLICT (sector_id, system) DO NOTHING`,
+        `INSERT INTO sector_pricing (sector_id, system, price_per_user, operating_costs, training_days, hosting_price, discount_percent, volume_discounts, includes_cloud_hosting)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) ON CONFLICT (sector_id, system) DO NOTHING`,
         [o.sectorId, o.system, o.pricePerUser, o.operatingCosts, o.trainingDays,
-         o.hostingPrice, o.discountPercent, o.volumeDiscounts != null ? JSON.stringify(o.volumeDiscounts) : null]
+         o.hostingPrice, o.discountPercent, o.volumeDiscounts != null ? JSON.stringify(o.volumeDiscounts) : null,
+         Boolean(o.includesCloudHosting)]
       );
     }
     await client.query("COMMIT");

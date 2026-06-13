@@ -227,6 +227,7 @@ export default function AdminPricingPage() {
               hostingPrice: null,
               discountPercent: null,
               volumeDiscounts: null,
+              includesCloudHosting: false,
             }])}
             className="rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-200"
           >+ Add Override</button>
@@ -309,6 +310,16 @@ export default function AdminPricingPage() {
                   placeholder
                 />
               </div>
+
+              {/* Cloud hosting note toggle */}
+              <label className="mt-3 flex items-center gap-2 border-t border-slate-100 pt-3 text-sm text-slate-700">
+                <input
+                  type="checkbox"
+                  checked={!!o.includesCloudHosting}
+                  onChange={(e) => updateOverride(i, "includesCloudHosting", e.target.checked)}
+                />
+                Price includes full cloud hosting (show the note on the landing page)
+              </label>
             </div>
           ))}
         </div>
