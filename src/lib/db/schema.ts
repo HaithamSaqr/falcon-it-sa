@@ -127,6 +127,26 @@ CREATE TABLE IF NOT EXISTS sectors (
   sort_order     int NOT NULL DEFAULT 0
 );
 
+-- Landing-page video routing per sector — Layer 1: by domain/subdomain.
+CREATE TABLE IF NOT EXISTS sector_video_domains (
+  id         text PRIMARY KEY,
+  sector_id  text NOT NULL,
+  domain     text NOT NULL DEFAULT '',
+  video_url  text NOT NULL DEFAULT '',
+  sort_order int  NOT NULL DEFAULT 0
+);
+CREATE INDEX IF NOT EXISTS sector_video_domains_sid ON sector_video_domains (sector_id);
+
+-- Landing-page video routing per sector — Layer 2: by visitor country.
+CREATE TABLE IF NOT EXISTS sector_video_countries (
+  id         text PRIMARY KEY,
+  sector_id  text NOT NULL,
+  country    text NOT NULL DEFAULT '',
+  video_url  text NOT NULL DEFAULT '',
+  sort_order int  NOT NULL DEFAULT 0
+);
+CREATE INDEX IF NOT EXISTS sector_video_countries_sid ON sector_video_countries (sector_id);
+
 -- Base pricing (single row, id = 1) — values in USD
 CREATE TABLE IF NOT EXISTS pricing_base (
   id                    int PRIMARY KEY DEFAULT 1 CHECK (id = 1),

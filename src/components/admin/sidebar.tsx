@@ -106,7 +106,13 @@ const NAV_ITEMS = [
   },
 ];
 
-export default function AdminSidebar() {
+export default function AdminSidebar({
+  mobileOpen = false,
+  onClose,
+}: {
+  mobileOpen?: boolean;
+  onClose?: () => void;
+}) {
   const pathname = usePathname();
 
   function isActive(href: string) {
@@ -115,10 +121,20 @@ export default function AdminSidebar() {
   }
 
   return (
-    <aside className="hidden w-64 flex-col border-r border-slate-200 bg-white lg:flex">
+    <>
+      {/* Mobile backdrop */}
+      {mobileOpen && (
+        <div className="fixed inset-0 z-40 bg-black/40 lg:hidden" onClick={onClose} aria-hidden />
+      )}
+
+      <aside
+        className={`fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-slate-200 bg-white transition-transform duration-200 lg:static lg:z-auto lg:translate-x-0 ${
+          mobileOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
       {/* Logo */}
       <div className="flex h-16 items-center border-b border-slate-200 px-6">
-        <Link href="/admin" className="text-xl font-bold text-slate-900">
+        <Link href="/admin" className="text-xl font-bold text-slate-900" onClick={onClose}>
           <span className="text-cyan-600">FAL</span>CON
         </Link>
         <span className="ml-2 rounded bg-cyan-50 px-1.5 py-0.5 text-[10px] font-semibold uppercase text-cyan-600">
@@ -132,6 +148,7 @@ export default function AdminSidebar() {
           <Link
             key={item.href}
             href={item.href}
+            onClick={onClose}
             className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
               isActive(item.href)
                 ? "bg-cyan-50 text-cyan-700"
@@ -158,6 +175,7 @@ export default function AdminSidebar() {
           View Website
         </a>
       </div>
-    </aside>
+      </aside>
+    </>
   );
 }

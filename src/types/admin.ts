@@ -194,8 +194,11 @@ export interface Sector {
   title: BilingualText;
   description: BilingualText;
   systems: SectorSystem[];
-  /** Optional video URL (YouTube/Vimeo/embed) shown on the landing page. */
+  /** Default video URL (YouTube/Vimeo/embed) shown on the landing page. */
   videoUrl: string;
+  /** Video overrides by domain (Layer 1) and visitor country (Layer 2). */
+  videoDomains: { id: string; domain: string; videoUrl: string }[];
+  videoCountries: { id: string; country: string; videoUrl: string }[];
   featured: boolean;
   enabled: boolean;
   sortOrder: number;

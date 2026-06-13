@@ -843,10 +843,39 @@ function rowToSector(r: any): Sector {
     description: { en: r.description_en, ar: r.description_ar },
     systems: (r.systems ?? []) as SectorSystem[],
     videoUrl: r.video_url ?? "",
+    videoDomains: [],
+    videoCountries: [],
     featured: r.featured,
     enabled: r.enabled,
     sortOrder: r.sort_order,
   };
+}
+
+/** Load per-sector video routing rules, grouped by sector_id. */
+async function readSectorVideoRules(
+  pool: Pool,
+  sectorId?: string
+): Promise<{
+  domains: Map<string, Sector["videoDomains"]>;
+  countries: Map<string, Sector["videoCountries"]>;
+}> {
+  const where = sectorId ? "WHERE sector_id = $1" : "";
+  const args = sectorId ? [sectorId] : [];
+  const dRes = await pool.query(`SELECT * FROM sector_video_domains ${where} ORDER BY sort_order, id`, args);
+  const cRes = await pool.query(`SELECT * FROM sector_video_countries ${where} ORDER BY sort_order, id`, args);
+  const domains = new Map<string, Sector["videoDomains"]>();
+  const countries = new Map<string, Sector["videoCountries"]>();
+  for (const r of dRes.rows) {
+    const arr = domains.get(r.sector_id) ?? [];
+    arr.push({ id: r.id, domain: r.domain, videoUrl: r.video_url });
+    domains.set(r.sector_id, arr);
+  }
+  for (const r of cRes.rows) {
+    const arr = countries.get(r.sector_id) ?? [];
+    arr.push({ id: r.id, country: r.country, videoUrl: r.video_url });
+    countries.set(r.sector_id, arr);
+  }
+  return { domains, countries };
 }
 /* eslint-enable @typescript-eslint/no-explicit-any */
 
@@ -854,12 +883,23 @@ export async function readSectors(pool: Pool, onlyEnabled = false): Promise<Sect
   const res = await pool.query(
     `SELECT * FROM sectors ${onlyEnabled ? "WHERE enabled = true" : ""} ORDER BY sort_order, id`
   );
-  return res.rows.map(rowToSector);
+  const sectors = res.rows.map(rowToSector);
+  const { domains, countries } = await readSectorVideoRules(pool);
+  for (const s of sectors) {
+    s.videoDomains = domains.get(s.id) ?? [];
+    s.videoCountries = countries.get(s.id) ?? [];
+  }
+  return sectors;
 }
 
 export async function readSector(pool: Pool, id: string): Promise<Sector | null> {
   const res = await pool.query(`SELECT * FROM sectors WHERE id = $1`, [id]);
-  return res.rows[0] ? rowToSector(res.rows[0]) : null;
+  if (!res.rows[0]) return null;
+  const sector = rowToSector(res.rows[0]);
+  const { domains, countries } = await readSectorVideoRules(pool, id);
+  sector.videoDomains = domains.get(id) ?? [];
+  sector.videoCountries = countries.get(id) ?? [];
+  return sector;
 }
 
 export async function writeSectors(pool: Pool, sectors: Sector[]): Promise<void> {
@@ -867,13 +907,16 @@ export async function writeSectors(pool: Pool, sectors: Sector[]): Promise<void>
   try {
     await client.query("BEGIN");
     await client.query("DELETE FROM sectors");
+    await client.query("DELETE FROM sector_video_domains");
+    await client.query("DELETE FROM sector_video_countries");
     for (let i = 0; i < sectors.length; i++) {
       const s = sectors[i];
+      const sectorId = s.id || newId("sec");
       await client.query(
         `INSERT INTO sectors (id, icon, gradient, name_en, name_ar, title_en, title_ar, description_en, description_ar, systems, video_url, featured, enabled, sort_order)
          VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)`,
         [
-          s.id || newId("sec"),
+          sectorId,
           s.icon ?? "",
           s.gradient ?? "",
           s.name?.en ?? "",
@@ -889,6 +932,21 @@ export async function writeSectors(pool: Pool, sectors: Sector[]): Promise<void>
           i,
         ]
       );
+
+      const vDomains = (s.videoDomains ?? []).filter((v) => v.domain?.trim() && v.videoUrl?.trim());
+      for (let j = 0; j < vDomains.length; j++) {
+        await client.query(
+          `INSERT INTO sector_video_domains (id, sector_id, domain, video_url, sort_order) VALUES ($1,$2,$3,$4,$5)`,
+          [vDomains[j].id || newId("svd"), sectorId, vDomains[j].domain.trim(), vDomains[j].videoUrl.trim(), j]
+        );
+      }
+      const vCountries = (s.videoCountries ?? []).filter((v) => v.country?.trim() && v.videoUrl?.trim());
+      for (let j = 0; j < vCountries.length; j++) {
+        await client.query(
+          `INSERT INTO sector_video_countries (id, sector_id, country, video_url, sort_order) VALUES ($1,$2,$3,$4,$5)`,
+          [vCountries[j].id || newId("svc"), sectorId, vCountries[j].country.trim().toUpperCase(), vCountries[j].videoUrl.trim(), j]
+        );
+      }
     }
     await client.query("COMMIT");
   } catch (e) {

@@ -1,8 +1,7 @@
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth";
 import { isInstalled } from "@/lib/db/config";
-import AdminSidebar from "@/components/admin/sidebar";
-import AdminHeader from "@/components/admin/header";
+import AdminShell from "@/components/admin/admin-shell";
 
 // Must render per-request: the install/auth gate reads the db-config file and
 // the session cookie at runtime. Without this, the build-time redirect to
@@ -24,13 +23,5 @@ export default async function DashboardLayout({
     redirect("/admin/login");
   }
 
-  return (
-    <div className="flex h-screen overflow-hidden bg-slate-50 text-slate-900">
-      <AdminSidebar />
-      <div className="flex flex-1 flex-col overflow-hidden">
-        <AdminHeader />
-        <main className="flex-1 overflow-y-auto p-6">{children}</main>
-      </div>
-    </div>
-  );
+  return <AdminShell>{children}</AdminShell>;
 }
