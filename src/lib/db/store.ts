@@ -185,6 +185,7 @@ export async function readSettings(pool: Pool): Promise<SiteSettings> {
       tiktok: r.social_tiktok ?? "",
     },
     loginUrl: r.login_url || "https://falcon-valley.com",
+    clientsSpeed: r.clients_speed == null ? 3 : Number(r.clients_speed),
     whatsappRouting,
     landingCta,
     regional: { gulfOnly: r.gulf_only },
@@ -207,8 +208,9 @@ export async function writeSettings(pool: Pool, s: SiteSettings): Promise<void> 
        social_linkedin, social_twitter, social_facebook, social_instagram, social_youtube,
        social_tiktok, login_url, jwt_secret, rate_limit_max, rate_limit_window_ms,
        landing_cta_mode, landing_cta_url,
-       landing_cta_label_en, landing_cta_label_ar, landing_cta_note_en, landing_cta_note_ar
-     ) VALUES (1, $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25)
+       landing_cta_label_en, landing_cta_label_ar, landing_cta_note_en, landing_cta_note_ar,
+       clients_speed
+     ) VALUES (1, $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26)
      ON CONFLICT (id) DO UPDATE SET
        company_name_en = EXCLUDED.company_name_en,
        company_name_ar = EXCLUDED.company_name_ar,
@@ -234,7 +236,8 @@ export async function writeSettings(pool: Pool, s: SiteSettings): Promise<void> 
        landing_cta_label_en = EXCLUDED.landing_cta_label_en,
        landing_cta_label_ar = EXCLUDED.landing_cta_label_ar,
        landing_cta_note_en = EXCLUDED.landing_cta_note_en,
-       landing_cta_note_ar = EXCLUDED.landing_cta_note_ar`,
+       landing_cta_note_ar = EXCLUDED.landing_cta_note_ar,
+       clients_speed = EXCLUDED.clients_speed`,
     [
       s.company.name.en, s.company.name.ar, s.company.email,
       s.company.phone.ksa, s.company.phone.egypt, s.company.whatsapp,
@@ -245,6 +248,7 @@ export async function writeSettings(pool: Pool, s: SiteSettings): Promise<void> 
       s.landingCta?.mode === "url" ? "url" : "whatsapp", s.landingCta?.url ?? "",
       s.landingCta?.label?.en ?? "", s.landingCta?.label?.ar ?? "",
       s.landingCta?.note?.en ?? "", s.landingCta?.note?.ar ?? "",
+      typeof s.clientsSpeed === "number" && s.clientsSpeed > 0 ? s.clientsSpeed : 3,
     ]
   );
   await writeBranches(pool, s.company.branches ?? []);

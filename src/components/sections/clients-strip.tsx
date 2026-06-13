@@ -1,11 +1,11 @@
-import { getClients } from "@/lib/data-store";
+import { getClients, getSettings } from "@/lib/data-store";
 import { getLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import Container from "@/components/ui/container";
 
 /** Home "Our Clients" strip — an auto-scrolling marquee of logos only. */
 export default async function ClientsStrip() {
-  const clients = await getClients();
+  const [clients, settings] = await Promise.all([getClients(), getSettings()]);
   // Only logos are shown publicly; clients without a logo are skipped here.
   const logos = clients.filter((c) => c.logo);
   if (logos.length === 0) return null;
@@ -19,6 +19,11 @@ export default async function ClientsStrip() {
   while (half.length < 8) half.push(...logos);
   const track = [...half, ...half];
 
+  // Speed = seconds per logo (admin-controlled) × items in one loop → constant
+  // pace regardless of how many logos exist. Higher value = slower scroll.
+  const perLogo = settings.clientsSpeed > 0 ? settings.clientsSpeed : 3;
+  const durationSec = Math.max(8, Math.round(half.length * perLogo));
+
   return (
     <section className="border-y border-gray-100 bg-white py-16">
       {/* Full-bleed marquee with fading edges */}
@@ -27,7 +32,7 @@ export default async function ClientsStrip() {
         <div className="pointer-events-none absolute inset-y-0 start-0 z-10 w-16 bg-gradient-to-r from-white to-transparent sm:w-24" />
         <div className="pointer-events-none absolute inset-y-0 end-0 z-10 w-16 bg-gradient-to-l from-white to-transparent sm:w-24" />
 
-        <div className="animate-marquee flex w-max items-center gap-12 sm:gap-16">
+        <div className="animate-marquee flex w-max items-center gap-12 sm:gap-16" style={{ animationDuration: `${durationSec}s` }}>
           {track.map((c, i) => (
             <div
               key={`${c.id}-${i}`}

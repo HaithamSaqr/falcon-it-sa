@@ -146,6 +146,8 @@ export interface SiteSettings {
   };
   /** External URL the navbar "Login" button points to. */
   loginUrl: string;
+  /** Clients marquee speed — seconds per logo (higher = slower). */
+  clientsSpeed: number;
   /**
    * WhatsApp number routing. Resolution precedence at request time:
    * visitor country (by IP) → request domain → company.whatsapp (default).

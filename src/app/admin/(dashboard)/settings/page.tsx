@@ -491,6 +491,43 @@ export default function SettingsPage() {
         </div>
       </div>
 
+      {/* Clients Strip */}
+      <div className="rounded-xl border border-slate-200 bg-white p-6">
+        <h3 className="mb-1 text-sm font-semibold text-slate-700">Clients Strip (home)</h3>
+        <p className="mb-4 text-xs text-slate-400">Scroll speed of the clients logo marquee. Higher = slower.</p>
+        <div className="flex flex-wrap items-center gap-4">
+          <div className="w-48">
+            <label className={labelClasses}>Speed (seconds per logo)</label>
+            <input
+              type="number"
+              min={0.5}
+              step={0.5}
+              value={settings.clientsSpeed ?? 3}
+              onChange={(e) => set("clientsSpeed", Math.max(0.5, Number(e.target.value) || 3))}
+              className={inputClasses}
+            />
+          </div>
+          <div className="flex gap-2">
+            {[
+              { label: "Slow", v: 5 },
+              { label: "Normal", v: 3 },
+              { label: "Fast", v: 1.5 },
+            ].map((p) => (
+              <button
+                key={p.label}
+                type="button"
+                onClick={() => set("clientsSpeed", p.v)}
+                className={`rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors ${
+                  (settings.clientsSpeed ?? 3) === p.v ? "border-cyan-500 bg-cyan-50 text-cyan-700" : "border-slate-300 text-slate-600 hover:bg-slate-50"
+                }`}
+              >
+                {p.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
       {/* WhatsApp Routing */}
       {(() => {
         const routing = settings.whatsappRouting ?? { domains: [], countries: [] };

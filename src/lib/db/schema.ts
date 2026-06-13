@@ -395,6 +395,7 @@ ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS landing_cta_label_en text NOT
 ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS landing_cta_label_ar text NOT NULL DEFAULT '';
 ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS landing_cta_note_en text NOT NULL DEFAULT '';
 ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS landing_cta_note_ar text NOT NULL DEFAULT '';
+ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS clients_speed numeric NOT NULL DEFAULT 3;
 `;
 
 export async function ensureSchema(pool: Pool): Promise<void> {

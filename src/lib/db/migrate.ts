@@ -63,6 +63,7 @@ function mergeSettings(s: any): SiteSettings {
     notifications: { ...DEFAULT_SETTINGS.notifications, ...s?.notifications },
     social: { ...DEFAULT_SETTINGS.social, ...s?.social },
     loginUrl: s?.loginUrl ?? DEFAULT_SETTINGS.loginUrl,
+    clientsSpeed: typeof s?.clientsSpeed === "number" ? s.clientsSpeed : DEFAULT_SETTINGS.clientsSpeed,
     whatsappRouting: s?.whatsappRouting ?? DEFAULT_SETTINGS.whatsappRouting,
     landingCta: s?.landingCta ?? DEFAULT_SETTINGS.landingCta,
     regional: { ...DEFAULT_SETTINGS.regional, ...s?.regional },

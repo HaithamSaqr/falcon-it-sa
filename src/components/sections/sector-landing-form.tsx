@@ -52,6 +52,7 @@ export default function SectorLandingForm({ sector, base, overrides, isEgypt, is
   const [showPrice, setShowPrice] = useState(false);
   const [error, setError] = useState("");
   const [sending, setSending] = useState(false);
+  const [shared, setShared] = useState(false);
   // Resolved landing video — starts as the default (matches SSR), then routes
   // by country → domain after mount. Precedence: country → domain → default.
   const [resolvedVideo, setResolvedVideo] = useState(sector.videoUrl);
@@ -190,6 +191,22 @@ export default function SectorLandingForm({ sector, base, overrides, isEgypt, is
         ...(showCloudHosting ? ["", "Price includes full cloud hosting."] : []),
       ];
     return encodeURIComponent(lines.join("\n"));
+  }
+
+  async function handleShare() {
+    const url = typeof window !== "undefined" ? window.location.href : "";
+    const title = `${sectorTitle} — Falcon`;
+    try {
+      if (typeof navigator !== "undefined" && navigator.share) {
+        await navigator.share({ title, text: sectorDesc, url });
+      } else {
+        await navigator.clipboard.writeText(url);
+        setShared(true);
+        setTimeout(() => setShared(false), 2000);
+      }
+    } catch {
+      /* user cancelled the share sheet — ignore */
+    }
   }
 
   async function handleSendToAI() {
@@ -373,9 +390,27 @@ export default function SectorLandingForm({ sector, base, overrides, isEgypt, is
             </div>
           </div>
 
-          <Button type="button" variant="outline" size="md" onClick={() => { if (validate()) setShowPrice(true); }} className="w-full">
-            🧮 {isAr ? "احسب التكلفة" : "Calculate cost"}
-          </Button>
+          <div className="flex items-stretch gap-2">
+            <Button type="button" variant="outline" size="md" onClick={() => { if (validate()) setShowPrice(true); }} className="flex-1">
+              🧮 {isAr ? "احسب التكلفة" : "Calculate cost"}
+            </Button>
+            <button
+              type="button"
+              onClick={handleShare}
+              aria-label={isAr ? "مشاركة الصفحة" : "Share page"}
+              title={isAr ? "مشاركة" : "Share"}
+              className="flex shrink-0 items-center justify-center gap-1.5 rounded-[var(--radius-button)] border border-gray-300 px-3 text-sm font-medium text-text-secondary transition-colors hover:border-primary-500 hover:text-primary-500"
+            >
+              {shared ? (
+                <span className="text-cta">✓</span>
+              ) : (
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M7.217 10.907a2.25 2.25 0 1 0 0 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186 9.566-5.314m-9.566 7.5 9.566 5.314m0 0a2.25 2.25 0 1 0 3.935 2.186 2.25 2.25 0 0 0-3.935-2.186Zm0-12.814a2.25 2.25 0 1 0 3.933-2.185 2.25 2.25 0 0 0-3.933 2.185Z" />
+                </svg>
+              )}
+              <span className="hidden sm:inline">{shared ? (isAr ? "تم النسخ" : "Copied") : (isAr ? "مشاركة" : "Share")}</span>
+            </button>
+          </div>
 
           {/* Price breakdown */}
           {showPrice && (

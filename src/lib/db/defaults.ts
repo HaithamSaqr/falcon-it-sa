@@ -301,6 +301,7 @@ export const DEFAULT_SETTINGS: SiteSettings = {
     tiktok: "",
   },
   loginUrl: "https://falcon-valley.com",
+  clientsSpeed: 3,
   whatsappRouting: { domains: [], countries: [] },
   landingCta: { mode: "whatsapp", url: "", label: { en: "", ar: "" }, note: { en: "", ar: "" } },
   regional: {
