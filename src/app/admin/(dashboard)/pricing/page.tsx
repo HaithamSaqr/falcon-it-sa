@@ -90,6 +90,7 @@ export default function AdminPricingPage() {
   const [base, setBase] = useState<PricingBase | null>(null);
   const [overrides, setOverrides] = useState<SectorPricingOverride[]>([]);
   const [sectors, setSectors] = useState<Sector[]>([]);
+  const [query, setQuery] = useState("");
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState("");
 
@@ -233,12 +234,30 @@ export default function AdminPricingPage() {
           >+ Add Override</button>
         </div>
 
+        {overrides.length > 0 && (
+          <input
+            type="search"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search overrides by sector…"
+            className="mb-4 w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20"
+          />
+        )}
+
         {overrides.length === 0 && (
           <p className="rounded-lg border border-dashed border-slate-200 py-6 text-center text-sm text-slate-400">No overrides — all sectors use base pricing.</p>
         )}
 
         <div className="space-y-4">
-          {overrides.map((o, i) => (
+          {overrides
+            .map((o, i) => ({ o, i }))
+            .filter(({ o }) => {
+              const q = query.trim().toLowerCase();
+              if (!q) return true;
+              const s = sectors.find((x) => x.id === o.sectorId);
+              return `${o.sectorId} ${o.system} ${s?.name.en ?? ""} ${s?.name.ar ?? ""}`.toLowerCase().includes(q);
+            })
+            .map(({ o, i }) => (
             <div key={i} className="rounded-lg border border-slate-100 bg-slate-50/60 p-4">
               {/* Row 1: identifiers + delete */}
               <div className="mb-3 flex flex-wrap items-end gap-3">

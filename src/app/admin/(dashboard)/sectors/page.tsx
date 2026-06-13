@@ -42,6 +42,7 @@ export default function AdminSectorsPage() {
   const [sectors, setSectors] = useState<Sector[] | null>(null);
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState("");
+  const [query, setQuery] = useState("");
 
   useEffect(() => {
     fetch("/api/admin/sectors")
@@ -111,7 +112,21 @@ export default function AdminSectorsPage() {
         </div>
       </div>
 
-      {sectors.map((s, i) => (
+      <input
+        type="search"
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        placeholder="Search sectors by name…"
+        className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20"
+      />
+
+      {sectors
+        .map((s, i) => ({ s, i }))
+        .filter(({ s }) =>
+          !query.trim() ||
+          `${s.id} ${s.name.en} ${s.name.ar} ${s.title.en} ${s.title.ar}`.toLowerCase().includes(query.trim().toLowerCase())
+        )
+        .map(({ s, i }) => (
         <div key={s.id} className="rounded-xl border border-slate-200 bg-white p-5">
           <div className="mb-3 flex items-center justify-between">
             <div className="flex items-center gap-3">

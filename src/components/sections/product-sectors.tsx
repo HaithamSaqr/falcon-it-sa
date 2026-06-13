@@ -27,6 +27,7 @@ export default async function ProductSectors({ slug }: { slug: string }) {
     <SectorsGrid
       sectors={filtered}
       system={system}
+      showSearch={filtered.length > 6}
       heading={isAr ? "القطاعات التي نخدمها" : "Sectors we serve"}
       subheading={
         isAr

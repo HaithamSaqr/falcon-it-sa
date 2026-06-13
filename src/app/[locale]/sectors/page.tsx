@@ -20,7 +20,7 @@ export default async function AllSectorsPage({ params }: Props) {
   });
   return (
     <div className="py-8">
-      <SectorsGrid sectors={sorted} hasMore={false} />
+      <SectorsGrid sectors={sorted} hasMore={false} showSearch />
     </div>
   );
 }
