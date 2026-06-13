@@ -114,9 +114,24 @@ export default function SectorLandingForm({ sector, base, overrides, isEgypt, is
     [overrides, sector.id, system]
   );
 
+  // Free technical support months — info only (override falls back to base).
+  const freeSupportMonths = useMemo(() => {
+    const ov = findOverride(overrides, sector.id, system || null);
+    return ov?.freeSupportMonths ?? base.freeSupportMonths ?? 0;
+  }, [overrides, sector.id, system, base.freeSupportMonths]);
+
   // No discount → show a single price (hide the struck-through "regular" line)
   // so the customer doesn't look for a missing discount.
   const hasDiscount = breakdown.discountPercent > 0 || breakdown.volumeDiscountPercent > 0;
+
+  // Split the total into yearly (license + hosting) and one-time (operating +
+  // training). Volume discount applies to the per-user license, the general
+  // discount to hosting/operating/training. yearly + oneTime === breakdown.total.
+  const yearlyTotal =
+    breakdown.users * breakdown.pricePerUser * (1 - breakdown.volumeDiscountPercent / 100) +
+    breakdown.hosting * (1 - breakdown.discountPercent / 100);
+  const oneTimeTotal =
+    (breakdown.operating + breakdown.trainingCost) * (1 - breakdown.discountPercent / 100);
 
   // Next volume discount tier hint
   const nextTier = useMemo((): (VolumeDiscountTier & { usersNeeded: number }) | null => {
@@ -164,12 +179,11 @@ export default function SectorLandingForm({ sector, base, overrides, isEgypt, is
         `النظام: ${sysLabel}`,
         `عدد المستخدمين: ${form.users}`,
         `أيام التدريب: ${breakdown.trainingDays}`,
-        ...(hasDiscount
-          ? [
-            `السعر قبل الخصم: ${price(breakdown.regular)}`,
-            `السعر بعد الخصم: ${price(breakdown.total)} / سنة`,
-          ]
-          : [`السعر: ${price(breakdown.total)} / سنة`]),
+        ...(freeSupportMonths > 0 ? [`دعم فني مجاني: ${freeSupportMonths} شهر`] : []),
+        ...(hasDiscount ? [`السعر قبل الخصم: ${price(breakdown.regular)}`] : []),
+        `سنوياً (الترخيص + الاستضافة): ${price(yearlyTotal)} / سنة`,
+        ...(oneTimeTotal > 0 ? [`التشغيل + التدريب: ${price(oneTimeTotal)} (مرة واحدة)`] : []),
+        `الإجمالي (السنة الأولى): ${price(breakdown.total)}`,
         ...(showCloudHosting ? ["", "السعر يشمل الاستضافة السحابية بالكامل."] : []),
       ]
       : [
@@ -182,12 +196,11 @@ export default function SectorLandingForm({ sector, base, overrides, isEgypt, is
         `System: ${sysLabel}`,
         `Users: ${form.users}`,
         `Training days: ${breakdown.trainingDays}`,
-        ...(hasDiscount
-          ? [
-            `Price before discount: ${price(breakdown.regular)}`,
-            `Price after discount: ${price(breakdown.total)} / year`,
-          ]
-          : [`Price: ${price(breakdown.total)} / year`]),
+        ...(freeSupportMonths > 0 ? [`Free technical support: ${freeSupportMonths} months`] : []),
+        ...(hasDiscount ? [`Price before discount: ${price(breakdown.regular)}`] : []),
+        `Yearly (license + hosting): ${price(yearlyTotal)} / year`,
+        ...(oneTimeTotal > 0 ? [`Operating + training: ${price(oneTimeTotal)} (one-time)`] : []),
+        `Total (first year): ${price(breakdown.total)}`,
         ...(showCloudHosting ? ["", "Price includes full cloud hosting."] : []),
       ];
     return encodeURIComponent(lines.join("\n"));
@@ -419,8 +432,16 @@ export default function SectorLandingForm({ sector, base, overrides, isEgypt, is
               <div className="space-y-1.5 text-sm text-text-secondary">
                 <Row label={isAr ? `${breakdown.users} مستخدم × ${price(breakdown.pricePerUser)}` : `${breakdown.users} users × ${price(breakdown.pricePerUser)}`} value={price(breakdown.users * breakdown.pricePerUser)} />
                 <Row label={isAr ? "الاستضافة" : "Hosting"} value={price(breakdown.hosting)} />
-                <Row label={isAr ? "تكاليف التشغيل" : "Operating costs"} value={price(breakdown.operating)} />
-                <Row label={isAr ? `التدريب (${breakdown.trainingDays} يوم)` : `Training (${breakdown.trainingDays} days)`} value={price(breakdown.trainingCost)} />
+                <Row label={`${isAr ? "تكاليف التشغيل" : "Operating costs"} ${isAr ? "· مرة واحدة" : "· one-time"}`} value={price(breakdown.operating)} />
+                <Row label={`${isAr ? `التدريب (${breakdown.trainingDays} يوم)` : `Training (${breakdown.trainingDays} days)`} ${isAr ? "· مرة واحدة" : "· one-time"}`} value={price(breakdown.trainingCost)} />
+                {freeSupportMonths > 0 && (
+                  <div className="flex items-center justify-between">
+                    <span className="flex items-center gap-1.5">🎁 {isAr ? "دعم فني مجاني" : "Free technical support"}</span>
+                    <span className="font-semibold text-emerald-600">
+                      {isAr ? `${freeSupportMonths} ${freeSupportMonths >= 3 && freeSupportMonths <= 10 ? "أشهر" : "شهر"} مجاناً` : `${freeSupportMonths} month${freeSupportMonths === 1 ? "" : "s"} free`}
+                    </span>
+                  </div>
+                )}
               </div>
               <div className="mt-3 border-t border-cta/20 pt-3 space-y-1.5">
                 {hasDiscount && (
@@ -448,17 +469,33 @@ export default function SectorLandingForm({ sector, base, overrides, isEgypt, is
                       : `Add ${nextTier.usersNeeded} more user${nextTier.usersNeeded === 1 ? "" : "s"} to unlock +${nextTier.discountPercent}% off`}
                   </div>
                 )}
-                <div className={cn("mt-1 flex items-center justify-between", hasDiscount && "border-t border-cta/20 pt-2")}>
-                  <span className="font-bold text-text-primary">{hasDiscount ? (isAr ? "السعر بعد الخصم" : "Price after discount") : (isAr ? "السعر" : "Price")}</span>
-                  <div className="flex items-baseline gap-1.5">
-                    <span className="text-2xl font-extrabold text-primary-600">{price(breakdown.total)}</span>
-                    <span className="text-sm font-medium text-text-secondary">{isAr ? "/ سنة" : "/ year"}</span>
+                {/* Yearly vs one-time split */}
+                <div className={cn("mt-1 space-y-1.5 border-t border-cta/20 pt-3")}>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-text-secondary">{isAr ? "سنوياً (الترخيص + الاستضافة)" : "Yearly (license + hosting)"}</span>
+                    <span className="font-semibold text-text-primary">
+                      {price(yearlyTotal)} <span className="font-normal text-text-secondary">{isAr ? "/ سنة" : "/ year"}</span>
+                    </span>
                   </div>
+                  {oneTimeTotal > 0 && (
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-text-secondary">{isAr ? "التشغيل + التدريب" : "Operating + training"}</span>
+                      <span className="font-semibold text-text-primary">
+                        {price(oneTimeTotal)} <span className="font-normal text-amber-600">{isAr ? "· مرة واحدة" : "· one-time"}</span>
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                {/* First-year total */}
+                <div className="mt-1 flex items-center justify-between border-t border-cta/20 pt-2">
+                  <span className="font-bold text-text-primary">{isAr ? "الإجمالي (السنة الأولى)" : "Total (first year)"}</span>
+                  <span className="text-2xl font-extrabold text-primary-600">{price(breakdown.total)}</span>
                 </div>
                 <p className="text-end text-xs text-text-secondary">
                   {isAr
-                    ? showCloudHosting ? "يُدفع سنوياً · شامل الاستضافة السحابية" : "يُدفع سنوياً"
-                    : showCloudHosting ? "Billed annually · includes full cloud hosting" : "Billed annually"}
+                    ? `الترخيص والاستضافة يتجددان سنوياً · التشغيل والتدريب مرة واحدة${showCloudHosting ? " · شامل الاستضافة السحابية" : ""}`
+                    : `License & hosting renew yearly · operating & training are one-time${showCloudHosting ? " · includes full cloud hosting" : ""}`}
                 </p>
               </div>
               {isEgypt && currency !== "EGP" && (

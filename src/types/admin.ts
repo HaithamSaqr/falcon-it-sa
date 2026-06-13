@@ -225,6 +225,8 @@ export interface PricingBase {
   trainingCostPerDay: number;
   trainingDays: number;
   systemTrainingDays: Partial<Record<SectorSystem, number>>;
+  /** Free technical support — informational only (months), no price effect. */
+  freeSupportMonths: number;
   discountPercent: number;
   usdToEgp: number;
   usdToSar: number;
@@ -242,6 +244,8 @@ export interface SectorPricingOverride {
   volumeDiscounts: VolumeDiscountTier[] | null;
   /** Show the "Price includes full cloud hosting" note on the landing page. */
   includesCloudHosting: boolean;
+  /** Free support months override (null → inherit base). Info only, no price. */
+  freeSupportMonths: number | null;
 }
 
 export interface ClientTag {

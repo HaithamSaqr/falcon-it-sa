@@ -1007,21 +1007,23 @@ export async function readPricingBase(pool: Pool): Promise<PricingBase> {
     usdToSar: Number(r.usd_to_sar ?? 3.75),
     systemTrainingDays: (r.system_training_days && typeof r.system_training_days === "object") ? r.system_training_days : {},
     volumeDiscounts: Array.isArray(r.volume_discounts) ? r.volume_discounts : [],
+    freeSupportMonths: Number(r.free_support_months ?? 0),
   };
 }
 
 export async function writePricingBase(pool: Pool, p: PricingBase): Promise<void> {
   await pool.query(
-    `INSERT INTO pricing_base (id, price_per_user, hosting_price, operating_costs, training_cost_per_day, training_days, discount_percent, usd_to_egp, usd_to_sar, system_training_days, volume_discounts)
-     VALUES (1,$1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
+    `INSERT INTO pricing_base (id, price_per_user, hosting_price, operating_costs, training_cost_per_day, training_days, discount_percent, usd_to_egp, usd_to_sar, system_training_days, volume_discounts, free_support_months)
+     VALUES (1,$1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
      ON CONFLICT (id) DO UPDATE SET
        price_per_user = EXCLUDED.price_per_user, hosting_price = EXCLUDED.hosting_price,
        operating_costs = EXCLUDED.operating_costs, training_cost_per_day = EXCLUDED.training_cost_per_day,
        training_days = EXCLUDED.training_days, discount_percent = EXCLUDED.discount_percent,
        usd_to_egp = EXCLUDED.usd_to_egp, usd_to_sar = EXCLUDED.usd_to_sar,
        system_training_days = EXCLUDED.system_training_days,
-       volume_discounts = EXCLUDED.volume_discounts`,
-    [p.pricePerUser, p.hostingPrice, p.operatingCosts, p.trainingCostPerDay, p.trainingDays, p.discountPercent, p.usdToEgp, p.usdToSar, JSON.stringify(p.systemTrainingDays ?? {}), JSON.stringify(p.volumeDiscounts ?? [])]
+       volume_discounts = EXCLUDED.volume_discounts,
+       free_support_months = EXCLUDED.free_support_months`,
+    [p.pricePerUser, p.hostingPrice, p.operatingCosts, p.trainingCostPerDay, p.trainingDays, p.discountPercent, p.usdToEgp, p.usdToSar, JSON.stringify(p.systemTrainingDays ?? {}), JSON.stringify(p.volumeDiscounts ?? []), Math.max(0, Math.round(p.freeSupportMonths ?? 0))]
   );
 }
 
@@ -1032,6 +1034,7 @@ export async function readSectorPricing(pool: Pool): Promise<SectorPricingOverri
   await pool.query(`ALTER TABLE sector_pricing ADD COLUMN IF NOT EXISTS discount_percent numeric`);
   await pool.query(`ALTER TABLE sector_pricing ADD COLUMN IF NOT EXISTS volume_discounts jsonb`);
   await pool.query(`ALTER TABLE sector_pricing ADD COLUMN IF NOT EXISTS includes_cloud_hosting boolean NOT NULL DEFAULT false`);
+  await pool.query(`ALTER TABLE sector_pricing ADD COLUMN IF NOT EXISTS free_support_months int`);
   const res = await pool.query(`SELECT * FROM sector_pricing ORDER BY sector_id, system`);
   return res.rows.map((r) => ({
     sectorId: r.sector_id,
@@ -1043,6 +1046,7 @@ export async function readSectorPricing(pool: Pool): Promise<SectorPricingOverri
     discountPercent: r.discount_percent == null ? null : Number(r.discount_percent),
     volumeDiscounts: Array.isArray(r.volume_discounts) ? r.volume_discounts : null,
     includesCloudHosting: Boolean(r.includes_cloud_hosting),
+    freeSupportMonths: r.free_support_months == null ? null : Number(r.free_support_months),
   }));
 }
 
@@ -1055,14 +1059,16 @@ export async function writeSectorPricing(pool: Pool, overrides: SectorPricingOve
     await client.query(`ALTER TABLE sector_pricing ADD COLUMN IF NOT EXISTS discount_percent numeric`);
     await client.query(`ALTER TABLE sector_pricing ADD COLUMN IF NOT EXISTS volume_discounts jsonb`);
     await client.query(`ALTER TABLE sector_pricing ADD COLUMN IF NOT EXISTS includes_cloud_hosting boolean NOT NULL DEFAULT false`);
+    await client.query(`ALTER TABLE sector_pricing ADD COLUMN IF NOT EXISTS free_support_months int`);
     await client.query("DELETE FROM sector_pricing");
     for (const o of overrides) {
       await client.query(
-        `INSERT INTO sector_pricing (sector_id, system, price_per_user, operating_costs, training_days, hosting_price, discount_percent, volume_discounts, includes_cloud_hosting)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) ON CONFLICT (sector_id, system) DO NOTHING`,
+        `INSERT INTO sector_pricing (sector_id, system, price_per_user, operating_costs, training_days, hosting_price, discount_percent, volume_discounts, includes_cloud_hosting, free_support_months)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) ON CONFLICT (sector_id, system) DO NOTHING`,
         [o.sectorId, o.system, o.pricePerUser, o.operatingCosts, o.trainingDays,
          o.hostingPrice, o.discountPercent, o.volumeDiscounts != null ? JSON.stringify(o.volumeDiscounts) : null,
-         Boolean(o.includesCloudHosting)]
+         Boolean(o.includesCloudHosting),
+         o.freeSupportMonths == null ? null : Math.max(0, Math.round(o.freeSupportMonths))]
       );
     }
     await client.query("COMMIT");

@@ -167,6 +167,7 @@ export default function AdminPricingPage() {
           <div><label className={lbl}>Operating costs</label><input type="number" className={inp} value={base.operatingCosts} onChange={(e) => setBase({ ...base, operatingCosts: num(+e.target.value) })} /></div>
           <div><label className={lbl}>Training cost / day</label><input type="number" className={inp} value={base.trainingCostPerDay} onChange={(e) => setBase({ ...base, trainingCostPerDay: num(+e.target.value) })} /></div>
           <div><label className={lbl}>Training days (default)</label><input type="number" className={inp} value={base.trainingDays} onChange={(e) => setBase({ ...base, trainingDays: num(+e.target.value) })} /></div>
+          <div><label className={lbl}>Free support (months)</label><input type="number" min={0} className={inp} value={base.freeSupportMonths ?? 0} onChange={(e) => setBase({ ...base, freeSupportMonths: Math.max(0, num(+e.target.value)) })} /></div>
           <div><label className={lbl}>Discount %</label><input type="number" className={inp} value={base.discountPercent} onChange={(e) => setBase({ ...base, discountPercent: num(+e.target.value) })} /></div>
           <div><label className={lbl}>USD → EGP rate</label><input type="number" className={inp} value={base.usdToEgp} onChange={(e) => setBase({ ...base, usdToEgp: num(+e.target.value) })} /></div>
           <div><label className={lbl}>USD → SAR rate</label><input type="number" step="0.01" className={inp} value={base.usdToSar} onChange={(e) => setBase({ ...base, usdToSar: num(+e.target.value) })} /></div>
@@ -229,6 +230,7 @@ export default function AdminPricingPage() {
               discountPercent: null,
               volumeDiscounts: null,
               includesCloudHosting: false,
+              freeSupportMonths: null,
             }])}
             className="rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-200"
           >+ Add Override</button>
@@ -313,6 +315,10 @@ export default function AdminPricingPage() {
                 <div>
                   <label className={lbl}>Training days</label>
                   <input type="number" className={inp} value={o.trainingDays ?? ""} placeholder="base" onChange={(e) => updateOverride(i, "trainingDays", nullNum(e.target.value))} />
+                </div>
+                <div>
+                  <label className={lbl}>Free support (months)</label>
+                  <input type="number" min={0} className={inp} value={o.freeSupportMonths ?? ""} placeholder="base" onChange={(e) => updateOverride(i, "freeSupportMonths", nullNum(e.target.value))} />
                 </div>
                 <div>
                   <label className={lbl}>Discount %</label>

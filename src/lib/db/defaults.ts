@@ -504,6 +504,7 @@ export const DEFAULT_PRICING_BASE: PricingBase = {
   operatingCosts: 100,
   trainingCostPerDay: 80,
   trainingDays: 3,
+  freeSupportMonths: 3,
   discountPercent: 10,
   usdToEgp: 50,
   usdToSar: 3.75,

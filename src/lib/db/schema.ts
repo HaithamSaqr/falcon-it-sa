@@ -182,7 +182,8 @@ CREATE TABLE IF NOT EXISTS pricing_base (
   usd_to_egp              numeric NOT NULL DEFAULT 50,
   usd_to_sar              numeric NOT NULL DEFAULT 3.75,
   volume_discounts        jsonb   NOT NULL DEFAULT '[]',
-  system_training_days    jsonb   NOT NULL DEFAULT '{}'
+  system_training_days    jsonb   NOT NULL DEFAULT '{}',
+  free_support_months     int     NOT NULL DEFAULT 0
 );
 
 -- Per-sector / per-system pricing overrides
@@ -379,6 +380,8 @@ ALTER TABLE sector_pricing ADD COLUMN IF NOT EXISTS hosting_price numeric;
 ALTER TABLE sector_pricing ADD COLUMN IF NOT EXISTS discount_percent numeric;
 ALTER TABLE sector_pricing ADD COLUMN IF NOT EXISTS volume_discounts jsonb;
 ALTER TABLE sector_pricing ADD COLUMN IF NOT EXISTS includes_cloud_hosting boolean NOT NULL DEFAULT false;
+ALTER TABLE pricing_base ADD COLUMN IF NOT EXISTS free_support_months int NOT NULL DEFAULT 0;
+ALTER TABLE sector_pricing ADD COLUMN IF NOT EXISTS free_support_months int;
 ALTER TABLE hero_content ADD COLUMN IF NOT EXISTS eyebrow_en text NOT NULL DEFAULT '';
 ALTER TABLE hero_content ADD COLUMN IF NOT EXISTS eyebrow_ar text NOT NULL DEFAULT '';
 ALTER TABLE hero_content ADD COLUMN IF NOT EXISTS cta1_url text NOT NULL DEFAULT '';
