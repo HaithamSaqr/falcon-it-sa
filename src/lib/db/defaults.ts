@@ -590,5 +590,9 @@ export const DEFAULT_INTEGRATIONS: IntegrationSettings = {
     gtmId: "",
     ga4Id: "",
     adsId: "",
+    adsQuoteLabel: "",
+    adsDemoLabel: "",
+    adsContactLabel: "",
+    adsWhatsappLabel: "",
   },
 };

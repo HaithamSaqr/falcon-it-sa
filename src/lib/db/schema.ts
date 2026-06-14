@@ -387,6 +387,10 @@ ALTER TABLE integrations ADD COLUMN IF NOT EXISTS google_verification text NOT N
 ALTER TABLE integrations ADD COLUMN IF NOT EXISTS google_gtm_id text NOT NULL DEFAULT '';
 ALTER TABLE integrations ADD COLUMN IF NOT EXISTS google_ga4_id text NOT NULL DEFAULT '';
 ALTER TABLE integrations ADD COLUMN IF NOT EXISTS google_ads_id text NOT NULL DEFAULT '';
+ALTER TABLE integrations ADD COLUMN IF NOT EXISTS google_ads_quote_label text NOT NULL DEFAULT '';
+ALTER TABLE integrations ADD COLUMN IF NOT EXISTS google_ads_demo_label text NOT NULL DEFAULT '';
+ALTER TABLE integrations ADD COLUMN IF NOT EXISTS google_ads_contact_label text NOT NULL DEFAULT '';
+ALTER TABLE integrations ADD COLUMN IF NOT EXISTS google_ads_whatsapp_label text NOT NULL DEFAULT '';
 ALTER TABLE hero_content ADD COLUMN IF NOT EXISTS eyebrow_en text NOT NULL DEFAULT '';
 ALTER TABLE hero_content ADD COLUMN IF NOT EXISTS eyebrow_ar text NOT NULL DEFAULT '';
 ALTER TABLE hero_content ADD COLUMN IF NOT EXISTS cta1_url text NOT NULL DEFAULT '';

@@ -9,6 +9,7 @@ import Button from "@/components/ui/button";
 import Card from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { useSettings } from "@/components/providers/settings-provider";
+import { fireAdsConversion, adsSendTo } from "@/lib/gtag";
 import { api } from "@/lib/api-client";
 import { contactFormSchema, type ContactFormData } from "@/lib/validations";
 
@@ -17,7 +18,7 @@ export default function ContactPage() {
   const locale = useLocale();
   const [submitted, setSubmitted] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
-  const { company } = useSettings();
+  const { company, googleAds } = useSettings();
   const isAr = locale === "ar";
 
   const {
@@ -33,6 +34,8 @@ export default function ContactPage() {
     const result = await api.submitContact(data);
     if (result.success) {
       setSubmitted(true);
+      // Google Ads conversion (contact form) — fire-and-forget, no redirect.
+      fireAdsConversion(adsSendTo(googleAds?.adsId, googleAds?.contactLabel));
     } else {
       setServerError(result.error || "Something went wrong. Please try again.");
     }
@@ -224,6 +227,7 @@ export default function ContactPage() {
                 variant="cta"
                 size="sm"
                 href={`https://wa.me/${company.whatsapp}`}
+                onClick={() => fireAdsConversion(adsSendTo(googleAds?.adsId, googleAds?.whatsappLabel))}
               >
                 Chat on WhatsApp
               </Button>

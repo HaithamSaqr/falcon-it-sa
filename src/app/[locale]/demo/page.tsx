@@ -8,6 +8,8 @@ import Container from "@/components/ui/container";
 import Button from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { api } from "@/lib/api-client";
+import { useSettings } from "@/components/providers/settings-provider";
+import { fireAdsConversion, adsSendTo } from "@/lib/gtag";
 import { demoFormSchema, type DemoFormData } from "@/lib/validations";
 import CalendarPicker from "@/components/forms/calendar-picker";
 import { useLocale } from "next-intl";
@@ -34,6 +36,7 @@ const BENEFIT_ICONS = ["🎯", "💡", "📋"] as const;
 export default function DemoPage() {
   const t = useTranslations("demo");
   const locale = useLocale();
+  const { googleAds } = useSettings();
   const [submitted, setSubmitted] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
   const [preferredDateTime, setPreferredDateTime] = useState<string | null>(null);
@@ -55,6 +58,8 @@ export default function DemoPage() {
     const result = await api.submitDemo(payload);
     if (result.success) {
       setSubmitted(true);
+      // Google Ads conversion (demo booked) — fire-and-forget, no redirect.
+      fireAdsConversion(adsSendTo(googleAds?.adsId, googleAds?.demoLabel));
     } else {
       setServerError(result.error || "Something went wrong. Please try again.");
     }

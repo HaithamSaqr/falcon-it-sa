@@ -51,6 +51,8 @@ interface PublicSettings {
   sectors: PublicSector[];
   whatsappRouting?: WhatsappRouting;
   landingCta?: LandingCta;
+  /** Public Google Ads conversion config (no secrets). */
+  googleAds?: { adsId: string; quoteLabel: string; demoLabel: string; contactLabel: string; whatsappLabel: string };
   company: {
     name: { en: string; ar: string };
     email: string;
@@ -76,6 +78,7 @@ const DEFAULT_SETTINGS: PublicSettings = {
   products: [],
   sectors: [],
   landingCta: { mode: "whatsapp", url: "", label: { en: "", ar: "" }, note: { en: "", ar: "" } },
+  googleAds: { adsId: "", quoteLabel: "", demoLabel: "", contactLabel: "", whatsappLabel: "" },
   company: {
     name: COMPANY.name as unknown as { en: string; ar: string },
     email: COMPANY.email,

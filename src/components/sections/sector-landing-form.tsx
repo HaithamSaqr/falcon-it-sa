@@ -8,6 +8,7 @@ import Button from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useSettings } from "@/components/providers/settings-provider";
 import { computePrice, findOverride } from "@/lib/pricing";
+import { fireAdsConversion, adsSendTo } from "@/lib/gtag";
 import type { VolumeDiscountTier } from "@/types/admin";
 import { toEmbedUrl } from "@/lib/video";
 import type { Sector, PricingBase, SectorPricingOverride, SectorSystem } from "@/types/admin";
@@ -31,7 +32,7 @@ interface Props {
 export default function SectorLandingForm({ sector, base, overrides, isEgypt, isSaudi, presetSystem }: Props) {
   const locale = useLocale();
   const isAr = locale === "ar";
-  const { company, landingCta } = useSettings();
+  const { company, landingCta, googleAds } = useSettings();
   const urlMode = landingCta?.mode === "url" && !!landingCta?.url;
   const ctaLabelOverride = (isAr ? landingCta?.label?.ar : landingCta?.label?.en)?.trim() || "";
   const ctaNoteOverride = (isAr ? landingCta?.note?.ar : landingCta?.note?.en)?.trim() || "";
@@ -272,6 +273,11 @@ export default function SectorLandingForm({ sector, base, overrides, isEgypt, is
     } finally {
       setSending(false);
     }
+
+    // Google Ads conversion ping (quote submitted). Fire-and-forget — we open
+    // the next destination in a new tab, so the page stays alive and the ping
+    // completes without needing event_callback.
+    fireAdsConversion(adsSendTo(googleAds?.adsId, googleAds?.quoteLabel));
 
     // CTA: external link (sector override or global SaaS checkout) with details…
     if (effectiveUrlMode && effectiveUrl) {

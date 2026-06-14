@@ -269,6 +269,35 @@ export default function IntegrationsPage() {
                 onChange={(v) => update("google", "adsId", v)}
                 placeholder="AW-XXXXXXXXX"
               />
+              <Field
+                label="Quote-form conversion label"
+                value={settings.google.adsQuoteLabel}
+                onChange={(v) => update("google", "adsQuoteLabel", v)}
+                placeholder="e.g. qeqKCOOYwb4cEOLBtusD"
+              />
+              <Field
+                label="Demo-form conversion label"
+                value={settings.google.adsDemoLabel}
+                onChange={(v) => update("google", "adsDemoLabel", v)}
+                placeholder="e.g. MYEqCKe3rr4cEOLBtusD"
+              />
+              <Field
+                label="Contact-form conversion label"
+                value={settings.google.adsContactLabel}
+                onChange={(v) => update("google", "adsContactLabel", v)}
+                placeholder="e.g. c6-fCJyKxL4cEOLBtusD"
+              />
+              <Field
+                label="WhatsApp-click conversion label"
+                value={settings.google.adsWhatsappLabel}
+                onChange={(v) => update("google", "adsWhatsappLabel", v)}
+                placeholder="e.g. GOAtCJeOxL4cEOLBtusD"
+              />
+              <p className="-mt-2 text-xs text-slate-400">
+                Each label fires a Google Ads conversion: sector quote calculator, /demo booking, /contact form, and clicks on
+                the standalone WhatsApp buttons (floating button, mobile bar, contact CTA). Paste only the label (after
+                <code className="rounded bg-slate-100 px-1">AW-…/</code>). All need the Ads ID above.
+              </p>
               <p className="text-xs text-slate-400">
                 Tip: if you use Tag Manager, you can manage Analytics &amp; Ads inside GTM and leave the GA4/Ads fields blank.
               </p>

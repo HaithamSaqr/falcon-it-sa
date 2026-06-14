@@ -1,18 +1,24 @@
-import { getSettings, getFooterLinks, getProducts, getSectors } from "@/lib/data-store";
+import { getSettings, getFooterLinks, getProducts, getSectors, getIntegrations } from "@/lib/data-store";
 import { jsonSuccess } from "@/lib/api-helpers";
 import { NextResponse } from "next/server";
 
 // GET /api/settings/public — public endpoint for site settings
 export async function GET() {
-  const [settings, footerLinks, products, sectors] = await Promise.all([
+  const [settings, footerLinks, products, sectors, integrations] = await Promise.all([
     getSettings(),
     getFooterLinks(),
     getProducts(true), // enabled only
     getSectors(true), // enabled only
+    getIntegrations(),
   ]);
+  // Only the public Google IDs are exposed (never odoo/ai secrets).
+  const g = integrations.google;
   const res = jsonSuccess({
     gulfOnly: settings.regional?.gulfOnly ?? false,
     loginUrl: settings.loginUrl || "https://falcon-valley.com",
+    googleAds: g.enabled
+      ? { adsId: g.adsId, quoteLabel: g.adsQuoteLabel, demoLabel: g.adsDemoLabel, contactLabel: g.adsContactLabel, whatsappLabel: g.adsWhatsappLabel }
+      : { adsId: "", quoteLabel: "", demoLabel: "", contactLabel: "", whatsappLabel: "" },
     whatsappRouting: settings.whatsappRouting ?? { domains: [], countries: [] },
     landingCta: settings.landingCta ?? { mode: "whatsapp", url: "", label: { en: "", ar: "" }, note: { en: "", ar: "" } },
     products: products.map((p) => ({ slug: p.slug, name: p.name })),

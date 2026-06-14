@@ -356,6 +356,14 @@ export interface IntegrationSettings {
     ga4Id: string;
     /** Google Ads conversion id (AW-XXXXXXXXX). */
     adsId: string;
+    /** Conversion label for the sector quote form (the part after AW-…/). */
+    adsQuoteLabel: string;
+    /** Conversion label for the /demo booking form. */
+    adsDemoLabel: string;
+    /** Conversion label for the /contact form. */
+    adsContactLabel: string;
+    /** Conversion label for standalone WhatsApp click buttons (floating, etc.). */
+    adsWhatsappLabel: string;
   };
 }
 

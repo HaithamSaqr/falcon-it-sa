@@ -4,12 +4,13 @@ import { useTranslations } from "next-intl";
 import { usePathname } from "@/i18n/navigation";
 import { useSettings } from "@/components/providers/settings-provider";
 import { useWhatsAppMessage } from "@/hooks/use-whatsapp-message";
+import { fireAdsConversion, adsSendTo } from "@/lib/gtag";
 import Button from "@/components/ui/button";
 
 export default function MobileBottomBar() {
   const t = useTranslations();
   const pathname = usePathname();
-  const { company } = useSettings();
+  const { company, googleAds } = useSettings();
   const waMessage = useWhatsAppMessage();
 
   // Hidden on sector landing pages (they have their own CTA flow + minimal footer).
@@ -31,6 +32,7 @@ export default function MobileBottomBar() {
           href={whatsappHref}
           target="_blank"
           rel="noopener noreferrer"
+          onClick={() => fireAdsConversion(adsSendTo(googleAds?.adsId, googleAds?.whatsappLabel))}
           aria-label={t("common.whatsappChat")}
           className="flex size-12 shrink-0 items-center justify-center rounded-[var(--radius-button)] bg-[#25D366] text-white transition-colors hover:bg-[#20bd5a]"
         >

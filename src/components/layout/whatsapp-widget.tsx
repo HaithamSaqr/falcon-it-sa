@@ -3,10 +3,11 @@
 import { useTranslations } from "next-intl";
 import { useSettings } from "@/components/providers/settings-provider";
 import { useWhatsAppMessage } from "@/hooks/use-whatsapp-message";
+import { fireAdsConversion, adsSendTo } from "@/lib/gtag";
 
 export default function WhatsAppWidget() {
   const t = useTranslations();
-  const { company } = useSettings();
+  const { company, googleAds } = useSettings();
 
   const message = encodeURIComponent(useWhatsAppMessage());
   const href = `https://wa.me/${company.whatsapp}?text=${message}`;
@@ -22,6 +23,7 @@ export default function WhatsAppWidget() {
         href={href}
         target="_blank"
         rel="noopener noreferrer"
+        onClick={() => fireAdsConversion(adsSendTo(googleAds?.adsId, googleAds?.whatsappLabel))}
         aria-label={t("common.whatsappChat")}
         className="relative flex size-14 items-center justify-center rounded-full bg-[#25D366] shadow-lg transition-transform duration-200 hover:scale-110"
       >
