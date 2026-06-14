@@ -5,6 +5,7 @@ import Button from "@/components/ui/button";
 import Card from "@/components/ui/card";
 import SectionHeader from "@/components/shared/section-header";
 import BrochureButton from "@/components/sections/brochure-button";
+import ProductEmbed from "@/components/sections/product-embed";
 import ProductHero from "@/components/sections/product-hero";
 import ProductSectors from "@/components/sections/product-sectors";
 
@@ -503,6 +504,7 @@ function FalconCloudContent({ isArabic }: { isArabic: boolean }) {
 
       <ProductSectors slug="falcon-cloud" />
 
+      <ProductEmbed slug="falcon-cloud" />
       <BrochureButton slug="falcon-cloud" />
     </>
   );

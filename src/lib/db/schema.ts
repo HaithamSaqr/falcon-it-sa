@@ -183,7 +183,8 @@ CREATE TABLE IF NOT EXISTS pricing_base (
   usd_to_sar              numeric NOT NULL DEFAULT 3.75,
   volume_discounts        jsonb   NOT NULL DEFAULT '[]',
   system_training_days    jsonb   NOT NULL DEFAULT '{}',
-  free_support_months     int     NOT NULL DEFAULT 0
+  free_support_months     int     NOT NULL DEFAULT 0,
+  lifetime_license        boolean NOT NULL DEFAULT false
 );
 
 -- Per-sector / per-system pricing overrides
@@ -198,6 +199,7 @@ CREATE TABLE IF NOT EXISTS sector_pricing (
   discount_percent numeric,
   volume_discounts jsonb,
   includes_cloud_hosting boolean NOT NULL DEFAULT false,
+  lifetime_license boolean,
   UNIQUE (sector_id, system)
 );
 
@@ -232,6 +234,8 @@ CREATE TABLE IF NOT EXISTS products (
   description_ar  text NOT NULL DEFAULT '',
   hero_image      text NOT NULL DEFAULT '',
   card_image      text NOT NULL DEFAULT '',
+  embed_html_en   text NOT NULL DEFAULT '',
+  embed_html_ar   text NOT NULL DEFAULT '',
   cta1_label_en   text NOT NULL DEFAULT '',
   cta1_label_ar   text NOT NULL DEFAULT '',
   cta1_url        text NOT NULL DEFAULT '/demo',
@@ -408,6 +412,10 @@ ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS landing_cta_label_ar text NOT
 ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS landing_cta_note_en text NOT NULL DEFAULT '';
 ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS landing_cta_note_ar text NOT NULL DEFAULT '';
 ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS clients_speed numeric NOT NULL DEFAULT 3;
+ALTER TABLE pricing_base ADD COLUMN IF NOT EXISTS lifetime_license boolean NOT NULL DEFAULT false;
+ALTER TABLE sector_pricing ADD COLUMN IF NOT EXISTS lifetime_license boolean;
+ALTER TABLE products ADD COLUMN IF NOT EXISTS embed_html_en text NOT NULL DEFAULT '';
+ALTER TABLE products ADD COLUMN IF NOT EXISTS embed_html_ar text NOT NULL DEFAULT '';
 `;
 
 export async function ensureSchema(pool: Pool): Promise<void> {

@@ -125,14 +125,19 @@ export default function SectorLandingForm({ sector, base, overrides, isEgypt, is
   // so the customer doesn't look for a missing discount.
   const hasDiscount = breakdown.discountPercent > 0 || breakdown.volumeDiscountPercent > 0;
 
-  // Split the total into yearly (license + hosting) and one-time (operating +
-  // training). Volume discount applies to the per-user license, the general
-  // discount to hosting/operating/training. yearly + oneTime === breakdown.total.
-  const yearlyTotal =
-    breakdown.users * breakdown.pricePerUser * (1 - breakdown.volumeDiscountPercent / 100) +
-    breakdown.hosting * (1 - breakdown.discountPercent / 100);
-  const oneTimeTotal =
+  // Split the total into yearly and one-time buckets. Volume discount applies to
+  // the per-user license, the general discount to hosting/operating/training.
+  // Normally the license renews yearly; when `lifetimeLicense` is on it becomes a
+  // one-time lifetime fee, so it moves to the one-time bucket (hosting still yearly).
+  // yearly + oneTime === breakdown.total either way.
+  const lifetime = breakdown.lifetimeLicense;
+  const licenseNet =
+    breakdown.users * breakdown.pricePerUser * (1 - breakdown.volumeDiscountPercent / 100);
+  const hostingNet = breakdown.hosting * (1 - breakdown.discountPercent / 100);
+  const opTrainNet =
     (breakdown.operating + breakdown.trainingCost) * (1 - breakdown.discountPercent / 100);
+  const yearlyTotal = (lifetime ? 0 : licenseNet) + hostingNet;
+  const oneTimeTotal = (lifetime ? licenseNet : 0) + opTrainNet;
 
   // Next volume discount tier hint
   const nextTier = useMemo((): (VolumeDiscountTier & { usersNeeded: number }) | null => {
@@ -182,8 +187,8 @@ export default function SectorLandingForm({ sector, base, overrides, isEgypt, is
         `أيام التدريب: ${breakdown.trainingDays}`,
         ...(freeSupportMonths > 0 ? [`دعم فني مجاني: ${freeSupportMonths} شهر`] : []),
         ...(hasDiscount ? [`السعر قبل الخصم: ${price(breakdown.regular)}`] : []),
-        `سنوياً (الترخيص + الاستضافة): ${price(yearlyTotal)} / سنة`,
-        ...(oneTimeTotal > 0 ? [`التشغيل + التدريب: ${price(oneTimeTotal)} (مرة واحدة)`] : []),
+        ...(yearlyTotal > 0 ? [`${lifetime ? "سنوياً (الاستضافة)" : "سنوياً (الترخيص + الاستضافة)"}: ${price(yearlyTotal)} / سنة`] : []),
+        ...(oneTimeTotal > 0 ? [`${lifetime ? "الترخيص (مدى الحياة) + التشغيل + التدريب" : "التشغيل + التدريب"}: ${price(oneTimeTotal)} (مرة واحدة)`] : []),
         `الإجمالي (السنة الأولى): ${price(breakdown.total)}`,
         ...(showCloudHosting ? ["", "السعر يشمل الاستضافة السحابية بالكامل."] : []),
       ]
@@ -199,8 +204,8 @@ export default function SectorLandingForm({ sector, base, overrides, isEgypt, is
         `Training days: ${breakdown.trainingDays}`,
         ...(freeSupportMonths > 0 ? [`Free technical support: ${freeSupportMonths} months`] : []),
         ...(hasDiscount ? [`Price before discount: ${price(breakdown.regular)}`] : []),
-        `Yearly (license + hosting): ${price(yearlyTotal)} / year`,
-        ...(oneTimeTotal > 0 ? [`Operating + training: ${price(oneTimeTotal)} (one-time)`] : []),
+        ...(yearlyTotal > 0 ? [`${lifetime ? "Yearly (hosting)" : "Yearly (license + hosting)"}: ${price(yearlyTotal)} / year`] : []),
+        ...(oneTimeTotal > 0 ? [`${lifetime ? "License (lifetime) + operating + training" : "Operating + training"}: ${price(oneTimeTotal)} (one-time)`] : []),
         `Total (first year): ${price(breakdown.total)}`,
         ...(showCloudHosting ? ["", "Price includes full cloud hosting."] : []),
       ];
@@ -436,8 +441,18 @@ export default function SectorLandingForm({ sector, base, overrides, isEgypt, is
             <div className="rounded-xl border-2 border-cta/30 bg-cta/5 p-5">
               <p className="mb-3 text-sm font-semibold text-text-primary">{isAr ? "تفاصيل التكلفة" : "Cost breakdown"}</p>
               <div className="space-y-1.5 text-sm text-text-secondary">
-                <Row label={isAr ? `${breakdown.users} مستخدم × ${price(breakdown.pricePerUser)}` : `${breakdown.users} users × ${price(breakdown.pricePerUser)}`} value={price(breakdown.users * breakdown.pricePerUser)} />
-                <Row label={isAr ? "الاستضافة" : "Hosting"} value={price(breakdown.hosting)} />
+                <div className="flex items-center justify-between">
+                  <span className="flex flex-wrap items-center gap-x-2">
+                    {isAr ? `${breakdown.users} مستخدم × ${price(breakdown.pricePerUser)}` : `${breakdown.users} users × ${price(breakdown.pricePerUser)}`}
+                    {lifetime && (
+                      <span className="rounded-full bg-primary-100 px-2 py-0.5 text-xs font-semibold text-primary-700">
+                        {isAr ? "تدفع مرة واحدة · مدى الحياة" : "one-time · lifetime"}
+                      </span>
+                    )}
+                  </span>
+                  <span className="font-medium text-text-primary">{price(breakdown.users * breakdown.pricePerUser)}</span>
+                </div>
+                <Row label={`${isAr ? "الاستضافة" : "Hosting"} ${isAr ? "· سنوياً" : "· yearly"}`} value={price(breakdown.hosting)} />
                 <Row label={`${isAr ? "تكاليف التشغيل" : "Operating costs"} ${isAr ? "· مرة واحدة" : "· one-time"}`} value={price(breakdown.operating)} />
                 <Row label={`${isAr ? `التدريب (${breakdown.trainingDays} يوم)` : `Training (${breakdown.trainingDays} days)`} ${isAr ? "· مرة واحدة" : "· one-time"}`} value={price(breakdown.trainingCost)} />
                 {freeSupportMonths > 0 && (
@@ -477,15 +492,25 @@ export default function SectorLandingForm({ sector, base, overrides, isEgypt, is
                 )}
                 {/* Yearly vs one-time split */}
                 <div className={cn("mt-1 space-y-1.5 border-t border-cta/20 pt-3")}>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-text-secondary">{isAr ? "سنوياً (الترخيص + الاستضافة)" : "Yearly (license + hosting)"}</span>
-                    <span className="font-semibold text-text-primary">
-                      {price(yearlyTotal)} <span className="font-normal text-text-secondary">{isAr ? "/ سنة" : "/ year"}</span>
-                    </span>
-                  </div>
+                  {yearlyTotal > 0 && (
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-text-secondary">
+                        {lifetime
+                          ? (isAr ? "سنوياً (الاستضافة)" : "Yearly (hosting)")
+                          : (isAr ? "سنوياً (الترخيص + الاستضافة)" : "Yearly (license + hosting)")}
+                      </span>
+                      <span className="font-semibold text-text-primary">
+                        {price(yearlyTotal)} <span className="font-normal text-text-secondary">{isAr ? "/ سنة" : "/ year"}</span>
+                      </span>
+                    </div>
+                  )}
                   {oneTimeTotal > 0 && (
                     <div className="flex items-center justify-between text-sm">
-                      <span className="text-text-secondary">{isAr ? "التشغيل + التدريب" : "Operating + training"}</span>
+                      <span className="text-text-secondary">
+                        {lifetime
+                          ? (isAr ? "الترخيص مدى الحياة + التشغيل + التدريب" : "Lifetime license + operating + training")
+                          : (isAr ? "التشغيل + التدريب" : "Operating + training")}
+                      </span>
                       <span className="font-semibold text-text-primary">
                         {price(oneTimeTotal)} <span className="font-normal text-amber-600">{isAr ? "· مرة واحدة" : "· one-time"}</span>
                       </span>
@@ -500,8 +525,8 @@ export default function SectorLandingForm({ sector, base, overrides, isEgypt, is
                 </div>
                 <p className="text-end text-xs text-text-secondary">
                   {isAr
-                    ? `الترخيص والاستضافة يتجددان سنوياً · التشغيل والتدريب مرة واحدة${showCloudHosting ? " · شامل الاستضافة السحابية" : ""}`
-                    : `License & hosting renew yearly · operating & training are one-time${showCloudHosting ? " · includes full cloud hosting" : ""}`}
+                    ? `${lifetime ? "الترخيص يُدفع مرة واحدة (مدى الحياة) · الاستضافة تتجدد سنوياً" : "الترخيص والاستضافة يتجددان سنوياً"} · التشغيل والتدريب مرة واحدة${showCloudHosting ? " · شامل الاستضافة السحابية" : ""}`
+                    : `${lifetime ? "License is a one-time lifetime fee · hosting renews yearly" : "License & hosting renew yearly"} · operating & training are one-time${showCloudHosting ? " · includes full cloud hosting" : ""}`}
                 </p>
               </div>
               {isEgypt && currency !== "EGP" && (

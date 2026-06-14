@@ -5,6 +5,7 @@ import Button from "@/components/ui/button";
 import Card from "@/components/ui/card";
 import SectionHeader from "@/components/shared/section-header";
 import BrochureButton from "@/components/sections/brochure-button";
+import ProductEmbed from "@/components/sections/product-embed";
 import ProductHero from "@/components/sections/product-hero";
 import ProductSectors from "@/components/sections/product-sectors";
 
@@ -525,6 +526,7 @@ function OdooServicesContent({ isArabic }: { isArabic: boolean }) {
 
       <ProductSectors slug="odoo-services" />
 
+      <ProductEmbed slug="odoo-services" />
       <BrochureButton slug="odoo-services" />
     </>
   );

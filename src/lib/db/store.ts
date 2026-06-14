@@ -1027,13 +1027,14 @@ export async function readPricingBase(pool: Pool): Promise<PricingBase> {
     systemTrainingDays: (r.system_training_days && typeof r.system_training_days === "object") ? r.system_training_days : {},
     volumeDiscounts: Array.isArray(r.volume_discounts) ? r.volume_discounts : [],
     freeSupportMonths: Number(r.free_support_months ?? 0),
+    lifetimeLicense: Boolean(r.lifetime_license),
   };
 }
 
 export async function writePricingBase(pool: Pool, p: PricingBase): Promise<void> {
   await pool.query(
-    `INSERT INTO pricing_base (id, price_per_user, hosting_price, operating_costs, training_cost_per_day, training_days, discount_percent, usd_to_egp, usd_to_sar, system_training_days, volume_discounts, free_support_months)
-     VALUES (1,$1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
+    `INSERT INTO pricing_base (id, price_per_user, hosting_price, operating_costs, training_cost_per_day, training_days, discount_percent, usd_to_egp, usd_to_sar, system_training_days, volume_discounts, free_support_months, lifetime_license)
+     VALUES (1,$1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
      ON CONFLICT (id) DO UPDATE SET
        price_per_user = EXCLUDED.price_per_user, hosting_price = EXCLUDED.hosting_price,
        operating_costs = EXCLUDED.operating_costs, training_cost_per_day = EXCLUDED.training_cost_per_day,
@@ -1041,8 +1042,9 @@ export async function writePricingBase(pool: Pool, p: PricingBase): Promise<void
        usd_to_egp = EXCLUDED.usd_to_egp, usd_to_sar = EXCLUDED.usd_to_sar,
        system_training_days = EXCLUDED.system_training_days,
        volume_discounts = EXCLUDED.volume_discounts,
-       free_support_months = EXCLUDED.free_support_months`,
-    [p.pricePerUser, p.hostingPrice, p.operatingCosts, p.trainingCostPerDay, p.trainingDays, p.discountPercent, p.usdToEgp, p.usdToSar, JSON.stringify(p.systemTrainingDays ?? {}), JSON.stringify(p.volumeDiscounts ?? []), Math.max(0, Math.round(p.freeSupportMonths ?? 0))]
+       free_support_months = EXCLUDED.free_support_months,
+       lifetime_license = EXCLUDED.lifetime_license`,
+    [p.pricePerUser, p.hostingPrice, p.operatingCosts, p.trainingCostPerDay, p.trainingDays, p.discountPercent, p.usdToEgp, p.usdToSar, JSON.stringify(p.systemTrainingDays ?? {}), JSON.stringify(p.volumeDiscounts ?? []), Math.max(0, Math.round(p.freeSupportMonths ?? 0)), Boolean(p.lifetimeLicense)]
   );
 }
 
@@ -1054,6 +1056,7 @@ export async function readSectorPricing(pool: Pool): Promise<SectorPricingOverri
   await pool.query(`ALTER TABLE sector_pricing ADD COLUMN IF NOT EXISTS volume_discounts jsonb`);
   await pool.query(`ALTER TABLE sector_pricing ADD COLUMN IF NOT EXISTS includes_cloud_hosting boolean NOT NULL DEFAULT false`);
   await pool.query(`ALTER TABLE sector_pricing ADD COLUMN IF NOT EXISTS free_support_months int`);
+  await pool.query(`ALTER TABLE sector_pricing ADD COLUMN IF NOT EXISTS lifetime_license boolean`);
   const res = await pool.query(`SELECT * FROM sector_pricing ORDER BY sector_id, system`);
   return res.rows.map((r) => ({
     sectorId: r.sector_id,
@@ -1066,6 +1069,7 @@ export async function readSectorPricing(pool: Pool): Promise<SectorPricingOverri
     volumeDiscounts: Array.isArray(r.volume_discounts) ? r.volume_discounts : null,
     includesCloudHosting: Boolean(r.includes_cloud_hosting),
     freeSupportMonths: r.free_support_months == null ? null : Number(r.free_support_months),
+    lifetimeLicense: r.lifetime_license == null ? null : Boolean(r.lifetime_license),
   }));
 }
 
@@ -1079,15 +1083,17 @@ export async function writeSectorPricing(pool: Pool, overrides: SectorPricingOve
     await client.query(`ALTER TABLE sector_pricing ADD COLUMN IF NOT EXISTS volume_discounts jsonb`);
     await client.query(`ALTER TABLE sector_pricing ADD COLUMN IF NOT EXISTS includes_cloud_hosting boolean NOT NULL DEFAULT false`);
     await client.query(`ALTER TABLE sector_pricing ADD COLUMN IF NOT EXISTS free_support_months int`);
+    await client.query(`ALTER TABLE sector_pricing ADD COLUMN IF NOT EXISTS lifetime_license boolean`);
     await client.query("DELETE FROM sector_pricing");
     for (const o of overrides) {
       await client.query(
-        `INSERT INTO sector_pricing (sector_id, system, price_per_user, operating_costs, training_days, hosting_price, discount_percent, volume_discounts, includes_cloud_hosting, free_support_months)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) ON CONFLICT (sector_id, system) DO NOTHING`,
+        `INSERT INTO sector_pricing (sector_id, system, price_per_user, operating_costs, training_days, hosting_price, discount_percent, volume_discounts, includes_cloud_hosting, free_support_months, lifetime_license)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) ON CONFLICT (sector_id, system) DO NOTHING`,
         [o.sectorId, o.system, o.pricePerUser, o.operatingCosts, o.trainingDays,
          o.hostingPrice, o.discountPercent, o.volumeDiscounts != null ? JSON.stringify(o.volumeDiscounts) : null,
          Boolean(o.includesCloudHosting),
-         o.freeSupportMonths == null ? null : Math.max(0, Math.round(o.freeSupportMonths))]
+         o.freeSupportMonths == null ? null : Math.max(0, Math.round(o.freeSupportMonths)),
+         o.lifetimeLicense == null ? null : Boolean(o.lifetimeLicense)]
       );
     }
     await client.query("COMMIT");
@@ -1185,6 +1191,7 @@ function rowToProduct(r: any): Product {
     description: { en: r.description_en, ar: r.description_ar },
     heroImage: r.hero_image,
     cardImage: r.card_image ?? "",
+    embedHtml: { en: r.embed_html_en ?? "", ar: r.embed_html_ar ?? "" },
     cta1: { label: { en: r.cta1_label_en, ar: r.cta1_label_ar }, url: r.cta1_url },
     cta2: { label: { en: r.cta2_label_en, ar: r.cta2_label_ar }, url: r.cta2_url },
     isCustom: r.is_custom,
@@ -1215,13 +1222,13 @@ export async function writeProducts(pool: Pool, products: Product[]): Promise<vo
       const p = products[i];
       await client.query(
         `INSERT INTO products (slug, name_en, name_ar, eyebrow_en, eyebrow_ar, title_en, title_ar,
-           description_en, description_ar, hero_image, card_image, cta1_label_en, cta1_label_ar, cta1_url,
+           description_en, description_ar, hero_image, card_image, embed_html_en, embed_html_ar, cta1_label_en, cta1_label_ar, cta1_url,
            cta2_label_en, cta2_label_ar, cta2_url, is_custom, enabled, sort_order)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20)`,
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22)`,
         [
           p.slug, p.name?.en ?? "", p.name?.ar ?? "", p.eyebrow?.en ?? "", p.eyebrow?.ar ?? "",
           p.title?.en ?? "", p.title?.ar ?? "", p.description?.en ?? "", p.description?.ar ?? "",
-          p.heroImage ?? "", p.cardImage ?? "", p.cta1?.label?.en ?? "", p.cta1?.label?.ar ?? "", p.cta1?.url ?? "/demo",
+          p.heroImage ?? "", p.cardImage ?? "", p.embedHtml?.en ?? "", p.embedHtml?.ar ?? "", p.cta1?.label?.en ?? "", p.cta1?.label?.ar ?? "", p.cta1?.url ?? "/demo",
           p.cta2?.label?.en ?? "", p.cta2?.label?.ar ?? "", p.cta2?.url ?? "/contact",
           Boolean(p.isCustom), p.enabled !== false, i,
         ]

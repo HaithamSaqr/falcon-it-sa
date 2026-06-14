@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { getProduct, getBrochure } from "@/lib/data-store";
 import { PRODUCT_CONTENT } from "@/lib/product-content";
 import ProductHero from "@/components/sections/product-hero";
+import ProductEmbed from "@/components/sections/product-embed";
 import BrochureButton from "@/components/sections/brochure-button";
 import Container from "@/components/ui/container";
 import Button from "@/components/ui/button";
@@ -145,6 +146,9 @@ export default async function DynamicProductPage({ params }: Props) {
           </Container>
         </section>
       )}
+
+      {/* Embedded custom HTML block (if set in admin) */}
+      <ProductEmbed slug={slug} />
 
       {/* Full brochure (if enabled) */}
       <BrochureButton slug={slug} />

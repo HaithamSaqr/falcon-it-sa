@@ -210,6 +210,18 @@ export default function AdminPricingPage() {
             onChange={(tiers) => setBase({ ...base, volumeDiscounts: tiers ?? [] })}
           />
         </div>
+
+        {/* Lifetime license toggle (base) */}
+        <div className="mt-5 border-t border-slate-100 pt-4">
+          <label className="flex items-center gap-2 text-sm text-slate-700">
+            <input
+              type="checkbox"
+              checked={!!base.lifetimeLicense}
+              onChange={(e) => setBase({ ...base, lifetimeLicense: e.target.checked })}
+            />
+            Lifetime license — the per-user price is a one-time fee (paid once, forever) instead of yearly. Hosting still renews yearly; operating &amp; training stay one-time.
+          </label>
+        </div>
       </div>
 
       {/* ── Per-sector overrides ── */}
@@ -231,6 +243,7 @@ export default function AdminPricingPage() {
               volumeDiscounts: null,
               includesCloudHosting: false,
               freeSupportMonths: null,
+              lifetimeLicense: null,
             }])}
             className="rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-200"
           >+ Add Override</button>
@@ -345,6 +358,22 @@ export default function AdminPricingPage() {
                 />
                 Price includes full cloud hosting (show the note on the landing page)
               </label>
+
+              {/* License billing override (base / yearly / lifetime) */}
+              <div className="mt-3 flex flex-wrap items-center gap-2 text-sm text-slate-700">
+                <span className={lbl + " mb-0"}>License billing</span>
+                <select
+                  className={inp + " w-auto"}
+                  value={o.lifetimeLicense == null ? "" : o.lifetimeLicense ? "lifetime" : "yearly"}
+                  onChange={(e) =>
+                    updateOverride(i, "lifetimeLicense", e.target.value === "" ? null : e.target.value === "lifetime")
+                  }
+                >
+                  <option value="">Base ({base.lifetimeLicense ? "lifetime" : "yearly"})</option>
+                  <option value="yearly">Yearly</option>
+                  <option value="lifetime">Lifetime (one-time)</option>
+                </select>
+              </div>
             </div>
           ))}
         </div>

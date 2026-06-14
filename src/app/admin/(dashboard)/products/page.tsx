@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import type { Product } from "@/types/admin";
 import ImageUpload from "@/components/admin/image-upload";
+import RichTextEditor from "@/components/admin/rich-text-editor";
 
 function slugify(s: string) {
   return s.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || `product-${Date.now()}`;
@@ -32,6 +33,7 @@ export default function AdminProductsPage() {
         description: { en: "", ar: "" },
         heroImage: "",
         cardImage: "",
+        embedHtml: { en: "", ar: "" },
         cta1: { label: { en: "Request a Quote", ar: "اطلب عرض سعر" }, url: "/contact" },
         cta2: { label: { en: "Book a Demo", ar: "احجز عرضاً" }, url: "/demo" },
         isCustom: true,
@@ -99,6 +101,22 @@ export default function AdminProductsPage() {
             <div><label className={label}>Hero Title (AR)</label><input className={input} value={p.title.ar} onChange={(e) => patch(i, (x) => ({ ...x, title: { ...x.title, ar: e.target.value } }))} dir="rtl" /></div>
             <div className="lg:col-span-2"><label className={label}>Details / Description (EN)</label><textarea className={input} rows={2} value={p.description.en} onChange={(e) => patch(i, (x) => ({ ...x, description: { ...x.description, en: e.target.value } }))} /></div>
             <div className="lg:col-span-2"><label className={label}>Details / Description (AR)</label><textarea className={input} rows={2} value={p.description.ar} onChange={(e) => patch(i, (x) => ({ ...x, description: { ...x.description, ar: e.target.value } }))} dir="rtl" /></div>
+          </div>
+
+          {/* Embedded HTML block — rendered inline on the product page (like a brochure, but embedded). */}
+          <div className="mt-4 border-t border-slate-100 pt-4">
+            <p className="mb-1 text-sm font-semibold text-slate-700">Embedded page block (HTML)</p>
+            <p className="mb-3 text-xs text-slate-400">Custom HTML shown directly inside the product page. Use the &lt;/&gt; HTML button to paste your own design. Leave empty to show nothing.</p>
+            <div className="grid gap-4 lg:grid-cols-2">
+              <div>
+                <label className={label}>Block (EN)</label>
+                <RichTextEditor value={p.embedHtml?.en ?? ""} dir="ltr" onChange={(html) => patch(i, (x) => ({ ...x, embedHtml: { ...x.embedHtml, en: html } }))} />
+              </div>
+              <div>
+                <label className={label}>Block (AR)</label>
+                <RichTextEditor value={p.embedHtml?.ar ?? ""} dir="rtl" onChange={(html) => patch(i, (x) => ({ ...x, embedHtml: { ...x.embedHtml, ar: html } }))} />
+              </div>
+            </div>
           </div>
         </div>
       ))}

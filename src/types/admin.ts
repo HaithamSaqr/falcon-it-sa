@@ -231,6 +231,12 @@ export interface PricingBase {
   usdToEgp: number;
   usdToSar: number;
   volumeDiscounts: VolumeDiscountTier[];
+  /**
+   * When true the per-user license price is a one-time lifetime fee
+   * (not renewed yearly). Hosting still renews yearly; operating/training
+   * stay one-time as usual.
+   */
+  lifetimeLicense: boolean;
 }
 
 export interface SectorPricingOverride {
@@ -246,6 +252,8 @@ export interface SectorPricingOverride {
   includesCloudHosting: boolean;
   /** Free support months override (null → inherit base). Info only, no price. */
   freeSupportMonths: number | null;
+  /** Lifetime license override (null → inherit base). */
+  lifetimeLicense: boolean | null;
 }
 
 export interface ClientTag {
@@ -272,6 +280,8 @@ export interface Product {
   heroImage: string;
   /** Separate image used by the home "Product Trio" card. */
   cardImage: string;
+  /** Custom HTML rendered embedded directly in the product page (like a brochure, but inline). */
+  embedHtml: BilingualText;
   cta1: { label: BilingualText; url: string };
   cta2: { label: BilingualText; url: string };
   isCustom: boolean;

@@ -25,6 +25,8 @@ export interface PriceBreakdown {
   volumeDiscountPercent: number;
   discount: number;
   total: number;
+  /** When true, the per-user license (userCost) is a one-time lifetime fee, not yearly. */
+  lifetimeLicense: boolean;
   usdToEgp: number;
   usdToSar: number;
 }
@@ -58,6 +60,7 @@ export function computePrice(
   const hosting = override?.hostingPrice ?? base.hostingPrice;
   const discountPercent = override?.discountPercent ?? base.discountPercent;
   const volumeTiers = override?.volumeDiscounts ?? base.volumeDiscounts ?? [];
+  const lifetimeLicense = override?.lifetimeLicense ?? base.lifetimeLicense ?? false;
 
   const trainingCost = base.trainingCostPerDay * trainingDays;
   const userCost = u * pricePerUser;
@@ -85,6 +88,7 @@ export function computePrice(
     volumeDiscountPercent,
     discount,
     total,
+    lifetimeLicense,
     usdToEgp: base.usdToEgp,
     usdToSar: base.usdToSar,
   };
