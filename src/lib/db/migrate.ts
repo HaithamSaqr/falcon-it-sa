@@ -95,6 +95,7 @@ function mergeIntegrations(ig: any): IntegrationSettings {
     whatsapp: { ...DEFAULT_INTEGRATIONS.whatsapp, ...ig?.whatsapp },
     helpdesk: { ...DEFAULT_INTEGRATIONS.helpdesk, ...ig?.helpdesk },
     google: { ...DEFAULT_INTEGRATIONS.google, ...ig?.google },
+    snapchat: { ...DEFAULT_INTEGRATIONS.snapchat, ...ig?.snapchat },
   };
 }
 /* eslint-enable @typescript-eslint/no-explicit-any */

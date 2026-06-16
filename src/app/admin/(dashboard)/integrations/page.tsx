@@ -7,6 +7,7 @@ const TABS = [
   { key: "odoo", label: "Odoo CRM" },
   { key: "ai", label: "AI Assistant" },
   { key: "google", label: "Google" },
+  { key: "snapchat", label: "Snapchat" },
   { key: "calendar", label: "Calendar" },
   { key: "helpdesk", label: "Helpdesk Portal" },
   { key: "email", label: "Email" },
@@ -300,6 +301,43 @@ export default function IntegrationsPage() {
               </p>
               <p className="text-xs text-slate-400">
                 Tip: if you use Tag Manager, you can manage Analytics &amp; Ads inside GTM and leave the GA4/Ads fields blank.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Snapchat Tab ── */}
+      {activeTab === "snapchat" && (
+        <div className="space-y-6">
+          <div className="rounded-xl border border-slate-200 bg-white p-6">
+            <div className="mb-6 flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-semibold text-slate-900">Snapchat Snap Pixel</h3>
+                <p className="text-sm text-slate-500">
+                  Loads the Snap Pixel on every public page and fires PAGE_VIEW on first load and each route change.
+                </p>
+              </div>
+              <label className="flex cursor-pointer items-center gap-3">
+                <input
+                  type="checkbox"
+                  checked={settings.snapchat.enabled}
+                  onChange={(e) => update("snapchat", "enabled", e.target.checked)}
+                  className="h-4 w-4 rounded border-slate-300 text-cyan-500 focus:ring-cyan-500"
+                />
+                <span className="text-sm text-slate-700">Enabled</span>
+              </label>
+            </div>
+            <div className="grid grid-cols-1 gap-4">
+              <Field
+                label="Snap Pixel ID"
+                value={settings.snapchat.pixelId}
+                onChange={(v) => update("snapchat", "pixelId", v)}
+                placeholder="e.g. c0116458-0cf9-41e9-a95b-4f29bd552620"
+              />
+              <p className="-mt-2 text-xs text-slate-400">
+                Find it in Snapchat Ads Manager → Events Manager → your Pixel. To switch ad accounts later, paste the new
+                Pixel ID here and save — no code change needed.
               </p>
             </div>
           </div>

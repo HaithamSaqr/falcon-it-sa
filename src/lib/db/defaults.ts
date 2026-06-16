@@ -600,4 +600,10 @@ export const DEFAULT_INTEGRATIONS: IntegrationSettings = {
     adsContactLabel: "",
     adsWhatsappLabel: "",
   },
+  snapchat: {
+    // Defaults to the currently-installed pixel so tracking keeps working until
+    // the account is changed from the admin panel.
+    enabled: true,
+    pixelId: "c0116458-0cf9-41e9-a95b-4f29bd552620",
+  },
 };

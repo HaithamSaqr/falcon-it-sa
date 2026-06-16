@@ -412,6 +412,8 @@ ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS landing_cta_label_ar text NOT
 ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS landing_cta_note_en text NOT NULL DEFAULT '';
 ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS landing_cta_note_ar text NOT NULL DEFAULT '';
 ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS clients_speed numeric NOT NULL DEFAULT 3;
+ALTER TABLE integrations ADD COLUMN IF NOT EXISTS snapchat_enabled boolean NOT NULL DEFAULT true;
+ALTER TABLE integrations ADD COLUMN IF NOT EXISTS snapchat_pixel_id text NOT NULL DEFAULT 'c0116458-0cf9-41e9-a95b-4f29bd552620';
 ALTER TABLE pricing_base ADD COLUMN IF NOT EXISTS lifetime_license boolean NOT NULL DEFAULT false;
 ALTER TABLE sector_pricing ADD COLUMN IF NOT EXISTS lifetime_license boolean;
 ALTER TABLE products ADD COLUMN IF NOT EXISTS embed_html_en text NOT NULL DEFAULT '';

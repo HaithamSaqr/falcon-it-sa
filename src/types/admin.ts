@@ -375,6 +375,12 @@ export interface IntegrationSettings {
     /** Conversion label for standalone WhatsApp click buttons (floating, etc.). */
     adsWhatsappLabel: string;
   };
+  /** Snapchat Snap Pixel — sitewide PAGE_VIEW tracking. */
+  snapchat: {
+    enabled: boolean;
+    /** Snap Pixel id (UUID from Snapchat Ads Manager). */
+    pixelId: string;
+  };
 }
 
 export interface CalendarSlot {

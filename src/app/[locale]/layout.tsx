@@ -13,6 +13,7 @@ import Navbar from "@/components/layout/navbar";
 import Footer from "@/components/layout/footer";
 import WhatsAppWidget from "@/components/layout/whatsapp-widget";
 import MobileBottomBar from "@/components/layout/mobile-bottom-bar";
+import SnapPixel from "@/components/layout/snap-pixel";
 import { SettingsProvider } from "@/components/providers/settings-provider";
 
 import "@/app/globals.css";
@@ -91,10 +92,14 @@ export default async function LocaleLayout({
   const messages = await getMessages();
   const isRTL = locale === "ar";
 
-  // Google tags (GTM / GA4 / Ads) — injected only when enabled in Integrations.
-  const g = (await getIntegrations().catch(() => null))?.google;
+  // Marketing tags — injected only when enabled in Integrations.
+  const integrations = await getIntegrations().catch(() => null);
+  const g = integrations?.google;
   const googleOn = !!g?.enabled;
   const gtagId = g?.ga4Id || g?.adsId || "";
+  // Snapchat Snap Pixel.
+  const snap = integrations?.snapchat;
+  const snapOn = !!snap?.enabled && !!snap?.pixelId;
 
   return (
     <html lang={locale} dir={isRTL ? "rtl" : "ltr"} suppressHydrationWarning>
@@ -117,6 +122,9 @@ export default async function LocaleLayout({
             />
           </noscript>
         )}
+
+        {/* Snapchat Snap Pixel — sitewide (init once + PAGE_VIEW on load & route change) */}
+        {snapOn && <SnapPixel pixelId={snap!.pixelId} />}
 
         <NextIntlClientProvider locale={locale} messages={messages}>
           <SettingsProvider>
