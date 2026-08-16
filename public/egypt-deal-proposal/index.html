@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-locale="ar">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Egypt Deal headless commerce transformation proposal, capabilities, competitive comparison, architecture, and delivery plan.">
+  <title>Egypt Deal — Commerce Transformation Proposal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@300;400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --ink:#071735;
+      --ink-2:#0d2458;
+      --ink-3:#183b79;
+      --signal:#ee232b;
+      --signal-dark:#b9151d;
+      --blue:#3478ef;
+      --cyan:#15a9c4;
+      --mint:#0a9664;
+      --amber:#d97b0b;
+      --paper:#f4f7fc;
+      --surface:#fff;
+      --soft:#eaf1fb;
+      --line:#d7e1ef;
+      --muted:#66758f;
+      --shadow:0 24px 80px rgba(7,23,53,.12);
+      --max:1240px;
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth;scroll-padding-top:92px}
+    body{margin:0;background:var(--paper);color:var(--ink);font-family:"Alexandria",sans-serif;line-height:1.75;-webkit-font-smoothing:antialiased}
+    html[data-locale="en"] body{font-family:"Manrope",sans-serif;line-height:1.65}
+    button,a{font:inherit}
+    a{color:inherit}
+    img{max-width:100%;display:block}
+    button{cursor:pointer}
+    :focus-visible{outline:3px solid rgba(52,120,239,.45);outline-offset:3px}
+    .skip{position:fixed;inset-block-start:8px;inset-inline-start:-999px;z-index:200;background:#fff;padding:10px 14px;border:2px solid var(--blue)}
+    .skip:focus{inset-inline-start:8px}
+    .progress{position:fixed;z-index:120;inset:0 0 auto;height:3px;background:transparent}
+    .progress i{display:block;width:0;height:100%;background:linear-gradient(90deg,var(--signal),var(--blue));transition:width .1s linear}
+    .deckbar{position:sticky;z-index:100;top:0;background:rgba(7,23,53,.94);backdrop-filter:blur(18px);border-bottom:1px solid rgba(255,255,255,.12);color:#fff}
+    .deckbar-inner{max-width:var(--max);margin:auto;min-height:76px;padding:12px 24px;display:flex;align-items:center;gap:28px}
+    .deck-brand{display:flex;align-items:center;gap:12px;text-decoration:none;min-width:max-content}
+    .brand-mark{width:42px;height:42px;background:var(--signal);display:grid;place-items:center;font-weight:800;border-radius:11px;box-shadow:0 9px 24px rgba(238,35,43,.34);letter-spacing:-1px}
+    .deck-brand strong{display:block;font-size:14px}.deck-brand small{display:block;color:#9db4dc;font-size:9px;letter-spacing:.14em;text-transform:uppercase}
+    .deck-nav{display:flex;gap:22px;align-items:center;margin-inline:auto}
+    .deck-nav a{text-decoration:none;color:#aebfdb;font-size:11px;font-weight:600;transition:.2s}
+    .deck-nav a:hover,.deck-nav a.active{color:#fff}
+    .deck-actions{display:flex;align-items:center;gap:9px}
+    .locale{display:flex;border:1px solid rgba(255,255,255,.16);padding:3px;border-radius:10px}
+    .locale button{border:0;background:transparent;color:#aebfdb;padding:7px 10px;border-radius:7px;font-size:10px;font-weight:700}
+    .locale button.active{background:#fff;color:var(--ink)}
+    .print-btn{border:1px solid rgba(255,255,255,.18);background:transparent;color:#fff;padding:8px 11px;border-radius:9px;font-size:10px}
+    .section{padding:96px 24px}
+    .wrap{max-width:var(--max);margin:auto}
+    .section-head{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(280px,.6fr);gap:50px;align-items:end;margin-bottom:44px}
+    .section-head.compact{grid-template-columns:1fr;max-width:790px}
+    .eyebrow{display:flex;align-items:center;gap:10px;color:var(--signal);font-size:10px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;margin-bottom:13px}
+    .eyebrow:before{content:"";width:28px;height:2px;background:currentColor}
+    h1,h2,h3,h4,p{margin-top:0}
+    h1{font-size:clamp(46px,6vw,82px);line-height:1.06;letter-spacing:-.055em;margin-bottom:24px;max-width:920px}
+    html[data-locale="ar"] h1{letter-spacing:-.035em;line-height:1.25}
+    h2{font-size:clamp(32px,4vw,52px);line-height:1.15;letter-spacing:-.045em;margin-bottom:15px}
+    html[data-locale="ar"] h2{line-height:1.35;letter-spacing:-.025em}
+    h3{font-size:22px;line-height:1.35;margin-bottom:10px}
+    h4{font-size:15px;margin-bottom:7px}
+    .lead{font-size:clamp(17px,2vw,23px);line-height:1.75;color:#c8d5ea;max-width:790px;margin-bottom:30px}
+    .section-copy{font-size:16px;color:var(--muted);max-width:720px}
+    .hero{position:relative;overflow:hidden;background:var(--ink);color:#fff;padding:86px 24px 70px;min-height:780px}
+    .hero:before{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(120,155,213,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(120,155,213,.08) 1px,transparent 1px);background-size:48px 48px;mask-image:linear-gradient(to bottom,black,transparent 86%)}
+    .hero:after{content:"";position:absolute;width:720px;height:720px;border:1px solid rgba(67,128,235,.22);border-radius:50%;inset-block-start:-210px;inset-inline-end:-220px;box-shadow:0 0 0 80px rgba(51,120,239,.035),0 0 0 160px rgba(51,120,239,.025)}
+    .hero .wrap{position:relative;z-index:2}
+    .hero-top{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(360px,.72fr);gap:72px;align-items:center}
+    .hero .eyebrow{color:#8cb6ff}
+    .hero h1 em{font-style:normal;color:#fff;position:relative;white-space:nowrap}
+    .hero h1 em:after{content:"";position:absolute;height:7px;background:var(--signal);inset-inline:0;bottom:3px;z-index:-1;transform:skewX(-13deg)}
+    .cta-row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;text-decoration:none;padding:14px 19px;border-radius:10px;border:1px solid rgba(255,255,255,.2);font-size:12px;font-weight:800;transition:.22s}
+    .btn.primary{background:var(--signal);border-color:var(--signal);color:#fff;box-shadow:0 14px 30px rgba(238,35,43,.26)}
+    .btn.primary:hover{background:#ff3139;transform:translateY(-2px)}
+    .btn.ghost{color:#fff;background:rgba(255,255,255,.05)}
+    .btn.light{background:#fff;color:var(--ink);border-color:var(--line)}
+    .decision-card{background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.14);padding:28px;box-shadow:0 30px 90px rgba(0,0,0,.2);position:relative}
+    .decision-card:before{content:"RECOMMENDED";position:absolute;inset-block-start:0;inset-inline-start:0;background:var(--signal);color:#fff;padding:7px 12px;font:800 8px "Manrope";letter-spacing:.13em}
+    html[data-locale="ar"] .decision-card:before{content:"التوصية";font-family:"Alexandria"}
+    .decision-card h3{font-size:27px;margin:30px 0 9px}
+    .decision-card>p{color:#aebfdb;font-size:13px}
+    .decision-list{margin:22px 0 0;padding:0;list-style:none;border-top:1px solid rgba(255,255,255,.11)}
+    .decision-list li{display:grid;grid-template-columns:90px 1fr;gap:16px;padding:13px 0;border-bottom:1px solid rgba(255,255,255,.09);font-size:11px}
+    .decision-list span{color:#8198bc}.decision-list b{font-weight:700}
+    .hero-proof{display:grid;grid-template-columns:repeat(4,1fr);margin-top:70px;border:1px solid rgba(255,255,255,.12)}
+    .hero-proof article{padding:22px;border-inline-end:1px solid rgba(255,255,255,.11)}
+    .hero-proof article:last-child{border-inline-end:0}
+    .hero-proof strong{font:800 24px "Manrope";display:block;color:#fff}.hero-proof span{font-size:10px;color:#93a8c9}
+    .decision{background:#fff}
+    .problem-grid{display:grid;grid-template-columns:repeat(4,1fr);border-block:1px solid var(--line)}
+    .problem{padding:28px 26px;border-inline-end:1px solid var(--line)}
+    .problem:last-child{border-inline-end:0}
+    .problem b{font:800 11px "Manrope";color:var(--signal);letter-spacing:.1em}.problem h3{font-size:18px;margin:14px 0 9px}.problem p{font-size:12px;color:var(--muted);margin:0}
+    .thesis{margin-top:45px;background:var(--ink);color:#fff;padding:38px 44px;display:grid;grid-template-columns:1fr auto;align-items:center;gap:30px}
+    .thesis h3{font-size:28px;margin:0}.thesis p{color:#aebfdb;max-width:730px;margin:7px 0 0;font-size:13px}.thesis .seal{width:82px;height:82px;border:1px solid rgba(255,255,255,.2);display:grid;place-items:center;font:800 24px "Manrope";transform:rotate(4deg)}
+    .solution{background:linear-gradient(180deg,#eef4fc 0%,#f7f9fd 100%)}
+    .architecture{display:grid;grid-template-columns:1fr 54px 1.35fr 54px 1.25fr;align-items:stretch;gap:0}
+    .arch-column{display:grid;gap:11px}
+    .arch-label{font:800 9px "Manrope";letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:3px}
+    .arch-node{background:#fff;border:1px solid var(--line);padding:17px 18px;min-height:88px;position:relative;box-shadow:0 10px 25px rgba(7,23,53,.045)}
+    .arch-node.core{background:var(--ink);border-color:var(--ink);color:#fff}.arch-node.signal{border-top:3px solid var(--signal)}
+    .arch-node h4{font-size:14px;margin:0 0 4px}.arch-node p{font-size:10px;color:var(--muted);margin:0}.arch-node.core p{color:#aebfdb}
+    .arch-arrow{display:grid;place-items:center;color:var(--blue);font:800 24px "Manrope"}
+    html[dir="rtl"] .arch-arrow{transform:scaleX(-1)}
+    .truth-strip{display:grid;grid-template-columns:repeat(5,1fr);margin-top:24px;background:#fff;border:1px solid var(--line)}
+    .truth-strip div{padding:17px;border-inline-end:1px solid var(--line)}.truth-strip div:last-child{border:0}
+    .truth-strip small{display:block;color:var(--muted);font-size:9px}.truth-strip b{font-size:11px}
+    .capabilities{background:#fff}
+    .cap-grid{display:grid;grid-template-columns:repeat(2,1fr);border-top:1px solid var(--line);border-inline-start:1px solid var(--line)}
+    .cap{padding:33px 34px;border-inline-end:1px solid var(--line);border-bottom:1px solid var(--line);position:relative;min-height:355px}
+    .cap-num{font:800 11px "Manrope";color:var(--signal);letter-spacing:.12em}
+    .cap h3{font-size:25px;margin:17px 0 9px}.cap>p{color:var(--muted);font-size:12px;max-width:520px}
+    .feature-list{display:grid;grid-template-columns:1fr 1fr;gap:8px 18px;padding:0;margin:24px 0;list-style:none}
+    .feature-list li{font-size:10px;padding-inline-start:15px;position:relative}.feature-list li:before{content:"";position:absolute;inset-inline-start:0;top:.7em;width:6px;height:6px;background:var(--blue)}
+    .cap-outcome{position:absolute;inset-inline:34px;bottom:28px;border-top:1px solid var(--line);padding-top:13px;color:var(--mint);font-size:10px;font-weight:700}
+    .experience{background:var(--ink);color:#fff;overflow:hidden}
+    .experience .section-copy{color:#aebfdb}
+    .preview-shell{border:1px solid rgba(255,255,255,.13);background:#06132d;box-shadow:0 34px 100px rgba(0,0,0,.3)}
+    .preview-toolbar{display:flex;align-items:center;gap:8px;padding:13px 16px;border-bottom:1px solid rgba(255,255,255,.1)}
+    .dots{display:flex;gap:5px;margin-inline-end:8px}.dots i{width:7px;height:7px;border-radius:50%;background:#ff6b5e}.dots i:nth-child(2){background:#f4b548}.dots i:nth-child(3){background:#37be7b}
+    .preview-toolbar button{border:1px solid rgba(255,255,255,.13);background:transparent;color:#90a4c5;padding:7px 10px;font-size:9px;border-radius:6px}
+    .preview-toolbar button.active{background:var(--signal);border-color:var(--signal);color:#fff}
+    .preview-toolbar a{margin-inline-start:auto;color:#fff;font-size:10px;text-decoration:none}
+    .preview-window{height:660px;overflow:hidden;background:#0a1d42}
+    .preview-window img{width:100%;height:100%;object-fit:cover;object-position:top;transition:opacity .25s}
+    .screen-index{display:grid;grid-template-columns:repeat(5,1fr);margin-top:24px;border-block:1px solid rgba(255,255,255,.12)}
+    .screen-index div{padding:17px 14px;border-inline-end:1px solid rgba(255,255,255,.1)}.screen-index div:last-child{border:0}
+    .screen-index strong{font:800 23px "Manrope";display:block}.screen-index span{color:#8da2c4;font-size:9px}
+    .flow{background:#fff}
+    .order-flow{display:grid;grid-template-columns:repeat(6,1fr);position:relative;margin-top:45px}
+    .order-flow:before{content:"";position:absolute;top:27px;inset-inline:4% 4%;height:1px;background:var(--line)}
+    .flow-step{position:relative;text-align:center;padding:0 12px}
+    .flow-step i{position:relative;z-index:2;width:54px;height:54px;margin:auto auto 15px;background:#fff;border:1px solid var(--line);display:grid;place-items:center;font:800 13px "Manrope";font-style:normal;box-shadow:0 8px 20px rgba(7,23,53,.07)}
+    .flow-step:nth-child(4) i{background:var(--signal);border-color:var(--signal);color:#fff}.flow-step h4{font-size:13px}.flow-step p{font-size:9px;color:var(--muted)}
+    .control-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:54px}
+    .control{padding:22px;border:1px solid var(--line);background:var(--paper)}
+    .control b{font-size:12px;display:block;margin-bottom:5px}.control span{font-size:10px;color:var(--muted)}
+    .comparison{background:#edf3fb}
+    .comparison-note{background:#fff;border-inline-start:4px solid var(--blue);padding:16px 19px;color:var(--muted);font-size:11px;margin-bottom:24px}
+    .matrix-wrap{overflow:auto;border:1px solid var(--line);background:#fff;box-shadow:var(--shadow)}
+    .matrix{width:100%;min-width:1180px;border-collapse:collapse;table-layout:fixed;font-size:10px}
+    .matrix th,.matrix td{padding:15px 13px;border-bottom:1px solid var(--line);border-inline-end:1px solid var(--line);vertical-align:top;text-align:start}
+    .matrix th{background:var(--ink);color:#fff;font-size:10px;position:sticky;top:0;z-index:2}.matrix th:first-child{width:180px}
+    .matrix th.recommended{background:var(--signal)}
+    .matrix td:first-child{font-weight:800;color:var(--ink);background:#f8fafe}.matrix td.recommended{background:#fff7f7}
+    .matrix b{display:block;font-size:10px;margin-bottom:3px}.matrix small{display:block;color:var(--muted);line-height:1.5}
+    .grade{display:inline-block;font:800 8px "Manrope";letter-spacing:.06em;text-transform:uppercase;color:var(--mint);margin-bottom:4px}.grade.custom{color:var(--amber)}.grade.heavy{color:var(--signal)}
+    .honest-title{font-size:25px;margin:58px 0 18px}
+    .platform-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+    .platform{background:#fff;border:1px solid var(--line);padding:23px;min-height:175px}
+    .platform b{font:800 12px "Manrope";letter-spacing:.06em;text-transform:uppercase;color:var(--blue)}
+    .platform h4{font-size:16px;margin:12px 0 6px}.platform p{font-size:10px;color:var(--muted);margin:0}
+    .advantages{background:var(--ink);color:#fff}
+    .advantages .section-copy{color:#9fb1cf}
+    .adv-grid{display:grid;grid-template-columns:repeat(2,1fr);border-top:1px solid rgba(255,255,255,.12);border-inline-start:1px solid rgba(255,255,255,.12)}
+    .adv{display:grid;grid-template-columns:52px 1fr;gap:18px;padding:27px;border-inline-end:1px solid rgba(255,255,255,.12);border-bottom:1px solid rgba(255,255,255,.12)}
+    .adv-num{font:800 24px "Manrope";color:var(--signal)}.adv h3{font-size:17px;margin:0 0 6px}.adv p{font-size:10px;color:#9fb1cf;margin:0}
+    .targets{display:grid;grid-template-columns:repeat(6,1fr);margin-top:50px;border:1px solid rgba(255,255,255,.13)}
+    .target{padding:22px 18px;border-inline-end:1px solid rgba(255,255,255,.12)}.target:last-child{border:0}
+    .target strong{font:800 25px "Manrope";display:block}.target span{font-size:9px;color:#91a5c6}.target small{display:block;font-size:8px;color:#5f769b;margin-top:3px}
+    .delivery{background:#fff}
+    .roadmap{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+    .phase{border:1px solid var(--line);padding:23px;min-height:230px;position:relative}
+    .phase.gate{background:var(--ink);color:#fff;border-color:var(--ink)}
+    .phase-no{font:800 9px "Manrope";color:var(--signal);letter-spacing:.12em}.phase h3{font-size:18px;margin:14px 0 8px}.phase p{font-size:10px;color:var(--muted)}.phase.gate p{color:#9fb1cf}
+    .phase time{position:absolute;bottom:20px;inset-inline:23px;font:800 9px "Manrope";color:var(--blue);border-top:1px solid var(--line);padding-top:10px}.phase.gate time{border-color:rgba(255,255,255,.15);color:#8fb9ff}
+    .delivery-callout{margin-top:24px;display:grid;grid-template-columns:1fr 1fr;background:#f2f6fc;border:1px solid var(--line)}
+    .delivery-callout>div{padding:28px 30px;border-inline-end:1px solid var(--line)}.delivery-callout>div:last-child{border:0}
+    .delivery-callout strong{display:block;font-size:17px}.delivery-callout p{font-size:11px;color:var(--muted);margin:7px 0 0}
+    .risk-table{width:100%;border-collapse:collapse;margin-top:50px;font-size:11px}
+    .risk-table th,.risk-table td{text-align:start;padding:15px;border-bottom:1px solid var(--line)}.risk-table th{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em}.risk-table td:first-child{font-weight:700;width:35%}
+    .next{background:var(--signal);color:#fff;position:relative;overflow:hidden}
+    .next:after{content:"ED";position:absolute;inset-inline-end:-25px;bottom:-150px;font:800 420px/1 "Manrope";color:rgba(255,255,255,.07);letter-spacing:-.1em}
+    .next .wrap{position:relative;z-index:2;display:grid;grid-template-columns:1.25fr .75fr;gap:70px;align-items:center}
+    .next h2{font-size:clamp(40px,5vw,65px);max-width:720px}.next p{font-size:16px;max-width:700px;color:#ffd8da}
+    .next-actions{display:grid;gap:10px}.next-actions .btn{width:100%}
+    .next-actions .btn.light{color:var(--signal)}
+    .sources{background:#07132b;color:#91a5c6;padding:48px 24px}
+    .sources .wrap{display:grid;grid-template-columns:260px 1fr;gap:45px}
+    .sources h3{color:#fff;font-size:18px}.sources p{font-size:10px}
+    .source-links{display:grid;grid-template-columns:repeat(2,1fr);gap:9px 25px}
+    .source-links a{color:#b8c8e2;font-size:9px;text-decoration:none;border-bottom:1px solid rgba(255,255,255,.08);padding-bottom:7px}.source-links a:hover{color:#fff}
+    .fineprint{margin-top:20px;font-size:8px;color:#667b9d}
+    [data-ar],[data-en]{unicode-bidi:plaintext}
+    @media(max-width:1050px){
+      .deck-nav{display:none}.hero-top{grid-template-columns:1fr}.decision-card{max-width:640px}.hero-proof{grid-template-columns:repeat(2,1fr)}.architecture{grid-template-columns:1fr}.arch-arrow{height:42px;transform:rotate(90deg)!important}.cap-grid{grid-template-columns:1fr}.preview-window{height:520px}.platform-grid{grid-template-columns:repeat(2,1fr)}.targets{grid-template-columns:repeat(3,1fr)}.roadmap{grid-template-columns:repeat(2,1fr)}
+    }
+    @media(max-width:720px){
+      .deckbar-inner{padding:10px 14px;gap:10px}.deck-brand small,.print-btn{display:none}.deck-actions{margin-inline-start:auto}.section{padding:68px 17px}.hero{padding:62px 17px 50px;min-height:0}.section-head{grid-template-columns:1fr;gap:15px}.hero-proof,.problem-grid,.truth-strip,.screen-index,.control-grid,.platform-grid,.adv-grid,.delivery-callout,.next .wrap,.sources .wrap{grid-template-columns:1fr}.hero-proof article,.problem,.truth-strip div,.screen-index div,.delivery-callout>div{border-inline-end:0;border-bottom:1px solid var(--line)}.hero-proof article,.screen-index div{border-color:rgba(255,255,255,.11)}.cap{padding:25px 20px;min-height:auto}.cap-outcome{position:static;margin-top:24px}.feature-list{grid-template-columns:1fr}.preview-window{height:360px}.order-flow{grid-template-columns:repeat(2,1fr);gap:24px}.order-flow:before{display:none}.targets{grid-template-columns:repeat(2,1fr)}.roadmap{grid-template-columns:1fr}.next-actions{max-width:420px}.source-links{grid-template-columns:1fr}.thesis{grid-template-columns:1fr}.thesis .seal{display:none}
+    }
+    @media print{
+      .deckbar,.progress,.preview-toolbar,.next-actions{display:none!important}.section,.hero{padding:42px 28px}.hero{min-height:auto}.section,.cap,.platform,.phase,.adv,.matrix-wrap{break-inside:avoid}.preview-window{height:460px}body{background:#fff}.next{background:var(--ink)}
+    }
+  </style>
+</head>
+<body>
+  <a class="skip" href="#main" data-ar="انتقل إلى المحتوى" data-en="Skip to content">انتقل إلى المحتوى</a>
+  <div class="progress" aria-hidden="true"><i></i></div>
+  <header class="deckbar">
+    <div class="deckbar-inner">
+      <a class="deck-brand" href="#top" aria-label="Egypt Deal proposal">
+        <span class="brand-mark">ED</span>
+        <span><strong>Egypt Deal</strong><small data-ar="مقترح التحول التجاري" data-en="Commerce transformation">مقترح التحول التجاري</small></span>
+      </a>
+      <nav class="deck-nav" aria-label="Presentation navigation">
+        <a href="#decision" data-ar="القرار" data-en="Decision">القرار</a>
+        <a href="#scope" data-ar="النطاق" data-en="Scope">النطاق</a>
+        <a href="#experience" data-ar="التجربة" data-en="Experience">التجربة</a>
+        <a href="#comparison" data-ar="المقارنة" data-en="Comparison">المقارنة</a>
+        <a href="#delivery" data-ar="التنفيذ" data-en="Delivery">التنفيذ</a>
+      </nav>
+      <div class="deck-actions">
+        <div class="locale" aria-label="Language"><button class="active" data-locale="ar">العربية</button><button data-locale="en">English</button></div>
+        <button class="print-btn" type="button" onclick="window.print()" data-ar="طباعة / PDF" data-en="Print / PDF">طباعة / PDF</button>
+      </div>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="hero" id="top">
+      <div class="wrap">
+        <div class="hero-top">
+          <div>
+            <div class="eyebrow" data-ar="مقترح استراتيجي • جاهز للعرض على العميل" data-en="Strategic proposal • Client presentation ready">مقترح استراتيجي • جاهز للعرض على العميل</div>
+            <h1 data-ar="من موقع داخل أودو إلى منظومة تجارة تملكها إيجيبت ديل." data-en="From an Odoo website to a commerce system Egypt Deal can own.">من موقع داخل أودو إلى منظومة تجارة تملكها إيجيبت ديل.</h1>
+            <p class="lead" data-ar="واجهة عربية وإنجليزية مستقلة، مرتبطة بالمخزون والطلبات والفواتير في أودو، ومصممة من البداية للمدفوعات المحلية وأمازون ونون وخدمة العميل والتشغيل اليومي." data-en="An independent Arabic and English experience connected to Odoo inventory, orders, and invoices—designed from day one for local payments, Amazon, noon, customer service, and daily operations.">واجهة عربية وإنجليزية مستقلة، مرتبطة بالمخزون والطلبات والفواتير في أودو، ومصممة من البداية للمدفوعات المحلية وأمازون ونون وخدمة العميل والتشغيل اليومي.</p>
+            <div class="cta-row">
+              <a class="btn primary" href="egypt-deal-commerce-mockups.html" data-ar="استعرض النموذج التفاعلي ←" data-en="Explore the interactive prototype →">استعرض النموذج التفاعلي ←</a>
+              <a class="btn ghost" href="#comparison" data-ar="شاهد المقارنة العادلة" data-en="See the fair comparison">شاهد المقارنة العادلة</a>
+            </div>
+          </div>
+          <aside class="decision-card">
+            <h3 data-ar="واجهة مستقلة. حقيقة واحدة." data-en="Independent experience. One commercial truth.">واجهة مستقلة. حقيقة واحدة.</h3>
+            <p data-ar="نحافظ على Odoo كنظام الأعمال الأساسي، ونبني حوله طبقة تجارة وتجربة عميل قابلة للتطوير والقياس." data-en="Keep Odoo as the core business system and build a scalable commerce and customer-experience layer around it.">نحافظ على Odoo كنظام الأعمال الأساسي، ونبني حوله طبقة تجارة وتجربة عميل قابلة للتطوير والقياس.</p>
+            <ul class="decision-list">
+              <li><span data-ar="نظام الحقيقة" data-en="System of record">نظام الحقيقة</span><b>Odoo ERP</b></li>
+              <li><span data-ar="التجربة" data-en="Experience">التجربة</span><b data-ar="واجهة مخصصة سريعة" data-en="Custom high-performance storefront">واجهة مخصصة سريعة</b></li>
+              <li><span data-ar="اللغات" data-en="Locales">اللغات</span><b>Arabic RTL + English LTR</b></li>
+              <li><span data-ar="المدفوعات" data-en="Payments">المدفوعات</span><b>Paymob + BNPL + COD</b></li>
+              <li><span data-ar="القنوات" data-en="Channels">القنوات</span><b>Web + Amazon + noon</b></li>
+            </ul>
+          </aside>
+        </div>
+        <div class="hero-proof">
+          <article><strong>27</strong><span data-ar="شاشة تفاعلية" data-en="Interactive product screens">شاشة تفاعلية</span></article>
+          <article><strong>2</strong><span data-ar="تجربتان كاملتان للغة والاتجاه" data-en="Complete language and direction experiences">تجربتان كاملتان للغة والاتجاه</span></article>
+          <article><strong>1</strong><span data-ar="مصدر معتمد للسعر والمخزون والطلب" data-en="Authoritative source for price, stock, and orders">مصدر معتمد للسعر والمخزون والطلب</span></article>
+          <article><strong>4</strong><span data-ar="نطاقات تشغيل: متجر، عميل، قنوات، مالية" data-en="Operating domains: store, client, channels, finance">نطاقات تشغيل: متجر، عميل، قنوات، مالية</span></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section decision" id="decision">
+      <div class="wrap">
+        <header class="section-head">
+          <div><div class="eyebrow" data-ar="القرار التجاري" data-en="The business decision">القرار التجاري</div><h2 data-ar="نفصل تجربة البيع عن نظام الأعمال، من غير ما نصنع مصدر بيانات جديد." data-en="Separate the selling experience from the business system—without creating another source of truth.">نفصل تجربة البيع عن نظام الأعمال، من غير ما نصنع مصدر بيانات جديد.</h2></div>
+          <p class="section-copy" data-ar="المشكلة ليست شكل الموقع فقط. المطلوب هو سرعة في البيع، دقة في المخزون، وضوح في الدفع، وخدمة ذاتية للعميل، مع تشغيل موثوق عبر أكثر من قناة." data-en="The problem is bigger than visual design. Egypt Deal needs selling speed, accurate stock, clear payments, customer self-service, and dependable multichannel operations.">المشكلة ليست شكل الموقع فقط. المطلوب هو سرعة في البيع، دقة في المخزون، وضوح في الدفع، وخدمة ذاتية للعميل، مع تشغيل موثوق عبر أكثر من قناة.</p>
+        </header>
+        <div class="problem-grid">
+          <article class="problem"><b>01</b><h3 data-ar="تجربة مقيدة" data-en="Experience coupling">تجربة مقيدة</h3><p data-ar="أي تغيير كبير في الواجهة يظل مرتبطًا بقوالب وتحديثات وتشغيل نظام الـERP." data-en="Major storefront changes remain tied to ERP templates, releases, and operational risk.">أي تغيير كبير في الواجهة يظل مرتبطًا بقوالب وتحديثات وتشغيل نظام الـERP.</p></article>
+          <article class="problem"><b>02</b><h3 data-ar="خطر ازدواج البيانات" data-en="Dual-truth risk">خطر ازدواج البيانات</h3><p data-ar="إضافة منصة تجارة ثانية قد تنشئ تعارضًا في السعر والمخزون والطلب ما لم يُحسم مصدر الحقيقة." data-en="Adding a second commerce backend can split price, stock, and order truth unless authority is explicit.">إضافة منصة تجارة ثانية قد تنشئ تعارضًا في السعر والمخزون والطلب ما لم يُحسم مصدر الحقيقة.</p></article>
+          <article class="problem"><b>03</b><h3 data-ar="تشغيل محلي حقيقي" data-en="Local operating reality">تشغيل محلي حقيقي</h3><p data-ar="المدفوعات والتقسيط والدفع عند الاستلام والمحافظات ليست مجرد أزرار؛ هي دورة تشغيل ومطابقة مالية." data-en="Payments, installments, COD, and governorates are operational and financial lifecycles—not checkout badges.">المدفوعات والتقسيط والدفع عند الاستلام والمحافظات ليست مجرد أزرار؛ هي دورة تشغيل ومطابقة مالية.</p></article>
+          <article class="problem"><b>04</b><h3 data-ar="قنوات منفصلة" data-en="Fragmented channels">قنوات منفصلة</h3><p data-ar="المتجر وAmazon وNoon يحتاجون مخزونًا مشتركًا وطلبات غير مكررة ومرتجعات وتسويات قابلة للمراجعة." data-en="Web, Amazon, and noon need shared allocation, deduplicated orders, returns, and auditable settlements.">المتجر وAmazon وNoon يحتاجون مخزونًا مشتركًا وطلبات غير مكررة ومرتجعات وتسويات قابلة للمراجعة.</p></article>
+        </div>
+        <div class="thesis"><div><h3 data-ar="الحل: واجهة مستقلة + طبقة تحكم + Odoo كنظام حقيقة." data-en="The answer: independent experience + commerce control layer + Odoo truth.">الحل: واجهة مستقلة + طبقة تحكم + Odoo كنظام حقيقة.</h3><p data-ar="نغير ما يراه العميل ويستخدمه الفريق، لكننا لا نعيد اختراع المنتج والسعر والمخزون والفاتورة الموجودة بالفعل في النظام." data-en="Change what customers experience and staff operate, while preserving the product, price, inventory, fulfillment, and invoice truth already running the business.">نغير ما يراه العميل ويستخدمه الفريق، لكننا لا نعيد اختراع المنتج والسعر والمخزون والفاتورة الموجودة بالفعل في النظام.</p></div><div class="seal">1×</div></div>
+      </div>
+    </section>
+
+    <section class="section solution" id="architecture">
+      <div class="wrap">
+        <header class="section-head compact"><div><div class="eyebrow" data-ar="معمارية الحل" data-en="Solution architecture">معمارية الحل</div><h2 data-ar="طبقات واضحة تمنع الفوضى وتحافظ على سرعة التطوير." data-en="Clear layers preserve operational truth and development speed.">طبقات واضحة تمنع الفوضى وتحافظ على سرعة التطوير.</h2><p class="section-copy" data-ar="كل طبقة لها مسؤولية محددة: Odoo يدير الحقيقة التجارية، طبقة التحكم تدير التزامن والقواعد، والواجهات تقدم التجربة المناسبة لكل مستخدم." data-en="Each layer has one job: Odoo owns commercial truth, the control layer owns synchronization and policy, and each experience serves its user without bypassing governance.">كل طبقة لها مسؤولية محددة: Odoo يدير الحقيقة التجارية، طبقة التحكم تدير التزامن والقواعد، والواجهات تقدم التجربة المناسبة لكل مستخدم.</p></div></header>
+        <div class="architecture">
+          <div class="arch-column"><div class="arch-label" data-ar="مصدر الحقيقة" data-en="Authoritative core">مصدر الحقيقة</div><article class="arch-node core"><h4>Odoo ERP</h4><p data-ar="المنتجات، قوائم الأسعار، المخزون القابل للبيع، أوامر البيع، التجهيز، الفواتير، والعملاء." data-en="Products, pricelists, sellable stock, sale orders, fulfillment, invoices, and customers.">المنتجات، قوائم الأسعار، المخزون القابل للبيع، أوامر البيع، التجهيز، الفواتير، والعملاء.</p></article></div>
+          <div class="arch-arrow">→</div>
+          <div class="arch-column"><div class="arch-label" data-ar="طبقة التجارة والتحكم" data-en="Commerce control layer">طبقة التجارة والتحكم</div><article class="arch-node signal"><h4 data-ar="مزامنة وعزل الأعطال" data-en="Sync and failure isolation">مزامنة وعزل الأعطال</h4><p data-ar="استيراد كامل وتغييرات فورية وقوائم إعادة المحاولة وعزل البيانات غير الصالحة." data-en="Full import, incremental events, retry queues, dead-letter recovery, and invalid-data quarantine.">استيراد كامل وتغييرات فورية وقوائم إعادة المحاولة وعزل البيانات غير الصالحة.</p></article><article class="arch-node"><h4 data-ar="تسعير ومخزون وطلبات آمنة" data-en="Safe pricing, stock, and orders">تسعير ومخزون وطلبات آمنة</h4><p data-ar="إعادة تحقق قبل الدفع، حجوزات مركزية، مفاتيح منع التكرار، ومطابقة دورية." data-en="Server repricing, central reservations, idempotency keys, and scheduled reconciliation.">إعادة تحقق قبل الدفع، حجوزات مركزية، مفاتيح منع التكرار، ومطابقة دورية.</p></article><article class="arch-node"><h4 data-ar="بحث ومحتوى وتحليلات" data-en="Search, content, and analytics">بحث ومحتوى وتحليلات</h4><p data-ar="فهرس ثنائي اللغة، إدارة محتوى، سلوك المستخدم، ومؤشرات تشغيل موحدة." data-en="Bilingual index, CMS, customer behavior, and reconciled operating metrics.">فهرس ثنائي اللغة، إدارة محتوى، سلوك المستخدم، ومؤشرات تشغيل موحدة.</p></article></div>
+          <div class="arch-arrow">→</div>
+          <div class="arch-column"><div class="arch-label" data-ar="الواجهات والقنوات" data-en="Experiences and channels">الواجهات والقنوات</div><article class="arch-node"><h4 data-ar="المتجر وبوابة العميل" data-en="Storefront and client portal">المتجر وبوابة العميل</h4><p data-ar="اكتشاف وشراء وتتبع وفواتير وعناوين ومرتجعات ودعم." data-en="Discovery, purchase, tracking, invoices, addresses, returns, and support.">اكتشاف وشراء وتتبع وفواتير وعناوين ومرتجعات ودعم.</p></article><article class="arch-node"><h4 data-ar="لوحة التشغيل" data-en="Operations control plane">لوحة التشغيل</h4><p data-ar="طلبات وكتالوج ومخزون وتكاملات ومدفوعات وعملاء وتحليلات." data-en="Orders, catalog, inventory, integrations, payments, customers, and analytics.">طلبات وكتالوج ومخزون وتكاملات ومدفوعات وعملاء وتحليلات.</p></article><article class="arch-node"><h4>Paymob • Amazon • noon • Carriers</h4><p data-ar="موصلات مستقلة بعقود موحدة، مفاتيح تكرار، وتتبّع وتسوية." data-en="Dedicated adapters with normalized contracts, idempotency, tracking, and settlement.">موصلات مستقلة بعقود موحدة، مفاتيح تكرار، وتتبّع وتسوية.</p></article></div>
+        </div>
+        <div class="truth-strip">
+          <div><small data-ar="السعر" data-en="Price">السعر</small><b>Odoo pricelist</b></div><div><small data-ar="المخزون" data-en="Stock">المخزون</small><b>Odoo + reservation ledger</b></div><div><small data-ar="الدفع" data-en="Payment">الدفع</small><b>Verified provider callback</b></div><div><small data-ar="التنفيذ" data-en="Fulfillment">التنفيذ</small><b>Odoo picking + carrier</b></div><div><small data-ar="التسوية" data-en="Settlement">التسوية</small><b>Provider + bank/carrier + Odoo</b></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section capabilities" id="scope">
+      <div class="wrap">
+        <header class="section-head"><div><div class="eyebrow" data-ar="النطاق الكامل" data-en="Complete product scope">النطاق الكامل</div><h2 data-ar="منتج تجارة متكامل، وليس مجرد صفحة رئيسية جديدة." data-en="A complete commerce product—not a redesigned homepage.">منتج تجارة متكامل، وليس مجرد صفحة رئيسية جديدة.</h2></div><p class="section-copy" data-ar="النطاق يغطي دورة العميل ودورة الموظف ودورة البيانات ودورة المال. كل ميزة مرتبطة بنتيجة تشغيل أو بيع قابلة للقياس." data-en="The scope covers the customer journey, staff workflow, data lifecycle, and money lifecycle. Every capability connects to a measurable sales or operating outcome.">النطاق يغطي دورة العميل ودورة الموظف ودورة البيانات ودورة المال. كل ميزة مرتبطة بنتيجة تشغيل أو بيع قابلة للقياس.</p></header>
+        <div class="cap-grid">
+          <article class="cap"><span class="cap-num">01 — CONVERT</span><h3 data-ar="المتجر والاكتشاف والتحويل" data-en="Storefront, discovery, and conversion">المتجر والاكتشاف والتحويل</h3><p data-ar="واجهة سريعة للموبايل تجعل الوصول للمنتج الصحيح والثقة في السعر والتوفر واتخاذ قرار الشراء أسهل." data-en="A mobile-first experience that makes the right product easier to find, trust, compare, and buy.">واجهة سريعة للموبايل تجعل الوصول للمنتج الصحيح والثقة في السعر والتوفر واتخاذ قرار الشراء أسهل.</p><ul class="feature-list"><li data-ar="رئيسية مرنة وإدارة أقسام" data-en="Composable homepage and merchandising">رئيسية مرنة وإدارة أقسام</li><li data-ar="بحث عربي وإنجليزي مع مرادفات" data-en="Arabic and English search with synonyms">بحث عربي وإنجليزي مع مرادفات</li><li data-ar="أقسام وفلاتر وترتيب" data-en="Categories, facets, and sorting">أقسام وفلاتر وترتيب</li><li data-ar="صفحة منتج غنية بالمواصفات" data-en="Specification-rich product pages">صفحة منتج غنية بالمواصفات</li><li data-ar="عروض ساخنة وأوتلت" data-en="Hot deals and outlet journeys">عروض ساخنة وأوتلت</li><li data-ar="سلة ودفع مرنان" data-en="Resilient cart and checkout">سلة ودفع مرنان</li><li data-ar="SEO وروابط قديمة محولة" data-en="SEO and legacy URL redirects">SEO وروابط قديمة محولة</li><li data-ar="تجربة كاملة للموبايل" data-en="Complete mobile experience">تجربة كاملة للموبايل</li></ul><div class="cap-outcome" data-ar="النتيجة: اكتشاف أسرع وثقة أعلى وتسرب أقل قبل الدفع." data-en="Outcome: faster discovery, stronger confidence, and less pre-checkout leakage.">النتيجة: اكتشاف أسرع وثقة أعلى وتسرب أقل قبل الدفع.</div></article>
+          <article class="cap"><span class="cap-num">02 — SERVE</span><h3 data-ar="بوابة العميل والخدمة الذاتية" data-en="Client portal and self-service">بوابة العميل والخدمة الذاتية</h3><p data-ar="العميل يرى الحقيقة التي يحتاجها من غير مكالمات طويلة أو حالات تقنية غير مفهومة من النظام الخلفي." data-en="Customers see the information they need without long calls or exposure to confusing internal ERP states.">العميل يرى الحقيقة التي يحتاجها من غير مكالمات طويلة أو حالات تقنية غير مفهومة من النظام الخلفي.</p><ul class="feature-list"><li data-ar="تسجيل آمن أو رابط سحري" data-en="Secure sign-in or magic link">تسجيل آمن أو رابط سحري</li><li data-ar="كل الطلبات وحالاتها" data-en="Complete order history and status">كل الطلبات وحالاتها</li><li data-ar="تتبع الضيف برقم الطلب" data-en="Guest tracking by order reference">تتبع الضيف برقم الطلب</li><li data-ar="فواتير وتنزيلات" data-en="Invoices and downloads">فواتير وتنزيلات</li><li data-ar="عناوين وتفضيلات الإشعارات" data-en="Addresses and notification preferences">عناوين وتفضيلات الإشعارات</li><li data-ar="قائمة أمنيات وتغير سعر" data-en="Wishlist and price-change signals">قائمة أمنيات وتغير سعر</li><li data-ar="مرتجعات وضمان" data-en="Returns and warranty cases">مرتجعات وضمان</li><li data-ar="دعم مرتبط بالطلب" data-en="Support linked to the original order">دعم مرتبط بالطلب</li></ul><div class="cap-outcome" data-ar="النتيجة: ضغط أقل على خدمة العملاء وشفافية أعلى بعد الشراء." data-en="Outcome: fewer service contacts and greater post-purchase transparency.">النتيجة: ضغط أقل على خدمة العملاء وشفافية أعلى بعد الشراء.</div></article>
+          <article class="cap"><span class="cap-num">03 — GOVERN</span><h3 data-ar="الكتالوج والمحتوى ثنائي اللغة" data-en="Catalog and bilingual content governance">الكتالوج والمحتوى ثنائي اللغة</h3><p data-ar="لا يصل أي منتج للمتجر قبل التأكد من السعر والصورة والقسم والعلامة والنسختين العربية والإنجليزية." data-en="No product reaches the storefront before price, image, category, brand, and both language variants pass quality gates.">لا يصل أي منتج للمتجر قبل التأكد من السعر والصورة والقسم والعلامة والنسختين العربية والإنجليزية.</p><ul class="feature-list"><li data-ar="استيراد كامل وتغييرات فورية" data-en="Full import and incremental deltas">استيراد كامل وتغييرات فورية</li><li data-ar="عزل المنتج غير الصالح" data-en="Invalid-product quarantine">عزل المنتج غير الصالح</li><li data-ar="تقييم اكتمال المحتوى" data-en="Content-completeness scoring">تقييم اكتمال المحتوى</li><li data-ar="خط صور وتحسين تلقائي" data-en="Image pipeline and optimization">خط صور وتحسين تلقائي</li><li data-ar="إدارة الصفحة والحملات" data-en="Homepage and campaign CMS">إدارة الصفحة والحملات</li><li data-ar="مراجعة عربية وإنجليزية" data-en="Arabic and English editorial review">مراجعة عربية وإنجليزية</li><li data-ar="بيانات SEO منظمة" data-en="Structured SEO data">بيانات SEO منظمة</li><li data-ar="سجل نشر وتدقيق" data-en="Publishing and audit history">سجل نشر وتدقيق</li></ul><div class="cap-outcome" data-ar="النتيجة: لا سعر صفري ولا منتج ناقص ولا تجربة مختلطة اللغة." data-en="Outcome: no zero prices, incomplete products, or mixed-language customer journeys.">النتيجة: لا سعر صفري ولا منتج ناقص ولا تجربة مختلطة اللغة.</div></article>
+          <article class="cap"><span class="cap-num">04 — CONTROL</span><h3 data-ar="المخزون والطلب والتنفيذ" data-en="Inventory, orders, and fulfillment">المخزون والطلب والتنفيذ</h3><p data-ar="المخزون المعروض والطلب المنشأ يمران بقواعد تمنع البيع الزائد والتكرار حتى عند تعطل شبكة أو خدمة." data-en="Displayed availability and order creation pass through controls that prevent overselling and duplication—even during timeouts or service failures.">المخزون المعروض والطلب المنشأ يمران بقواعد تمنع البيع الزائد والتكرار حتى عند تعطل شبكة أو خدمة.</p><ul class="feature-list"><li data-ar="مخزون متعدد المواقع" data-en="Multi-location availability">مخزون متعدد المواقع</li><li data-ar="حجوزات ومخزون أمان" data-en="Reservations and safety stock">حجوزات ومخزون أمان</li><li data-ar="إعادة تحقق قبل الطلب" data-en="Pre-order price and stock revalidation">إعادة تحقق قبل الطلب</li><li data-ar="منع تكرار الطلب" data-en="Idempotent order creation">منع تكرار الطلب</li><li data-ar="قوائم إعادة المحاولة" data-en="Retry and dead-letter queues">قوائم إعادة المحاولة</li><li data-ar="مطابقة دورية مع Odoo" data-en="Scheduled Odoo reconciliation">مطابقة دورية مع Odoo</li><li data-ar="تتبع التجهيز والشحن" data-en="Picking and carrier tracking">تتبع التجهيز والشحن</li><li data-ar="تنبيهات اختلاف المخزون" data-en="Inventory mismatch alerts">تنبيهات اختلاف المخزون</li></ul><div class="cap-outcome" data-ar="النتيجة: مخزون أكثر صدقًا وطلبات مرة واحدة ومسار تنفيذ قابل للتعافي." data-en="Outcome: more truthful stock, exactly-once order intent, and recoverable fulfillment.">النتيجة: مخزون أكثر صدقًا وطلبات مرة واحدة ومسار تنفيذ قابل للتعافي.</div></article>
+          <article class="cap"><span class="cap-num">05 — COLLECT</span><h3 data-ar="المدفوعات والاسترداد والمصالحة" data-en="Payments, refunds, and reconciliation">المدفوعات والاسترداد والمصالحة</h3><p data-ar="نجاح الدفع لا يأتي من رجوع المتصفح؛ يأتي من إشعار مزود موثق ثم يطابق مع الطلب والفاتورة والتسوية." data-en="Payment success never comes from a browser redirect; it comes from a verified provider event reconciled to order, invoice, and settlement.">نجاح الدفع لا يأتي من رجوع المتصفح؛ يأتي من إشعار مزود موثق ثم يطابق مع الطلب والفاتورة والتسوية.</p><ul class="feature-list"><li>Paymob Intention API</li><li data-ar="دفع مستضاف وتحقق ثلاثي" data-en="Hosted checkout and 3D Secure">دفع مستضاف وتحقق ثلاثي</li><li data-ar="محافظ حسب قدرة التاجر" data-en="Merchant-enabled wallets">محافظ حسب قدرة التاجر</li><li data-ar="تقسيط حسب أهلية المزود" data-en="Provider-owned BNPL eligibility">تقسيط حسب أهلية المزود</li><li data-ar="تحقق ومخاطر للدفع عند الاستلام" data-en="COD verification and risk controls">تحقق ومخاطر للدفع عند الاستلام</li><li data-ar="استرداد كلي وجزئي" data-en="Full and partial refunds">استرداد كلي وجزئي</li><li data-ar="موافقتان للمبالغ الحساسة" data-en="Four-eyes approval for sensitive amounts">موافقتان للمبالغ الحساسة</li><li data-ar="مطابقة رباعية يومية" data-en="Daily four-way reconciliation">مطابقة رباعية يومية</li></ul><div class="cap-outcome" data-ar="النتيجة: دفع موثوق، استرداد متتبع، ونقد لا يُعتبر محصلًا قبل المطابقة." data-en="Outcome: trusted payment state, traceable refunds, and no cash recognized before reconciliation.">النتيجة: دفع موثوق، استرداد متتبع، ونقد لا يُعتبر محصلًا قبل المطابقة.</div></article>
+          <article class="cap"><span class="cap-num">06 — EXPAND</span><h3 data-ar="Amazon وNoon وتوحيد القنوات" data-en="Amazon, noon, and omnichannel operations">Amazon وNoon وتوحيد القنوات</h3><p data-ar="كل قناة تحتفظ بمرجعها وقواعدها، لكن الحجز والمخزون والطلب والمرتجع والتسوية ترجع إلى نموذج موحد." data-en="Each channel keeps its own references and rules while allocation, orders, returns, and settlements map to one controlled model.">كل قناة تحتفظ بمرجعها وقواعدها، لكن الحجز والمخزون والطلب والمرتجع والتسوية ترجع إلى نموذج موحد.</p><ul class="feature-list"><li>Amazon SP-API</li><li>Noon Partner API</li><li data-ar="ربط SKU وASIN ورمز الشريك" data-en="SKU, ASIN, and partner mapping">ربط SKU وASIN ورمز الشريك</li><li data-ar="توزيع كمية قابلة للبيع" data-en="Available-to-promise allocation">توزيع كمية قابلة للبيع</li><li data-ar="ضوابط سعر وهامش" data-en="Price and margin guardrails">ضوابط سعر وهامش</li><li data-ar="استيراد طلب دون تكرار" data-en="Idempotent channel-order import">استيراد طلب دون تكرار</li><li data-ar="تحديث شحن ومرتجع" data-en="Shipment and return updates">تحديث شحن ومرتجع</li><li data-ar="تسويات ورسوم مستقلة" data-en="Channel-specific payouts and fees">تسويات ورسوم مستقلة</li></ul><div class="cap-outcome" data-ar="النتيجة: توسع القنوات من غير بيع زائد أو طلبات ضائعة أو تسويات غامضة." data-en="Outcome: channel growth without overselling, lost orders, or ambiguous settlement.">النتيجة: توسع القنوات من غير بيع زائد أو طلبات ضائعة أو تسويات غامضة.</div></article>
+          <article class="cap"><span class="cap-num">07 — OPERATE</span><h3 data-ar="لوحة إدارة مبنية للعمل الحقيقي" data-en="An admin console built for real operations">لوحة إدارة مبنية للعمل الحقيقي</h3><p data-ar="كل مشكلة لها مالك وحالة ومسار استرداد آمن بدل البحث في قواعد البيانات أو تكرار العمليات يدويًا." data-en="Every exception has an owner, state, and safe recovery path instead of database access or blind manual retries.">كل مشكلة لها مالك وحالة ومسار استرداد آمن بدل البحث في قواعد البيانات أو تكرار العمليات يدويًا.</p><ul class="feature-list"><li data-ar="لوحة عمليات وتنبيهات" data-en="Operations dashboard and alerts">لوحة عمليات وتنبيهات</li><li data-ar="إدارة الطلبات والتنفيذ" data-en="Order and fulfillment management">إدارة الطلبات والتنفيذ</li><li data-ar="جودة الكتالوج" data-en="Catalog quality control">جودة الكتالوج</li><li data-ar="مطابقة المخزون" data-en="Inventory reconciliation">مطابقة المخزون</li><li data-ar="صحة التكاملات والقوائم" data-en="Integration health and queues">صحة التكاملات والقوائم</li><li data-ar="إدارة المحتوى والعملاء" data-en="Content and customer operations">إدارة المحتوى والعملاء</li><li data-ar="مدفوعات وقنوات منفصلة" data-en="Dedicated payments and channel operations">مدفوعات وقنوات منفصلة</li><li data-ar="صلاحيات وسجل تدقيق" data-en="RBAC and immutable audit trail">صلاحيات وسجل تدقيق</li></ul><div class="cap-outcome" data-ar="النتيجة: فريق أسرع، أخطاء أقل، وتحكم لا يعتمد على فرد واحد." data-en="Outcome: faster staff, fewer mistakes, and control that does not depend on one person.">النتيجة: فريق أسرع، أخطاء أقل، وتحكم لا يعتمد على فرد واحد.</div></article>
+          <article class="cap"><span class="cap-num">08 — PROTECT</span><h3 data-ar="الأمان والأداء والقياس" data-en="Security, performance, and measurement">الأمان والأداء والقياس</h3><p data-ar="الجودة ليست مرحلة أخيرة؛ تدخل في التصميم والاختبارات والنشر والمراقبة من أول يوم." data-en="Quality is not a final phase. It is built into design, testing, deployment, and monitoring from the first day.">الجودة ليست مرحلة أخيرة؛ تدخل في التصميم والاختبارات والنشر والمراقبة من أول يوم.</p><ul class="feature-list"><li data-ar="صلاحيات أقل ما يمكن" data-en="Least-privilege credentials">صلاحيات أقل ما يمكن</li><li data-ar="لا تخزين لبيانات البطاقة" data-en="No raw card data stored">لا تخزين لبيانات البطاقة</li><li data-ar="حماية وجدار تطبيق" data-en="WAF, rate limits, and bot controls">حماية وجدار تطبيق</li><li data-ar="تتبّع ومؤشرات وتنبيهات" data-en="Tracing, metrics, and alerts">تتبّع ومؤشرات وتنبيهات</li><li data-ar="اختبارات عربية وإنجليزية" data-en="Arabic and English E2E tests">اختبارات عربية وإنجليزية</li><li data-ar="اختبارات أداء وفوضى" data-en="Load and failure-chaos tests">اختبارات أداء وفوضى</li><li data-ar="نشر تدريجي ورجوع آمن" data-en="Progressive rollout and rollback">نشر تدريجي ورجوع آمن</li><li data-ar="تحليلات تجارية موحدة" data-en="Reconciled commerce analytics">تحليلات تجارية موحدة</li></ul><div class="cap-outcome" data-ar="النتيجة: منصة قابلة للثقة في أيام الضغط، وليس فقط في العرض." data-en="Outcome: a platform that remains trustworthy under peak load—not only during a demo.">النتيجة: منصة قابلة للثقة في أيام الضغط، وليس فقط في العرض.</div></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section experience" id="experience">
+      <div class="wrap">
+        <header class="section-head"><div><div class="eyebrow" data-ar="دليل مرئي" data-en="Visual proof">دليل مرئي</div><h2 data-ar="سبع وعشرون شاشة توضح ما سيشتريه العميل وما سيديره الفريق." data-en="Twenty-seven screens show what customers will buy through—and what staff will operate.">سبع وعشرون شاشة توضح ما سيشتريه العميل وما سيديره الفريق.</h2></div><p class="section-copy" data-ar="النموذج ليس تصميم واجهة فقط. هو خريطة منتج تشمل الحالات والسلطات والتنبيهات ومسارات التعافي." data-en="The prototype is more than interface styling. It is a product map covering states, authority, alerts, and recovery workflows.">النموذج ليس تصميم واجهة فقط. هو خريطة منتج تشمل الحالات والسلطات والتنبيهات ومسارات التعافي.</p></header>
+        <div class="preview-shell">
+          <div class="preview-toolbar"><span class="dots"><i></i><i></i><i></i></span><button class="active" data-preview="store" data-ar="المتجر الإنجليزي" data-en="English storefront">المتجر الإنجليزي</button><button data-preview="payments" data-ar="المدفوعات العربية" data-en="Arabic payments admin">المدفوعات العربية</button><a href="egypt-deal-commerce-mockups.html" data-ar="افتح كل الشاشات ←" data-en="Open all screens →">افتح كل الشاشات ←</a></div>
+          <div class="preview-window"><img id="previewImage" src="bilingual-english-storefront-preview.png" alt="Egypt Deal interactive storefront preview"></div>
+        </div>
+        <div class="screen-index"><div><strong>6</strong><span data-ar="شاشات المتجر" data-en="Storefront screens">شاشات المتجر</span></div><div><strong>6</strong><span data-ar="شاشات بوابة العميل" data-en="Client portal screens">شاشات بوابة العميل</span></div><div><strong>8</strong><span data-ar="شاشات الإدارة الأساسية" data-en="Core admin screens">شاشات الإدارة الأساسية</span></div><div><strong>3</strong><span data-ar="شاشات الأسواق" data-en="Marketplace screens">شاشات الأسواق</span></div><div><strong>4</strong><span data-ar="شاشات المدفوعات" data-en="Payment-operation screens">شاشات المدفوعات</span></div></div>
+      </div>
+    </section>
+
+    <section class="section flow" id="operations">
+      <div class="wrap">
+        <header class="section-head compact"><div><div class="eyebrow" data-ar="كيف يعمل الطلب" data-en="How an order works">كيف يعمل الطلب</div><h2 data-ar="كل خطوة لها حقيقة معتمدة، وليس مجرد حالة على الشاشة." data-en="Every step has authoritative evidence—not merely a label on screen.">كل خطوة لها حقيقة معتمدة، وليس مجرد حالة على الشاشة.</h2><p class="section-copy" data-ar="المسار مصمم بحيث يتحمل تكرار الضغط، انقطاع الشبكة، تأخر Odoo، وتأخر إشعار الدفع من غير إنشاء طلب أو تحصيل مرتين." data-en="The flow tolerates double clicks, network interruption, Odoo delay, and late payment callbacks without creating or collecting twice.">المسار مصمم بحيث يتحمل تكرار الضغط، انقطاع الشبكة، تأخر Odoo، وتأخر إشعار الدفع من غير إنشاء طلب أو تحصيل مرتين.</p></div></header>
+        <div class="order-flow">
+          <article class="flow-step"><i>01</i><h4 data-ar="اكتشاف" data-en="Discover">اكتشاف</h4><p data-ar="بحث وفلاتر وتوفر من الفهرس" data-en="Search, facets, and projected availability">بحث وفلاتر وتوفر من الفهرس</p></article>
+          <article class="flow-step"><i>02</i><h4 data-ar="تسعير" data-en="Quote">تسعير</h4><p data-ar="إعادة حساب على الخادم" data-en="Server-side price and policy calculation">إعادة حساب على الخادم</p></article>
+          <article class="flow-step"><i>03</i><h4 data-ar="حجز" data-en="Reserve">حجز</h4><p data-ar="حجز مركزي بمدة صلاحية" data-en="Central stock hold with expiry">حجز مركزي بمدة صلاحية</p></article>
+          <article class="flow-step"><i>04</i><h4 data-ar="دفع" data-en="Pay">دفع</h4><p data-ar="إشعار مزود موثق" data-en="Verified provider callback">إشعار مزود موثق</p></article>
+          <article class="flow-step"><i>05</i><h4 data-ar="تصدير" data-en="Export">تصدير</h4><p data-ar="طلب واحد فقط إلى Odoo" data-en="Exactly one order intent to Odoo">طلب واحد فقط إلى Odoo</p></article>
+          <article class="flow-step"><i>06</i><h4 data-ar="تنفيذ ومطابقة" data-en="Fulfill and reconcile">تنفيذ ومطابقة</h4><p data-ar="شحن وفاتورة وتسوية" data-en="Shipment, invoice, and settlement">شحن وفاتورة وتسوية</p></article>
+        </div>
+        <div class="control-grid"><article class="control"><b data-ar="إذا تعطل Odoo بعد الدفع" data-en="If Odoo is unavailable after payment">إذا تعطل Odoo بعد الدفع</b><span data-ar="تبقى العملية مؤكدة في قائمة آمنة وتُصدر مرة واحدة بعد التعافي." data-en="The confirmed payment stays in a durable queue and exports exactly once after recovery.">تبقى العملية مؤكدة في قائمة آمنة وتُصدر مرة واحدة بعد التعافي.</span></article><article class="control"><b data-ar="إذا تكرر إشعار الدفع" data-en="If the payment callback repeats">إذا تكرر إشعار الدفع</b><span data-ar="يتم التعرف عليه كمكرر من مفتاح المزود، ولا يُنشئ دفعًا أو طلبًا إضافيًا." data-en="The provider key identifies the duplicate; no additional payment or order is created.">يتم التعرف عليه كمكرر من مفتاح المزود، ولا يُنشئ دفعًا أو طلبًا إضافيًا.</span></article><article class="control"><b data-ar="إذا تغير السعر أو المخزون" data-en="If price or stock changes">إذا تغير السعر أو المخزون</b><span data-ar="يعاد التسعير والتحقق قبل نية الدفع، ويُطلب من العميل تأكيد التغيير." data-en="The server requotes before payment intent and asks the customer to accept any change.">يعاد التسعير والتحقق قبل نية الدفع، ويُطلب من العميل تأكيد التغيير.</span></article></div>
+      </div>
+    </section>
+
+    <section class="section comparison" id="comparison">
+      <div class="wrap">
+        <header class="section-head"><div><div class="eyebrow" data-ar="المقارنة التنافسية" data-en="Competitive comparison">المقارنة التنافسية</div><h2 data-ar="لا توجد منصة أفضل في كل شيء. توجد منصة أنسب لقرار معين." data-en="There is no universal winner. There is a best fit for a specific business decision.">لا توجد منصة أفضل في كل شيء. توجد منصة أنسب لقرار معين.</h2></div><p class="section-copy" data-ar="نقارن حسب واقع Egypt Deal: الحفاظ على Odoo، المدفوعات المصرية، اللغة العربية، Amazon وNoon، وإدارة الاستثناءات والتسويات." data-en="The comparison is weighted for Egypt Deal: preserve Odoo, support Egyptian payments, treat Arabic as first class, operate Amazon and noon, and reconcile exceptions.">نقارن حسب واقع Egypt Deal: الحفاظ على Odoo، المدفوعات المصرية، اللغة العربية، Amazon وNoon، وإدارة الاستثناءات والتسويات.</p></header>
+        <div class="comparison-note" data-ar="هذه مصفوفة ملاءمة للمشروع وليست ترتيبًا عامًا. كلمة مخصص تعني أن الميزة تحتاج تكاملًا أو إضافة أو تصميم تشغيل إضافيًا." data-en="This is a project-fit matrix, not a universal platform ranking. Custom means extra integration, extension, or operating design is required for Egypt Deal's target model.">هذه مصفوفة ملاءمة للمشروع وليست ترتيبًا عامًا. كلمة مخصص تعني أن الميزة تحتاج تكاملًا أو إضافة أو تصميم تشغيل إضافيًا.</div>
+        <div class="matrix-wrap">
+          <table class="matrix">
+            <thead><tr><th data-ar="المعيار" data-en="Decision criterion">المعيار</th><th class="recommended" data-ar="الحل المقترح" data-en="Proposed solution">الحل المقترح</th><th>Odoo Website</th><th>Shopify</th><th>WooCommerce</th><th>BigCommerce</th><th>Adobe Commerce</th></tr></thead>
+            <tbody>
+              <tr><td data-ar="الحفاظ على حقيقة Odoo" data-en="Preserve Odoo truth">الحفاظ على حقيقة Odoo</td><td class="recommended"><span class="grade" data-ar="مصمم لهذا" data-en="Designed for it">مصمم لهذا</span><b data-ar="Odoo يظل المصدر" data-en="Odoo remains authoritative">Odoo يظل المصدر</b></td><td><span class="grade" data-ar="أصلي" data-en="Native">أصلي</span><small data-ar="أقرب مسار للنظام" data-en="Closest native path">أقرب مسار للنظام</small></td><td><span class="grade custom" data-ar="تكامل مخصص" data-en="Custom integration">تكامل مخصص</span><small data-ar="يجب حسم سلطة كل نظام" data-en="Authority must be resolved">يجب حسم سلطة كل نظام</small></td><td><span class="grade custom" data-ar="تكامل مخصص" data-en="Custom integration">تكامل مخصص</span><small data-ar="قاعدة تجارة ثانية" data-en="Second commerce database">قاعدة تجارة ثانية</small></td><td><span class="grade custom" data-ar="تكامل مخصص" data-en="Custom integration">تكامل مخصص</span><small data-ar="خلفية SaaS إضافية" data-en="Additional SaaS backend">خلفية SaaS إضافية</small></td><td><span class="grade custom" data-ar="برنامج مؤسسي" data-en="Enterprise integration">برنامج مؤسسي</span><small data-ar="تكامل واسع" data-en="Broad integration program">تكامل واسع</small></td></tr>
+              <tr><td data-ar="حرية تجربة العميل" data-en="Customer-experience freedom">حرية تجربة العميل</td><td class="recommended"><span class="grade" data-ar="كاملة" data-en="Full">كاملة</span><b data-ar="مبنية للعلامة" data-en="Built for the brand">مبنية للعلامة</b></td><td><span class="grade custom" data-ar="جيدة" data-en="Good">جيدة</span><small data-ar="داخل نموذج القوالب والمحرر" data-en="Within builder and theme model">داخل نموذج القوالب والمحرر</small></td><td><span class="grade" data-ar="قوية" data-en="Strong">قوية</span><small>Hydrogen / Storefront API</small></td><td><span class="grade" data-ar="قوية" data-en="Strong">قوية</span><small data-ar="قوالب أو Headless" data-en="Theme or headless ownership">قوالب أو Headless</small></td><td><span class="grade" data-ar="قوية" data-en="Strong">قوية</span><small data-ar="API ومكونات جاهزة" data-en="API-first and composable">API ومكونات جاهزة</small></td><td><span class="grade" data-ar="مؤسسية" data-en="Enterprise">مؤسسية</span><small data-ar="خبرة واسعة وتكلفة أعلى" data-en="Broad experience stack">خبرة واسعة وتكلفة أعلى</small></td></tr>
+              <tr><td data-ar="العربية في المتجر والتشغيل" data-en="Arabic across store and operations">العربية في المتجر والتشغيل</td><td class="recommended"><span class="grade" data-ar="شرط قبول" data-en="Acceptance gate">شرط قبول</span><b>RTL + LTR</b></td><td><span class="grade" data-ar="متاحة" data-en="Available">متاحة</span><small data-ar="ترجمة المنتجات والصفحات" data-en="Product and page translation">ترجمة المنتجات والصفحات</small></td><td><span class="grade" data-ar="متاحة" data-en="Available">متاحة</span><small data-ar="التشغيل المصري مخصص" data-en="Egypt operations remain custom">التشغيل المصري مخصص</small></td><td><span class="grade custom" data-ar="عبر المنظومة" data-en="Ecosystem-led">عبر المنظومة</span><small data-ar="إضافات وتنفيذ" data-en="Extensions and implementation">إضافات وتنفيذ</small></td><td><span class="grade" data-ar="دولي" data-en="International">دولي</span><small data-ar="التشغيل المحلي مخصص" data-en="Local workflows custom">التشغيل المحلي مخصص</small></td><td><span class="grade" data-ar="قوية" data-en="Strong">قوية</span><small data-ar="موجهة للمؤسسات" data-en="Enterprise localization">موجهة للمؤسسات</small></td></tr>
+              <tr><td data-ar="Paymob والتقسيط والدفع عند الاستلام" data-en="Paymob, BNPL, and COD lifecycle">Paymob والتقسيط والدفع عند الاستلام</td><td class="recommended"><span class="grade" data-ar="تشغيل كامل" data-en="Full operations">تشغيل كامل</span><b data-ar="من النية حتى التسوية" data-en="Intent through settlement">من النية حتى التسوية</b></td><td><span class="grade custom" data-ar="قابل للتوسعة" data-en="Extensible">قابل للتوسعة</span><small data-ar="الدورة المستهدفة مخصصة" data-en="Target lifecycle is custom">الدورة المستهدفة مخصصة</small></td><td><span class="grade custom" data-ar="مزود خارجي" data-en="Third-party provider">مزود خارجي</span><small data-ar="مصر غير مدرجة في Shopify Payments وقت البحث" data-en="Egypt was not listed for Shopify Payments at review time">مصر غير مدرجة في Shopify Payments وقت البحث</small></td><td><span class="grade custom" data-ar="خيارات كثيرة" data-en="Broad choice">خيارات كثيرة</span><small data-ar="التوحيد والمطابقة حسب التنفيذ" data-en="Coherence depends on extensions">التوحيد والمطابقة حسب التنفيذ</small></td><td><span class="grade custom" data-ar="تكامل بوابة" data-en="Gateway integration">تكامل بوابة</span><small data-ar="الدورة المصرية مخصصة" data-en="Egypt lifecycle custom">الدورة المصرية مخصصة</small></td><td><span class="grade custom" data-ar="تكامل مؤسسي" data-en="Enterprise integration">تكامل مؤسسي</span><small data-ar="قوي لكن أثقل" data-en="Powerful but heavier">قوي لكن أثقل</small></td></tr>
+              <tr><td data-ar="مخزون وطلب موحدان" data-en="Unified stock and order truth">مخزون وطلب موحدان</td><td class="recommended"><span class="grade" data-ar="سجل مركزي" data-en="Central ledger">سجل مركزي</span><b data-ar="حجز ومنع تكرار" data-en="Reservation and idempotency">حجز ومنع تكرار</b></td><td><span class="grade" data-ar="أصلي" data-en="Native">أصلي</span><small data-ar="في مسار Odoo" data-en="Inside Odoo path">في مسار Odoo</small></td><td><span class="grade custom" data-ar="قرار معماري" data-en="Architecture decision">قرار معماري</span><small data-ar="Odoo أم Shopify" data-en="Odoo versus Shopify authority">Odoo أم Shopify</small></td><td><span class="grade custom" data-ar="قرار معماري" data-en="Architecture decision">قرار معماري</span><small data-ar="Odoo أم Woo" data-en="Odoo versus Woo authority">Odoo أم Woo</small></td><td><span class="grade custom" data-ar="قرار معماري" data-en="Architecture decision">قرار معماري</span><small data-ar="خلفيتان تجاريتان" data-en="Two commerce backends">خلفيتان تجاريتان</small></td><td><span class="grade custom" data-ar="قرار مؤسسي" data-en="Enterprise decision">قرار مؤسسي</span><small data-ar="توحيد واسع" data-en="Broad orchestration">توحيد واسع</small></td></tr>
+              <tr><td data-ar="Amazon وNoon" data-en="Amazon and noon operations">Amazon وNoon</td><td class="recommended"><span class="grade" data-ar="موصلات مخصصة" data-en="Dedicated adapters">موصلات مخصصة</span><b data-ar="قوائم، مخزون، طلب، مرتجع، تسوية" data-en="Listings, stock, orders, returns, settlement">قوائم، مخزون، طلب، مرتجع، تسوية</b></td><td><span class="grade custom" data-ar="Amazon متاح" data-en="Amazon available">Amazon متاح</span><small data-ar="Noon والضوابط المتقدمة مخصصة" data-en="Noon and advanced controls custom">Noon والضوابط المتقدمة مخصصة</small></td><td><span class="grade custom" data-ar="منظومة تطبيقات" data-en="App ecosystem">منظومة تطبيقات</span><small data-ar="Noon والتسوية حسب التنفيذ" data-en="Noon and settlement custom">Noon والتسوية حسب التنفيذ</small></td><td><span class="grade custom" data-ar="إضافات" data-en="Extensions">إضافات</span><small data-ar="الجودة والتوحيد متغيران" data-en="Quality and coherence vary">الجودة والتوحيد متغيران</small></td><td><span class="grade" data-ar="قنوات قوية" data-en="Strong channels">قنوات قوية</span><small data-ar="Noon المحلي يظل مخصصًا" data-en="Local noon workflow remains custom">Noon المحلي يظل مخصصًا</small></td><td><span class="grade custom" data-ar="برنامج قنوات" data-en="Channel program">برنامج قنوات</span><small data-ar="ملحقات وتكامل مؤسسي" data-en="Extensions and enterprise integration">ملحقات وتكامل مؤسسي</small></td></tr>
+              <tr><td data-ar="لوحة تشغيل ومصالحة" data-en="Operations and reconciliation">لوحة تشغيل ومصالحة</td><td class="recommended"><span class="grade" data-ar="ضمن النطاق" data-en="Included">ضمن النطاق</span><b data-ar="إدارة واسترداد وتدقيق" data-en="Control, recovery, and audit">إدارة واسترداد وتدقيق</b></td><td><span class="grade" data-ar="ERP قوي" data-en="Strong ERP">ERP قوي</span><small data-ar="تحكم Headless والقنوات مخصص" data-en="Headless/channel controls custom">تحكم Headless والقنوات مخصص</small></td><td><span class="grade" data-ar="إدارة تجارة قوية" data-en="Strong commerce admin">إدارة تجارة قوية</span><small data-ar="مطابقة Odoo محلية مخصصة" data-en="Odoo/local reconciliation custom">مطابقة Odoo محلية مخصصة</small></td><td><span class="grade custom" data-ar="مزيج إضافات" data-en="Plugin mix">مزيج إضافات</span><small data-ar="لوحة موحدة تحتاج بناء" data-en="Unified control plane needs work">لوحة موحدة تحتاج بناء</small></td><td><span class="grade" data-ar="لوحة SaaS قوية" data-en="Strong SaaS control">لوحة SaaS قوية</span><small data-ar="ضوابط Odoo ومصر مخصصة" data-en="Odoo/Egypt controls custom">ضوابط Odoo ومصر مخصصة</small></td><td><span class="grade" data-ar="مؤسسية" data-en="Enterprise">مؤسسية</span><small data-ar="تحكم وتحليلات واسعة" data-en="Broad control and analytics">تحكم وتحليلات واسعة</small></td></tr>
+              <tr><td data-ar="إطلاق متجر بسيط" data-en="Simple-store launch speed">إطلاق متجر بسيط</td><td class="recommended"><span class="grade custom" data-ar="متوسط" data-en="Moderate">متوسط</span><small data-ar="بعد إثبات التكامل" data-en="After integration proof">بعد إثبات التكامل</small></td><td><span class="grade" data-ar="الأسرع" data-en="Fastest">الأسرع</span><small data-ar="إذا كانت التجربة الأصلية كافية" data-en="When native experience is enough">إذا كانت التجربة الأصلية كافية</small></td><td><span class="grade" data-ar="سريع" data-en="Fast">سريع</span><small data-ar="للتجارة القياسية" data-en="For standard commerce">للتجارة القياسية</small></td><td><span class="grade" data-ar="سريع إلى متوسط" data-en="Fast to moderate">سريع إلى متوسط</span><small data-ar="حسب الاستضافة والإضافات" data-en="Depends on hosting and plugins">حسب الاستضافة والإضافات</small></td><td><span class="grade" data-ar="سريع" data-en="Fast">سريع</span><small data-ar="مسار SaaS" data-en="SaaS launch path">مسار SaaS</small></td><td><span class="grade heavy" data-ar="برنامج أطول" data-en="Longer program">برنامج أطول</span><small data-ar="مؤسسي" data-en="Enterprise delivery">مؤسسي</small></td></tr>
+              <tr><td data-ar="عبء التشغيل والملكية" data-en="Operating burden and ownership">عبء التشغيل والملكية</td><td class="recommended"><span class="grade custom" data-ar="مُدار مخصص" data-en="Managed custom">مُدار مخصص</span><small data-ar="فريق وانضباط مطلوبان" data-en="Requires team and discipline">فريق وانضباط مطلوبان</small></td><td><span class="grade" data-ar="منخفض" data-en="Low">منخفض</span><small data-ar="خصوصًا على Odoo Online" data-en="Especially on Odoo Online">خصوصًا على Odoo Online</small></td><td><span class="grade" data-ar="منخفض إلى متوسط" data-en="Low to medium">منخفض إلى متوسط</span><small data-ar="الواجهة المستقلة لها ملكية" data-en="Headless still needs ownership">الواجهة المستقلة لها ملكية</small></td><td><span class="grade heavy" data-ar="مرتفع" data-en="High">مرتفع</span><small data-ar="استضافة وأمان وإضافات" data-en="Hosting, security, and plugins">استضافة وأمان وإضافات</small></td><td><span class="grade" data-ar="منخفض إلى متوسط" data-en="Low to medium">منخفض إلى متوسط</span><small data-ar="خلفية SaaS" data-en="SaaS backend">خلفية SaaS</small></td><td><span class="grade heavy" data-ar="مرتفع جدًا" data-en="Very high">مرتفع جدًا</span><small data-ar="تشغيل مؤسسي" data-en="Enterprise program">تشغيل مؤسسي</small></td></tr>
+              <tr><td data-ar="ملاءمة Egypt Deal" data-en="Egypt Deal fit">ملاءمة Egypt Deal</td><td class="recommended"><span class="grade" data-ar="الأعلى" data-en="Highest">الأعلى</span><b data-ar="مصمم حول القيود الفعلية" data-en="Designed around actual constraints">مصمم حول القيود الفعلية</b></td><td><span class="grade" data-ar="قوي للبساطة" data-en="Strong for simplicity">قوي للبساطة</span><small data-ar="أقل تميزًا في التجربة" data-en="Less experience separation">أقل تميزًا في التجربة</small></td><td><span class="grade custom" data-ar="قوي للتجارة العامة" data-en="Strong general commerce">قوي للتجارة العامة</span><small data-ar="يضيف مصدر تجارة آخر" data-en="Adds another commerce core">يضيف مصدر تجارة آخر</small></td><td><span class="grade custom" data-ar="مرن" data-en="Flexible">مرن</span><small data-ar="عبء توحيد أكبر" data-en="Higher integration burden">عبء توحيد أكبر</small></td><td><span class="grade custom" data-ar="قوي Headless" data-en="Strong headless">قوي Headless</span><small data-ar="خلفية أخرى غير لازمة" data-en="Another backend to reconcile">خلفية أخرى غير لازمة</small></td><td><span class="grade heavy" data-ar="أكبر من الاحتياج" data-en="Likely oversized">أكبر من الاحتياج</span><small data-ar="قوة مؤسسية بتكلفة وتعقيد" data-en="Enterprise power and complexity">قوة مؤسسية بتكلفة وتعقيد</small></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <h3 class="honest-title" data-ar="أين يتفوق كل بديل بصدق؟" data-en="Where does each alternative genuinely win?">أين يتفوق كل بديل بصدق؟</h3>
+        <div class="platform-grid">
+          <article class="platform"><b>Odoo Website</b><h4 data-ar="أقل تعقيد وأسرع بداية" data-en="Lowest complexity and fastest native start">أقل تعقيد وأسرع بداية</h4><p data-ar="الاختيار الأفضل عندما تكون تجربة Odoo القياسية وتكاملاته الحالية كافية." data-en="Best when the standard Odoo experience and existing connectors are sufficient.">الاختيار الأفضل عندما تكون تجربة Odoo القياسية وتكاملاته الحالية كافية.</p></article>
+          <article class="platform"><b>Shopify</b><h4 data-ar="منظومة تجارة مُدارة وناضجة" data-en="Mature managed-commerce ecosystem">منظومة تجارة مُدارة وناضجة</h4><p data-ar="قوي في التطبيقات والشركاء والتجارة العالمية وله مسار Headless موثوق." data-en="Strong apps, partners, global commerce, and a credible headless path.">قوي في التطبيقات والشركاء والتجارة العالمية وله مسار Headless موثوق.</p></article>
+          <article class="platform"><b>WooCommerce</b><h4 data-ar="ملكية مفتوحة وقوة المحتوى" data-en="Open ownership and content strength">ملكية مفتوحة وقوة المحتوى</h4><p data-ar="مناسب لفرق WordPress القادرة على إدارة الاستضافة والإضافات والجودة." data-en="A strong fit for WordPress teams prepared to own hosting, extensions, and quality.">مناسب لفرق WordPress القادرة على إدارة الاستضافة والإضافات والجودة.</p></article>
+          <article class="platform"><b>BigCommerce</b><h4 data-ar="تجارة SaaS مرنة وHeadless" data-en="Composable headless SaaS">تجارة SaaS مرنة وHeadless</h4><p data-ar="واجهة API قوية ومتاجر متعددة من لوحة واحدة مع خلفية تجارة جاهزة." data-en="Strong APIs and multi-storefront control with a ready commerce backend.">واجهة API قوية ومتاجر متعددة من لوحة واحدة مع خلفية تجارة جاهزة.</p></article>
+          <article class="platform"><b>Adobe Commerce</b><h4 data-ar="حجم وحوكمة مؤسسية" data-en="Extreme enterprise scale and governance">حجم وحوكمة مؤسسية</h4><p data-ar="يتفوق عند ملايين المنتجات ومئات العلامات والأسواق ومتطلبات B2B وB2C المعقدة." data-en="Excels at massive catalogs, brands, markets, and complex B2B/B2C governance.">يتفوق عند ملايين المنتجات ومئات العلامات والأسواق ومتطلبات B2B وB2C المعقدة.</p></article>
+          <article class="platform"><b>Egypt Deal Headless</b><h4 data-ar="الأنسب لواقع المشروع" data-en="Best fit for this operating model">الأنسب لواقع المشروع</h4><p data-ar="يحافظ على Odoo ويضيف تجربة مميزة وتشغيلًا مصريًا وقنوات وتسوية من غير حقيقة تجارية ثانية." data-en="Preserves Odoo while adding differentiated UX, Egyptian operations, channels, and reconciliation without a second commerce truth.">يحافظ على Odoo ويضيف تجربة مميزة وتشغيلًا مصريًا وقنوات وتسوية من غير حقيقة تجارية ثانية.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section advantages" id="advantages">
+      <div class="wrap">
+        <header class="section-head"><div><div class="eyebrow" data-ar="لماذا هذا هو الاختيار المقترح" data-en="Why this is the recommendation">لماذا هذا هو الاختيار المقترح</div><h2 data-ar="عشر مزايا مرتبطة مباشرة بالبيع والتشغيل والملكية." data-en="Ten advantages tied directly to sales, operations, and ownership.">عشر مزايا مرتبطة مباشرة بالبيع والتشغيل والملكية.</h2></div><p class="section-copy" data-ar="لا نعتمد على شعارات عامة مثل أكثر مرونة. كل ميزة هنا تحل مخاطرة أو فرصة واضحة في Egypt Deal." data-en="No generic claims such as more flexible. Each advantage addresses a specific Egypt Deal risk or opportunity.">لا نعتمد على شعارات عامة مثل أكثر مرونة. كل ميزة هنا تحل مخاطرة أو فرصة واضحة في Egypt Deal.</p></header>
+        <div class="adv-grid">
+          <article class="adv"><div class="adv-num">01</div><div><h3 data-ar="نحافظ على استثمار Odoo" data-en="Preserve the Odoo investment">نحافظ على استثمار Odoo</h3><p data-ar="لا هجرة شاملة ولا إعادة إدخال للمنتجات والمخزون والفواتير." data-en="No wholesale replatform or duplicate entry for products, stock, and invoices.">لا هجرة شاملة ولا إعادة إدخال للمنتجات والمخزون والفواتير.</p></div></article>
+          <article class="adv"><div class="adv-num">02</div><div><h3 data-ar="حقيقة واحدة لكل القنوات" data-en="One truth across every channel">حقيقة واحدة لكل القنوات</h3><p data-ar="المتجر وAmazon وNoon يستخدمون تخصيص مخزون وهوية طلب واحدة." data-en="Web, Amazon, and noon share one allocation and order-identity model.">المتجر وAmazon وNoon يستخدمون تخصيص مخزون وهوية طلب واحدة.</p></div></article>
+          <article class="adv"><div class="adv-num">03</div><div><h3 data-ar="العربية ليست ترجمة لاحقة" data-en="Arabic is not an afterthought">العربية ليست ترجمة لاحقة</h3><p data-ar="البحث والاتجاه والمحتوى والأخطاء والفواتير والإدارة كلها ثنائية اللغة." data-en="Search, direction, content, errors, invoices, portal, and admin are bilingual.">البحث والاتجاه والمحتوى والأخطاء والفواتير والإدارة كلها ثنائية اللغة.</p></div></article>
+          <article class="adv"><div class="adv-num">04</div><div><h3 data-ar="دفع مصري مصمم كتشغيل" data-en="Egyptian payments designed as operations">دفع مصري مصمم كتشغيل</h3><p data-ar="أهلية وتقسيط ودفع عند الاستلام واسترداد وتسوية بأدلة واضحة." data-en="Eligibility, BNPL, COD, refunds, and settlement with explicit evidence.">أهلية وتقسيط ودفع عند الاستلام واسترداد وتسوية بأدلة واضحة.</p></div></article>
+          <article class="adv"><div class="adv-num">05</div><div><h3 data-ar="تحديث الواجهة دون لمس ERP" data-en="Ship experience without touching ERP">تحديث الواجهة دون لمس ERP</h3><p data-ar="تجارب وحملات وتحسينات أداء تنشر باستقلال عن تحديثات Odoo." data-en="Experiments, campaigns, and performance work release independently from Odoo.">تجارب وحملات وتحسينات أداء تنشر باستقلال عن تحديثات Odoo.</p></div></article>
+          <article class="adv"><div class="adv-num">06</div><div><h3 data-ar="منع التكرار والبيع الزائد" data-en="Duplicate and oversell protection">منع التكرار والبيع الزائد</h3><p data-ar="مفاتيح تكرار وحجز مركزي وإعادة تحقق ومطابقة تحت الأعطال." data-en="Idempotency, central reservation, revalidation, and reconciliation under failure.">مفاتيح تكرار وحجز مركزي وإعادة تحقق ومطابقة تحت الأعطال.</p></div></article>
+          <article class="adv"><div class="adv-num">07</div><div><h3 data-ar="ملكية استراتيجية أقل تقييدًا" data-en="Lower strategic lock-in">ملكية استراتيجية أقل تقييدًا</h3><p data-ar="الواجهة والبحث والدفع والقنوات خلف عقود يمكن استبدالها وتطويرها." data-en="Experience, search, payments, and channels sit behind replaceable contracts.">الواجهة والبحث والدفع والقنوات خلف عقود يمكن استبدالها وتطويرها.</p></div></article>
+          <article class="adv"><div class="adv-num">08</div><div><h3 data-ar="خدمة عميل ذاتية" data-en="Customer self-service">خدمة عميل ذاتية</h3><p data-ar="تتبع وفواتير وعناوين ومرتجعات وضمان مرتبطة بنفس حقيقة الطلب." data-en="Tracking, invoices, addresses, returns, and warranty share the same order truth.">تتبع وفواتير وعناوين ومرتجعات وضمان مرتبطة بنفس حقيقة الطلب.</p></div></article>
+          <article class="adv"><div class="adv-num">09</div><div><h3 data-ar="تحويل أفضل بالجودة" data-en="Conversion through clarity">تحويل أفضل بالجودة</h3><p data-ar="سرعة واكتشاف وتوفر موثوق ومواصفات وسعر ودفع واضحون." data-en="Speed, discovery, truthful availability, rich specs, and clear price and payment.">سرعة واكتشاف وتوفر موثوق ومواصفات وسعر ودفع واضحون.</p></div></article>
+          <article class="adv"><div class="adv-num">10</div><div><h3 data-ar="قياس موحد للقرار" data-en="Reconciled measurement for decisions">قياس موحد للقرار</h3><p data-ar="نفس تعريف الإيراد والطلب والدفع والمخزون عبر التحليلات والتشغيل." data-en="Revenue, order, payment, and stock definitions remain consistent across analytics and operations.">نفس تعريف الإيراد والطلب والدفع والمخزون عبر التحليلات والتشغيل.</p></div></article>
+        </div>
+        <div class="targets">
+          <article class="target"><strong>99.9%</strong><span data-ar="توافر شهري مستهدف" data-en="Monthly availability target">توافر شهري مستهدف</span><small data-ar="هدف إطلاق" data-en="Launch SLO">هدف إطلاق</small></article>
+          <article class="target"><strong>&lt;2m</strong><span data-ar="حداثة المخزون والحالة" data-en="Normal stock/status freshness">حداثة المخزون والحالة</span><small data-ar="في التشغيل الطبيعي" data-en="Normal operations">في التشغيل الطبيعي</small></article>
+          <article class="target"><strong>0×</strong><span data-ar="طلبات مكررة" data-en="Duplicate orders">طلبات مكررة</span><small data-ar="في اختبارات الأعطال" data-en="Chaos-test gate">في اختبارات الأعطال</small></article>
+          <article class="target"><strong>&lt;150ms</strong><span data-ar="بحث عند المئين 95" data-en="Search p95 target">بحث عند المئين 95</span><small data-ar="بدون زمن الشبكة" data-en="Excluding network">بدون زمن الشبكة</small></article>
+          <article class="target"><strong>27</strong><span data-ar="شاشة محددة" data-en="Defined product screens">شاشة محددة</span><small data-ar="عربي وإنجليزي" data-en="Arabic and English">عربي وإنجليزي</small></article>
+          <article class="target"><strong>4-way</strong><span data-ar="مطابقة المدفوعات" data-en="Payment reconciliation">مطابقة المدفوعات</span><small data-ar="مزود + محلي + Odoo + بنك" data-en="Provider + local + Odoo + bank">مزود + محلي + Odoo + بنك</small></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section delivery" id="delivery">
+      <div class="wrap">
+        <header class="section-head"><div><div class="eyebrow" data-ar="خطة التنفيذ" data-en="Delivery plan">خطة التنفيذ</div><h2 data-ar="اثنا عشر أسبوعًا على مراحل، تبدأ بإثبات لا يمكن تجاوزه." data-en="A twelve-week phased program, beginning with a gate that cannot be skipped.">اثنا عشر أسبوعًا على مراحل، تبدأ بإثبات لا يمكن تجاوزه.</h2></div><p class="section-copy" data-ar="التقدير لفريق متعدد التخصصات. المدة التجارية النهائية تُثبت بعد فحص نسخة Odoo والصلاحيات والحقول الحقيقية وحسابات المزودين." data-en="The estimate assumes a focused multidisciplinary team. The final commercial schedule is confirmed after Odoo version, API access, real fields, and provider accounts are verified.">التقدير لفريق متعدد التخصصات. المدة التجارية النهائية تُثبت بعد فحص نسخة Odoo والصلاحيات والحقول الحقيقية وحسابات المزودين.</p></header>
+        <div class="roadmap">
+          <article class="phase gate"><span class="phase-no">PHASE 0</span><h3 data-ar="إثبات التكامل" data-en="Integration proof">إثبات التكامل</h3><p data-ar="قراءة منتج وسعر ومخزون وطلب وتجهيز، ثم إنشاء طلب مسودة آمن وتكراره دون نسخة ثانية." data-en="Read real product, price, stock, order, and picking fields; then create and safely retry one draft order.">قراءة منتج وسعر ومخزون وطلب وتجهيز، ثم إنشاء طلب مسودة آمن وتكراره دون نسخة ثانية.</p><time>2–4 DAYS • GO / NO-GO</time></article>
+          <article class="phase"><span class="phase-no">PHASE 1</span><h3 data-ar="الأساس" data-en="Foundation">الأساس</h3><p data-ar="الكود والبيئات والنشر والمراقبة والتصميم واللغات والعقود وقاعدة البيانات." data-en="Repository, environments, CI/CD, observability, design system, locales, schemas, and API contracts.">الكود والبيئات والنشر والمراقبة والتصميم واللغات والعقود وقاعدة البيانات.</p><time>WEEK 1</time></article>
+          <article class="phase"><span class="phase-no">PHASE 2</span><h3 data-ar="الكتالوج والاكتشاف" data-en="Catalog and discovery">الكتالوج والاكتشاف</h3><p data-ar="المزامنة والجودة والصور والبحث والأقسام والرئيسية وSEO." data-en="Sync, quality gates, images, search, taxonomy, homepage, PLP, and SEO.">المزامنة والجودة والصور والبحث والأقسام والرئيسية وSEO.</p><time>WEEKS 2–3</time></article>
+          <article class="phase"><span class="phase-no">PHASE 3</span><h3 data-ar="المنتج والسلة" data-en="PDP and cart">المنتج والسلة</h3><p data-ar="مواصفات وتوفر ومقارنة وسياسات وتقسيط وسلة محفوظة وإعادة تحقق." data-en="Rich PDP, availability, compare, policy messaging, finance, persistent cart, and revalidation.">مواصفات وتوفر ومقارنة وسياسات وتقسيط وسلة محفوظة وإعادة تحقق.</p><time>WEEKS 4–5</time></article>
+          <article class="phase"><span class="phase-no">PHASE 4</span><h3 data-ar="الدفع والمدفوعات" data-en="Checkout and payments">الدفع والمدفوعات</h3><p data-ar="العناوين والتوصيل وPaymob والتقسيط والدفع عند الاستلام والاسترداد والتسوية." data-en="Addressing, delivery, Paymob, BNPL, COD, refunds, callbacks, and reconciliation.">العناوين والتوصيل وPaymob والتقسيط والدفع عند الاستلام والاسترداد والتسوية.</p><time>WEEKS 6–7</time></article>
+          <article class="phase"><span class="phase-no">PHASE 5</span><h3 data-ar="الحساب والتتبع" data-en="Account and tracking">الحساب والتتبع</h3><p data-ar="تسجيل العميل والطلبات والفواتير والتتبع والإشعارات والدعم." data-en="Authentication, order history, invoices, tracking, notifications, and support.">تسجيل العميل والطلبات والفواتير والتتبع والإشعارات والدعم.</p><time>WEEK 8</time></article>
+          <article class="phase"><span class="phase-no">PHASE 6</span><h3 data-ar="التقوية والهجرة" data-en="Hardening and migration">التقوية والهجرة</h3><p data-ar="المحتوى والروابط واختبارات الأمان والأداء والوصول والتدريب وتجربة الإطلاق." data-en="Content, redirects, security, performance, accessibility, training, rehearsal, and rollback.">المحتوى والروابط واختبارات الأمان والأداء والوصول والتدريب وتجربة الإطلاق.</p><time>WEEKS 9–10</time></article>
+          <article class="phase"><span class="phase-no">PHASE 7</span><h3 data-ar="Amazon وNoon" data-en="Amazon and noon">Amazon وNoon</h3><p data-ar="الحسابات والقوائم والمخزون والطلبات والشحن والمرتجعات والتسويات بإطلاق تدريجي." data-en="Accounts, listings, stock, orders, shipping, returns, and settlement through staged canaries.">الحسابات والقوائم والمخزون والطلبات والشحن والمرتجعات والتسويات بإطلاق تدريجي.</p><time>WEEKS 11–12</time></article>
+        </div>
+        <div class="delivery-callout"><div><strong data-ar="الفريق المقترح" data-en="Recommended delivery team">الفريق المقترح</strong><p data-ar="قيادة منتج/معمارية، مطورا Backend، مطور Frontend، تصميم/محتوى، جودة وأتمتة، DevOps بدوام جزئي، ومالك عمليات من العميل." data-en="Product/architecture lead, two backend engineers, frontend engineer, design/content, QA automation, part-time DevOps, and a client operations owner.">قيادة منتج/معمارية، مطورا Backend، مطور Frontend، تصميم/محتوى، جودة وأتمتة، DevOps بدوام جزئي، ومالك عمليات من العميل.</p></div><div><strong data-ar="قاعدة الالتزام" data-en="Commitment rule">قاعدة الالتزام</strong><p data-ar="لا يبدأ بناء الدفع قبل نجاح إثبات Odoo، ولا تنطلق الأسواق قبل استقرار مسار الطلب والمدفوعات في المتجر." data-en="Checkout does not begin before the Odoo proof passes, and marketplaces do not launch before the first-party order and payment path is stable.">لا يبدأ بناء الدفع قبل نجاح إثبات Odoo، ولا تنطلق الأسواق قبل استقرار مسار الطلب والمدفوعات في المتجر.</p></div></div>
+        <table class="risk-table"><thead><tr><th data-ar="التكلفة أو المخاطرة" data-en="Trade-off or risk">التكلفة أو المخاطرة</th><th data-ar="كيف نعالجها" data-en="How it is controlled">كيف نعالجها</th></tr></thead><tbody>
+          <tr><td data-ar="استثمار أولي أكبر من قالب جاهز" data-en="More initial investment than a theme">استثمار أولي أكبر من قالب جاهز</td><td data-ar="إثبات مبكر، نطاق مرحلي، واختبارات قبول واضحة قبل كل توسع." data-en="Early proof, phased scope, and explicit acceptance gates before expansion.">إثبات مبكر، نطاق مرحلي، واختبارات قبول واضحة قبل كل توسع.</td></tr>
+          <tr><td data-ar="ملكية طبقة تكامل مخصصة" data-en="Ownership of a custom control layer">ملكية طبقة تكامل مخصصة</td><td data-ar="عقود مكتوبة ومراقبة وقوائم أخطاء ومطابقة ودليل تشغيل واتفاق دعم." data-en="Typed contracts, observability, failure queues, reconciliation, runbooks, and a support model.">عقود مكتوبة ومراقبة وقوائم أخطاء ومطابقة ودليل تشغيل واتفاق دعم.</td></tr>
+          <tr><td data-ar="اعتماد على صلاحيات وحسابات خارجية" data-en="Dependency on external accounts and capabilities">اعتماد على صلاحيات وحسابات خارجية</td><td data-ar="قائمة متطلبات بشرية، بيئات اختبار، واكتشاف قدرة قبل أي وعد إطلاق." data-en="Human-account checklist, sandboxes, and capability discovery before launch promises.">قائمة متطلبات بشرية، بيئات اختبار، واكتشاف قدرة قبل أي وعد إطلاق.</td></tr>
+          <tr><td data-ar="تعقيد Headless إذا أُفرط في الخدمات" data-en="Headless complexity if services proliferate">تعقيد Headless إذا أُفرط في الخدمات</td><td data-ar="أقل عدد ممكن من الخدمات، مستودع موحد، ومصدر حقيقة واحد." data-en="Minimum necessary services, one repository, shared schemas, and one source of truth.">أقل عدد ممكن من الخدمات، مستودع موحد، ومصدر حقيقة واحد.</td></tr>
+        </tbody></table>
+      </div>
+    </section>
+
+    <section class="section next" id="next">
+      <div class="wrap">
+        <div><div class="eyebrow" style="color:#fff" data-ar="الخطوة التالية" data-en="The next decision">الخطوة التالية</div><h2 data-ar="اعتماد مرحلة إثبات التكامل، ثم تثبيت العرض التجاري وخطة النشر." data-en="Approve the integration proof, then lock the commercial scope and deployment plan.">اعتماد مرحلة إثبات التكامل، ثم تثبيت العرض التجاري وخطة النشر.</h2><p data-ar="هذه المرحلة القصيرة تحوّل أهم افتراض في المشروع إلى دليل: هل يمكن قراءة الحقيقة من Odoo وكتابة طلب آمن بالصلاحيات المتاحة؟ بعدها يصبح الجدول والتكلفة والإطلاق قرارات مبنية على واقع." data-en="This short phase converts the project's biggest assumption into evidence: can we read real Odoo truth and create a safe order with available permissions? The schedule, commercial proposal, and deployment plan then rest on facts.">هذه المرحلة القصيرة تحوّل أهم افتراض في المشروع إلى دليل: هل يمكن قراءة الحقيقة من Odoo وكتابة طلب آمن بالصلاحيات المتاحة؟ بعدها يصبح الجدول والتكلفة والإطلاق قرارات مبنية على واقع.</p></div>
+        <div class="next-actions"><a class="btn light" href="egypt-deal-commerce-mockups.html" data-ar="استعرض تجربة الشاشات" data-en="Review the screen experience">استعرض تجربة الشاشات</a><a class="btn ghost" href="egypt-deal-headless-build-plan.md" data-ar="افتح خطة البناء الكاملة" data-en="Open the complete build plan">افتح خطة البناء الكاملة</a><button class="btn ghost" type="button" onclick="window.print()" data-ar="احفظ العرض بصيغة PDF" data-en="Save this proposal as PDF">احفظ العرض بصيغة PDF</button></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="sources">
+    <div class="wrap">
+      <div><h3 data-ar="مصادر المقارنة" data-en="Comparison sources">مصادر المقارنة</h3><p data-ar="تمت مراجعة الصفحات الرسمية في 15 أغسطس 2026. يجب إعادة فحص الأسعار والباقات والدول المدعومة والتكاملات قبل قرار تجاري نهائي." data-en="Official product sources reviewed August 15, 2026. Recheck pricing, packaging, supported countries, and connector availability before a final commercial decision.">تمت مراجعة الصفحات الرسمية في 15 أغسطس 2026. يجب إعادة فحص الأسعار والباقات والدول المدعومة والتكاملات قبل قرار تجاري نهائي.</p></div>
+      <div><div class="source-links"><a href="https://www.odoo.com/app/ecommerce-features" target="_blank" rel="noreferrer">Odoo eCommerce features</a><a href="https://www.odoo.com/documentation/19.0/applications/websites/ecommerce/configuration.html" target="_blank" rel="noreferrer">Odoo eCommerce documentation</a><a href="https://www.shopify.com/enterprise/blog/headless-ecommerce-platform" target="_blank" rel="noreferrer">Shopify headless commerce guide</a><a href="https://help.shopify.com/en/manual/payments/shopify-payments/supported-countries" target="_blank" rel="noreferrer">Shopify Payments supported countries</a><a href="https://woocommerce.com/woocommerce-features/" target="_blank" rel="noreferrer">WooCommerce features</a><a href="https://www.bigcommerce.com/solutions/headless-commerce/" target="_blank" rel="noreferrer">BigCommerce headless commerce</a><a href="https://business.adobe.com/products/commerce/scalable-commerce-operations.html" target="_blank" rel="noreferrer">Adobe Commerce scalable operations</a><a href="egypt-deal-headless-build-plan.md">Egypt Deal complete technical plan</a></div><div class="fineprint" data-ar="المقارنة تقيم الملاءمة لمتطلبات Egypt Deal وليست ادعاءً بأن الحل المقترح يتفوق على كل منصة في كل سيناريو. مؤشرات الأداء المعروضة أهداف إطلاق وليست نتائج تاريخية." data-en="The comparison evaluates fit for Egypt Deal's stated requirements; it does not claim the proposed solution beats every platform in every scenario. Displayed performance figures are launch targets, not historical results.">المقارنة تقيم الملاءمة لمتطلبات Egypt Deal وليست ادعاءً بأن الحل المقترح يتفوق على كل منصة في كل سيناريو. مؤشرات الأداء المعروضة أهداف إطلاق وليست نتائج تاريخية.</div></div>
+    </div>
+  </footer>
+
+  <script>
+    const root=document.documentElement;
+    const localeButtons=[...document.querySelectorAll('.locale button[data-locale]')];
+    function setLocale(locale){
+      root.dataset.locale=locale;root.lang=locale;root.dir=locale==='ar'?'rtl':'ltr';
+      document.querySelectorAll('[data-ar][data-en]').forEach(el=>{el.textContent=el.dataset[locale]});
+      localeButtons.forEach(btn=>btn.classList.toggle('active',btn.dataset.locale===locale));
+      document.title=locale==='ar'?'Egypt Deal — مقترح التحول التجاري':'Egypt Deal — Commerce Transformation Proposal';
+      try{localStorage.setItem('egypt-deal-proposal-locale',locale)}catch(_){ }
+    }
+    localeButtons.forEach(btn=>btn.addEventListener('click',()=>setLocale(btn.dataset.locale)));
+    let initial='ar';try{initial=localStorage.getItem('egypt-deal-proposal-locale')||'ar'}catch(_){ }setLocale(initial);
+    const preview=document.getElementById('previewImage');
+    document.querySelectorAll('[data-preview]').forEach(btn=>btn.addEventListener('click',()=>{
+      document.querySelectorAll('[data-preview]').forEach(x=>x.classList.remove('active'));btn.classList.add('active');
+      preview.style.opacity='.2';setTimeout(()=>{preview.src=btn.dataset.preview==='store'?'bilingual-english-storefront-preview.png':'bilingual-arabic-payments-preview.png';preview.alt=btn.dataset.preview==='store'?'Egypt Deal English storefront preview':'Egypt Deal Arabic payments administration preview';preview.style.opacity='1'},140);
+    }));
+    const progress=document.querySelector('.progress i');
+    function updateProgress(){const max=document.documentElement.scrollHeight-innerHeight;progress.style.width=(max>0?scrollY/max*100:0)+'%'}
+    addEventListener('scroll',updateProgress,{passive:true});updateProgress();
+    const links=[...document.querySelectorAll('.deck-nav a')];
+    const sections=[...document.querySelectorAll('main section[id]')];
+    const observer=new IntersectionObserver(entries=>entries.forEach(entry=>{if(entry.isIntersecting){links.forEach(a=>a.classList.toggle('active',a.getAttribute('href')==='#'+entry.target.id))}}),{rootMargin:'-20% 0px -70%'});
+    sections.forEach(section=>observer.observe(section));
+  </script>
+</body>
+</html>
