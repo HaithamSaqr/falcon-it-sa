@@ -145,6 +145,27 @@
     .control b{font-size:12px;display:block;margin-bottom:5px}.control span{font-size:10px;color:var(--muted)}
     .comparison{background:#edf3fb}
     .comparison-note{background:#fff;border-inline-start:4px solid var(--blue);padding:16px 19px;color:var(--muted);font-size:11px;margin-bottom:24px}
+    .experience-compare{position:relative;overflow:hidden;margin-bottom:26px;padding:30px;background:var(--ink);color:#fff;box-shadow:var(--shadow)}
+    .experience-compare:before{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(120,155,213,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(120,155,213,.07) 1px,transparent 1px);background-size:42px 42px;mask-image:linear-gradient(to bottom,black,transparent 70%);pointer-events:none}
+    .experience-compare-head{position:relative;z-index:1;display:grid;grid-template-columns:minmax(0,1.05fr) minmax(280px,.75fr);gap:42px;align-items:end;margin-bottom:22px}
+    .experience-compare-kicker{display:block;margin-bottom:9px;color:#86a8e1;font:800 9px "Manrope";letter-spacing:.14em;text-transform:uppercase}
+    .experience-compare h3{max-width:720px;margin:0;font-size:clamp(24px,3vw,36px);line-height:1.25;letter-spacing:-.035em}
+    html[data-locale="ar"] .experience-compare h3{letter-spacing:-.015em;line-height:1.5}
+    .experience-compare-head p{margin:0;color:#afbeda;font-size:11px;line-height:1.8}
+    .compare-pair{position:relative;z-index:1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:14px}
+    .compare-pair--mobile{grid-template-columns:repeat(2,minmax(260px,360px));justify-content:center}
+    .compare-card{margin:0;background:#fff;color:var(--ink);border-top:4px solid var(--blue);box-shadow:0 18px 44px rgba(0,0,0,.2)}
+    .compare-card--proposed{border-top-color:var(--signal)}
+    .compare-card-top{display:flex;align-items:center;justify-content:space-between;gap:14px;min-height:58px;padding:12px 14px;border-bottom:1px solid var(--line)}
+    .compare-card-top h4{margin:0;font-size:12px;line-height:1.5;text-align:end}
+    .compare-state{flex:0 0 auto;padding:5px 8px;background:#eaf2ff;color:var(--ink-3);font:800 10px "Manrope";letter-spacing:.08em;text-transform:uppercase}
+    .compare-card--proposed .compare-state{background:#fff0f0;color:var(--signal-dark)}
+    .compare-media{aspect-ratio:8/5;overflow:hidden;background:#dfe7f2}
+    .compare-pair--mobile .compare-media{aspect-ratio:390/844}
+    .compare-media img{width:100%;height:100%;object-fit:cover;object-position:top}
+    .compare-card figcaption{min-height:72px;padding:13px 14px;color:var(--muted);font-size:10px;line-height:1.75}
+    .compare-source{position:relative;z-index:1;margin:18px 0 0;padding-top:14px;border-top:1px solid rgba(255,255,255,.12);color:#8fa4c7;font-size:9px}
+    .compare-source a{color:#fff;text-decoration:none;border-bottom:1px solid rgba(255,255,255,.25)}
     .matrix-wrap{overflow:auto;border:1px solid var(--line);background:#fff;box-shadow:var(--shadow)}
     .matrix{width:100%;min-width:1180px;border-collapse:collapse;table-layout:fixed;font-size:10px}
     .matrix th,.matrix td{padding:15px 13px;border-bottom:1px solid var(--line);border-inline-end:1px solid var(--line);vertical-align:top;text-align:start}
@@ -191,13 +212,13 @@
     .fineprint{margin-top:20px;font-size:8px;color:#667b9d}
     [data-ar],[data-en]{unicode-bidi:plaintext}
     @media(max-width:1050px){
-      .deck-nav{display:none}.hero-top{grid-template-columns:1fr}.decision-card{max-width:640px}.hero-proof{grid-template-columns:repeat(2,1fr)}.architecture{grid-template-columns:1fr}.arch-arrow{height:42px;transform:rotate(90deg)!important}.cap-grid{grid-template-columns:1fr}.preview-window{height:520px}.platform-grid{grid-template-columns:repeat(2,1fr)}.targets{grid-template-columns:repeat(3,1fr)}.roadmap{grid-template-columns:repeat(2,1fr)}
+      .deck-nav{display:none}.hero-top{grid-template-columns:1fr}.decision-card{max-width:640px}.hero-proof{grid-template-columns:repeat(2,1fr)}.architecture{grid-template-columns:1fr}.arch-arrow{height:42px;transform:rotate(90deg)!important}.cap-grid{grid-template-columns:1fr}.preview-window{height:520px}.experience-compare-head{grid-template-columns:1fr;gap:12px}.platform-grid{grid-template-columns:repeat(2,1fr)}.targets{grid-template-columns:repeat(3,1fr)}.roadmap{grid-template-columns:repeat(2,1fr)}
     }
     @media(max-width:720px){
-      .deckbar-inner{padding:10px 14px;gap:10px}.deck-brand small,.print-btn{display:none}.deck-actions{margin-inline-start:auto}.section{padding:68px 17px}.hero{padding:62px 17px 50px;min-height:0}.section-head{grid-template-columns:1fr;gap:15px}.hero-proof,.problem-grid,.truth-strip,.screen-index,.control-grid,.platform-grid,.adv-grid,.delivery-callout,.next .wrap,.sources .wrap{grid-template-columns:1fr}.hero-proof article,.problem,.truth-strip div,.screen-index div,.delivery-callout>div{border-inline-end:0;border-bottom:1px solid var(--line)}.hero-proof article,.screen-index div{border-color:rgba(255,255,255,.11)}.cap{padding:25px 20px;min-height:auto}.cap-outcome{position:static;margin-top:24px}.feature-list{grid-template-columns:1fr}.preview-window{height:360px}.order-flow{grid-template-columns:repeat(2,1fr);gap:24px}.order-flow:before{display:none}.targets{grid-template-columns:repeat(2,1fr)}.roadmap{grid-template-columns:1fr}.next-actions{max-width:420px}.source-links{grid-template-columns:1fr}.thesis{grid-template-columns:1fr}.thesis .seal{display:none}
+      .deckbar-inner{padding:10px 14px;gap:10px}.deck-brand small,.print-btn{display:none}.deck-actions{margin-inline-start:auto}.section{padding:68px 17px}.hero{padding:62px 17px 50px;min-height:0}.section-head{grid-template-columns:1fr;gap:15px}.hero-proof,.problem-grid,.truth-strip,.screen-index,.control-grid,.platform-grid,.adv-grid,.delivery-callout,.next .wrap,.sources .wrap{grid-template-columns:1fr}.hero-proof article,.problem,.truth-strip div,.screen-index div,.delivery-callout>div{border-inline-end:0;border-bottom:1px solid var(--line)}.hero-proof article,.screen-index div{border-color:rgba(255,255,255,.11)}.cap{padding:25px 20px;min-height:auto}.cap-outcome{position:static;margin-top:24px}.feature-list{grid-template-columns:1fr}.preview-window{height:360px}.experience-compare{padding:21px 14px}.compare-pair,.compare-pair--mobile{grid-template-columns:1fr}.compare-pair--mobile .compare-card{width:100%;max-width:320px;margin-inline:auto}.compare-card figcaption{min-height:0}.order-flow{grid-template-columns:repeat(2,1fr);gap:24px}.order-flow:before{display:none}.targets{grid-template-columns:repeat(2,1fr)}.roadmap{grid-template-columns:1fr}.next-actions{max-width:420px}.source-links{grid-template-columns:1fr}.thesis{grid-template-columns:1fr}.thesis .seal{display:none}
     }
     @media print{
-      .deckbar,.progress,.preview-toolbar,.next-actions{display:none!important}.section,.hero{padding:42px 28px}.hero{min-height:auto}.section,.cap,.platform,.phase,.adv,.matrix-wrap{break-inside:avoid}.preview-window{height:460px}body{background:#fff}.next{background:var(--ink)}
+      .deckbar,.progress,.preview-toolbar,.next-actions{display:none!important}.section,.hero{padding:42px 28px}.hero{min-height:auto}.section,.cap,.platform,.phase,.adv,.matrix-wrap,.compare-card{break-inside:avoid}.preview-window{height:460px}body{background:#fff}.next{background:var(--ink)}
     }
   </style>
 </head>
@@ -219,7 +240,7 @@
       </nav>
       <div class="deck-actions">
         <div class="locale" aria-label="Language"><button class="active" data-locale="ar">العربية</button><button data-locale="en">English</button></div>
-        <button class="print-btn" type="button" onclick="window.print()" data-ar="طباعة / PDF" data-en="Print / PDF">طباعة / PDF</button>
+        <button class="print-btn" type="button" onclick="printProposal()" data-ar="طباعة / PDF" data-en="Print / PDF">طباعة / PDF</button>
       </div>
     </div>
   </header>
@@ -335,6 +356,37 @@
     <section class="section comparison" id="comparison">
       <div class="wrap">
         <header class="section-head"><div><div class="eyebrow" data-ar="المقارنة التنافسية" data-en="Competitive comparison">المقارنة التنافسية</div><h2 data-ar="لا توجد منصة أفضل في كل شيء. توجد منصة أنسب لقرار معين." data-en="There is no universal winner. There is a best fit for a specific business decision.">لا توجد منصة أفضل في كل شيء. توجد منصة أنسب لقرار معين.</h2></div><p class="section-copy" data-ar="نقارن حسب واقع Egypt Deal: الحفاظ على Odoo، المدفوعات المصرية، اللغة العربية، Amazon وNoon، وإدارة الاستثناءات والتسويات." data-en="The comparison is weighted for Egypt Deal: preserve Odoo, support Egyptian payments, treat Arabic as first class, operate Amazon and noon, and reconcile exceptions.">نقارن حسب واقع Egypt Deal: الحفاظ على Odoo، المدفوعات المصرية، اللغة العربية، Amazon وNoon، وإدارة الاستثناءات والتسويات.</p></header>
+        <section class="experience-compare" aria-labelledby="experience-compare-title">
+          <header class="experience-compare-head">
+            <div><span class="experience-compare-kicker" data-ar="الموقع الحالي × التصور المقترح" data-en="LIVE SITE × PROPOSED CONCEPT">الموقع الحالي × التصور المقترح</span><h3 id="experience-compare-title" data-ar="من المتجر الحالي إلى تجربة Headless المقترحة" data-en="From today’s storefront to the proposed headless experience">من المتجر الحالي إلى تجربة Headless المقترحة</h3></div>
+            <p data-ar="مقارنة مرئية متكافئة لنقطة الدخول نفسها على سطح المكتب والموبايل. الشاشات المقترحة تصورٌ للاتجاه المستهدف وليست نتيجة إنتاج منشورة." data-en="A like-for-like view of the same entry point on desktop and mobile. Proposed screens illustrate the target direction; they are not a published production result.">مقارنة مرئية متكافئة لنقطة الدخول نفسها على سطح المكتب والموبايل. الشاشات المقترحة تصورٌ للاتجاه المستهدف وليست نتيجة إنتاج منشورة.</p>
+          </header>
+          <div class="compare-pair">
+            <figure class="compare-card compare-card--current">
+              <div class="compare-card-top"><span class="compare-state" data-ar="الحالي" data-en="CURRENT">الحالي</span><h4 data-ar="المتجر الحالي — سطح المكتب" data-en="Current storefront — Desktop">المتجر الحالي — سطح المكتب</h4></div>
+              <div class="compare-media"><img src="comparison-current-desktop-en.png" width="1600" height="1000" loading="lazy" fetchpriority="low" decoding="async" alt="الصفحة الرئيسية الحالية لموقع Egypt Deal على سطح المكتب، وتظهر شريط التواصل والبحث الواسع والتنقل الإنجليزي وبانر الأجهزة الأزرق." data-alt-ar="الصفحة الرئيسية الحالية لموقع Egypt Deal على سطح المكتب، وتظهر شريط التواصل والبحث الواسع والتنقل الإنجليزي وبانر الأجهزة الأزرق." data-alt-en="Egypt Deal live desktop homepage with contact bar, wide search, English navigation, and a blue appliance hero."></div>
+              <figcaption data-ar="عرض واسع، بحث علوي، ومسار بيع يركز على العروض والخدمة." data-en="A broad hero, top search, and a merchandising path centered on deals and service.">عرض واسع، بحث علوي، ومسار بيع يركز على العروض والخدمة.</figcaption>
+            </figure>
+            <figure class="compare-card compare-card--proposed">
+              <div class="compare-card-top"><span class="compare-state" data-ar="تصور مقترح" data-en="PROPOSED CONCEPT">تصور مقترح</span><h4 data-ar="التجربة المقترحة — سطح المكتب" data-en="Proposed experience — Desktop">التجربة المقترحة — سطح المكتب</h4></div>
+              <div class="compare-media"><img src="comparison-proposed-desktop-en.png" width="1600" height="1000" loading="lazy" fetchpriority="low" decoding="async" alt="واجهة Egypt Deal المقترحة لسطح المكتب، وتظهر تنقلًا يقوده البحث ومنتج سماعات بارزًا وإشارات الثقة وبطاقات الأقسام." data-alt-ar="واجهة Egypt Deal المقترحة لسطح المكتب، وتظهر تنقلًا يقوده البحث ومنتج سماعات بارزًا وإشارات الثقة وبطاقات الأقسام." data-alt-en="Proposed Egypt Deal desktop storefront with search-led navigation, a featured earbuds hero, trust cues, and category cards."></div>
+              <figcaption data-ar="اكتشاف أوضح، منتج بارز، وإشارات المخزون والضمان والدفع داخل رحلة الشراء." data-en="Clearer discovery, a product-led hero, and stock, warranty, and payment cues inside the journey.">اكتشاف أوضح، منتج بارز، وإشارات المخزون والضمان والدفع داخل رحلة الشراء.</figcaption>
+            </figure>
+          </div>
+          <div class="compare-pair compare-pair--mobile">
+            <figure class="compare-card compare-card--current">
+              <div class="compare-card-top"><span class="compare-state" data-ar="الحالي" data-en="CURRENT">الحالي</span><h4 data-ar="المتجر الحالي — الموبايل" data-en="Current storefront — Mobile">المتجر الحالي — الموبايل</h4></div>
+              <div class="compare-media"><img src="comparison-current-mobile-ar.png" width="390" height="844" loading="lazy" fetchpriority="low" decoding="async" alt="الصفحة العربية الحالية لموقع Egypt Deal على الموبايل، وتظهر شريط التواصل والشعار وخيارات اللغة والسلة والقائمة والبانر الترويجي." data-alt-ar="الصفحة العربية الحالية لموقع Egypt Deal على الموبايل، وتظهر شريط التواصل والشعار وخيارات اللغة والسلة والقائمة والبانر الترويجي." data-alt-en="Egypt Deal live Arabic mobile homepage with contact strip, logo, language and cart controls, menu, and current promotional hero."></div>
+              <figcaption data-ar="هوية واضحة ومسار عروض مباشر، بينما يبدأ البحث بعد التفاعل مع التنقل." data-en="Clear branding and a direct offer path, with search reached through navigation.">هوية واضحة ومسار عروض مباشر، بينما يبدأ البحث بعد التفاعل مع التنقل.</figcaption>
+            </figure>
+            <figure class="compare-card compare-card--proposed">
+              <div class="compare-card-top"><span class="compare-state" data-ar="تصور مقترح" data-en="PROPOSED CONCEPT">تصور مقترح</span><h4 data-ar="التجربة المقترحة — الموبايل" data-en="Proposed experience — Mobile">التجربة المقترحة — الموبايل</h4></div>
+              <div class="compare-media"><img src="comparison-proposed-mobile-ar.png" width="390" height="844" loading="lazy" fetchpriority="low" decoding="async" alt="واجهة Egypt Deal العربية المقترحة للموبايل، وتظهر البحث في المشهد الأول وبانر منتج وإشارات الثقة وصورة المنتج." data-alt-ar="واجهة Egypt Deal العربية المقترحة للموبايل، وتظهر البحث في المشهد الأول وبانر منتج وإشارات الثقة وصورة المنتج." data-alt-en="Proposed Egypt Deal Arabic mobile storefront with first-view search, a product-led hero, trust cues, and a featured product image."></div>
+              <figcaption data-ar="بحث ظاهر من البداية، إشارات ثقة، ومسار مباشر من العرض إلى المنتج." data-en="Search in the first view, visible trust cues, and a direct path from offer to product.">بحث ظاهر من البداية، إشارات ثقة، ومسار مباشر من العرض إلى المنتج.</figcaption>
+            </figure>
+          </div>
+          <p class="compare-source"><span data-ar="تم التقاط الشاشات الحالية من" data-en="Current screens captured from">تم التقاط الشاشات الحالية من</span> <a href="https://egypt-deal.com/" target="_blank" rel="noreferrer">egypt-deal.com</a> <span data-ar="في 16 أغسطس 2026. الشاشات المقترحة توضيحية." data-en="on August 16, 2026. Proposed screens are illustrative.">في 16 أغسطس 2026. الشاشات المقترحة توضيحية.</span></p>
+        </section>
         <div class="comparison-note" data-ar="هذه مصفوفة ملاءمة للمشروع وليست ترتيبًا عامًا. كلمة مخصص تعني أن الميزة تحتاج تكاملًا أو إضافة أو تصميم تشغيل إضافيًا." data-en="This is a project-fit matrix, not a universal platform ranking. Custom means extra integration, extension, or operating design is required for Egypt Deal's target model.">هذه مصفوفة ملاءمة للمشروع وليست ترتيبًا عامًا. كلمة مخصص تعني أن الميزة تحتاج تكاملًا أو إضافة أو تصميم تشغيل إضافيًا.</div>
         <div class="matrix-wrap">
           <table class="matrix">
@@ -417,7 +469,7 @@
     <section class="section next" id="next">
       <div class="wrap">
         <div><div class="eyebrow" style="color:#fff" data-ar="الخطوة التالية" data-en="The next decision">الخطوة التالية</div><h2 data-ar="اعتماد مرحلة إثبات التكامل، ثم تثبيت العرض التجاري وخطة النشر." data-en="Approve the integration proof, then lock the commercial scope and deployment plan.">اعتماد مرحلة إثبات التكامل، ثم تثبيت العرض التجاري وخطة النشر.</h2><p data-ar="هذه المرحلة القصيرة تحوّل أهم افتراض في المشروع إلى دليل: هل يمكن قراءة الحقيقة من Odoo وكتابة طلب آمن بالصلاحيات المتاحة؟ بعدها يصبح الجدول والتكلفة والإطلاق قرارات مبنية على واقع." data-en="This short phase converts the project's biggest assumption into evidence: can we read real Odoo truth and create a safe order with available permissions? The schedule, commercial proposal, and deployment plan then rest on facts.">هذه المرحلة القصيرة تحوّل أهم افتراض في المشروع إلى دليل: هل يمكن قراءة الحقيقة من Odoo وكتابة طلب آمن بالصلاحيات المتاحة؟ بعدها يصبح الجدول والتكلفة والإطلاق قرارات مبنية على واقع.</p></div>
-        <div class="next-actions"><a class="btn light" href="egypt-deal-commerce-mockups.html" data-ar="استعرض تجربة الشاشات" data-en="Review the screen experience">استعرض تجربة الشاشات</a><a class="btn ghost" href="egypt-deal-headless-build-plan.md" data-ar="افتح خطة البناء الكاملة" data-en="Open the complete build plan">افتح خطة البناء الكاملة</a><button class="btn ghost" type="button" onclick="window.print()" data-ar="احفظ العرض بصيغة PDF" data-en="Save this proposal as PDF">احفظ العرض بصيغة PDF</button></div>
+        <div class="next-actions"><a class="btn light" href="egypt-deal-commerce-mockups.html" data-ar="استعرض تجربة الشاشات" data-en="Review the screen experience">استعرض تجربة الشاشات</a><a class="btn ghost" href="egypt-deal-headless-build-plan.md" data-ar="افتح خطة البناء الكاملة" data-en="Open the complete build plan">افتح خطة البناء الكاملة</a><button class="btn ghost" type="button" onclick="printProposal()" data-ar="احفظ العرض بصيغة PDF" data-en="Save this proposal as PDF">احفظ العرض بصيغة PDF</button></div>
       </div>
     </section>
   </main>
@@ -435,12 +487,18 @@
     function setLocale(locale){
       root.dataset.locale=locale;root.lang=locale;root.dir=locale==='ar'?'rtl':'ltr';
       document.querySelectorAll('[data-ar][data-en]').forEach(el=>{el.textContent=el.dataset[locale]});
+      document.querySelectorAll('[data-alt-ar][data-alt-en]').forEach(img=>{img.alt=img.getAttribute('data-alt-'+locale)});
       localeButtons.forEach(btn=>btn.classList.toggle('active',btn.dataset.locale===locale));
       document.title=locale==='ar'?'Egypt Deal — مقترح التحول التجاري':'Egypt Deal — Commerce Transformation Proposal';
       try{localStorage.setItem('egypt-deal-proposal-locale',locale)}catch(_){ }
     }
     localeButtons.forEach(btn=>btn.addEventListener('click',()=>setLocale(btn.dataset.locale)));
     let initial='ar';try{initial=localStorage.getItem('egypt-deal-proposal-locale')||'ar'}catch(_){ }setLocale(initial);
+    async function printProposal(){
+      const images=[...document.images];images.forEach(img=>img.loading='eager');
+      await Promise.all(images.map(img=>img.decode?img.decode().catch(()=>{}):Promise.resolve()));
+      window.print();
+    }
     const preview=document.getElementById('previewImage');
     document.querySelectorAll('[data-preview]').forEach(btn=>btn.addEventListener('click',()=>{
       document.querySelectorAll('[data-preview]').forEach(x=>x.classList.remove('active'));btn.classList.add('active');
