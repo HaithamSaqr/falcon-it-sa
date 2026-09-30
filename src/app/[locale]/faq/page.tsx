@@ -11,5 +11,8 @@ export default async function FAQPage({ params }: Props) {
   setRequestLocale(locale);
 
   const content = await getContent();
-  return <FAQ items={content.faqs} isAr={locale === "ar"} />;
+  const faqs = content.faqs.filter((item) =>
+    !/free trial|تجربة مجانية|التجربة المجانية/i.test(`${item.question.en} ${item.question.ar}`),
+  );
+  return <FAQ items={faqs} isAr={locale === "ar"} />;
 }

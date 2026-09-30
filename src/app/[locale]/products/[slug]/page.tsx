@@ -100,7 +100,7 @@ export default async function DynamicProductPage({ params }: Props) {
                     ))}
                   </ul>
                   <div className="mt-8">
-                    <Button variant="cta" size="lg" href="/contact">{isAr ? "اطلب عرض سعر" : "Request a quote"}</Button>
+                    <Button variant="cta" size="lg" href="/demo">{isAr ? "احجز موعدًا" : "Book an Appointment"}</Button>
                   </div>
                 </div>
 

@@ -13,8 +13,6 @@ export default async function ProductHero({ slug, product }: { slug?: string; pr
   const eyebrow = isAr ? p.eyebrow.ar : p.eyebrow.en;
   const title = isAr ? p.title.ar : p.title.en;
   const description = isAr ? p.description.ar : p.description.en;
-  const cta1 = isAr ? p.cta1.label.ar : p.cta1.label.en;
-  const cta2 = isAr ? p.cta2.label.ar : p.cta2.label.en;
 
   return (
     <section className="bg-dark py-20 lg:py-28">
@@ -29,16 +27,9 @@ export default async function ProductHero({ slug, product }: { slug?: string; pr
             <h1 className="mb-6 text-4xl font-extrabold text-white sm:text-5xl lg:text-6xl">{title}</h1>
             <p className="mb-8 text-xl text-gray-300">{description}</p>
             <div className="flex flex-wrap items-center gap-4">
-              {cta1 && (
-                <Button variant="cta" size="lg" href={p.cta1.url || "/contact"}>
-                  {cta1}
-                </Button>
-              )}
-              {cta2 && (
-                <Button variant="dark-outline" size="lg" href={p.cta2.url || "/demo"}>
-                  {cta2}
-                </Button>
-              )}
+              <Button variant="cta" size="lg" href="/demo">
+                {isAr ? "احجز موعدًا" : "Book an Appointment"}
+              </Button>
             </div>
           </div>
 

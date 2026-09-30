@@ -1,12 +1,11 @@
 import { setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
-import { headers } from "next/headers";
-import { getSector, getPricingBase, getSectorPricing } from "@/lib/data-store";
-import SectorLandingForm from "@/components/sections/sector-landing-form";
+import { getSector } from "@/lib/data-store";
+import Container from "@/components/ui/container";
+import Button from "@/components/ui/button";
 
 type Props = {
   params: Promise<{ locale: string; slug: string }>;
-  searchParams: Promise<{ system?: string }>;
 };
 
 export async function generateMetadata({ params }: Props) {
@@ -20,42 +19,34 @@ export async function generateMetadata({ params }: Props) {
   };
 }
 
-export default async function SectorPage({ params, searchParams }: Props) {
+export default async function SectorPage({ params }: Props) {
   const { locale, slug } = await params;
-  const { system: presetSystem } = await searchParams;
   setRequestLocale(locale);
 
   const sector = await getSector(slug);
   if (!sector || !sector.enabled) notFound();
 
-  const [base, allOverrides] = await Promise.all([getPricingBase(), getSectorPricing()]);
-  const overrides = allOverrides.filter((o) => o.sectorId === slug);
-  if (process.env.NODE_ENV === "development") {
-    console.log(`[sector/${slug}] allOverrides(${allOverrides.length}):`, JSON.stringify(allOverrides));
-    console.log(`[sector/${slug}] filtered overrides(${overrides.length}):`, JSON.stringify(overrides));
-    console.log(`[sector/${slug}] sector.id:`, sector.id, "base.discountPercent:", base.discountPercent, "base.systemTrainingDays:", JSON.stringify(base.systemTrainingDays));
-  }
-
-  // Country detection from common proxy headers (Vercel / Cloudflare).
-  const h = await headers();
-  const country = (h.get("x-vercel-ip-country") || h.get("cf-ipcountry") || "").toUpperCase();
-  const isEgypt = country === "EG";
-  const isSaudi = country === "SA";
-
-  // Only honor a preset system if this sector is actually linked to it.
-  const validPreset =
-    presetSystem && sector.systems.includes(presetSystem as (typeof sector.systems)[number])
-      ? presetSystem
-      : undefined;
+  const isAr = locale === "ar";
 
   return (
-    <SectorLandingForm
-      sector={sector}
-      base={base}
-      overrides={overrides}
-      isEgypt={isEgypt}
-      isSaudi={isSaudi}
-      presetSystem={validPreset}
-    />
+    <section className="bg-surface py-20 lg:py-28">
+      <Container className="max-w-3xl text-center">
+        <span className="text-5xl" aria-hidden>{sector.icon}</span>
+        <h1 className="mt-5 text-4xl font-extrabold text-text-primary">
+          {isAr ? sector.title.ar : sector.title.en}
+        </h1>
+        <p className="mx-auto mt-5 max-w-2xl text-lg text-text-secondary">
+          {isAr ? sector.description.ar : sector.description.en}
+        </p>
+        <p className="mt-8 text-text-secondary">
+          {isAr ? "تحدث مع فريقنا عن متطلبات قطاعك والحل الأنسب لعملك." : "Talk with our team about your sector and the right solution for your business."}
+        </p>
+        <div className="mt-8">
+          <Button variant="cta" size="lg" href="/demo">
+            {isAr ? "احجز موعدًا" : "Book an Appointment"}
+          </Button>
+        </div>
+      </Container>
+    </section>
   );
 }

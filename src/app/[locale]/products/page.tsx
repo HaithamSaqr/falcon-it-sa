@@ -67,9 +67,6 @@ function ProductsContent() {
                 <h2 className="mt-6 text-center text-xl font-bold text-text-primary">
                   {t(`${product.key}.name`)}
                 </h2>
-                <p className="mt-2 text-center text-sm font-semibold text-primary-500">
-                  {t(`${product.key}.price`)}
-                </p>
                 <p className="mt-3 flex-1 text-center text-text-secondary">
                   {t(`${product.key}.description`)}
                 </p>
@@ -77,6 +74,11 @@ function ProductsContent() {
                   <Button href={product.href} variant="primary" size="md">
                     {t("learnMore")}
                   </Button>
+                  <div className="mt-3">
+                    <Button href="/demo" variant="cta" size="md">
+                      {t("bookAppointment")}
+                    </Button>
+                  </div>
                 </div>
               </Card>
             ))}

@@ -93,8 +93,8 @@ export async function sendDemoConfirmation(data: {
   await sendEmail({
     to: data.to,
     subject: isArabic
-      ? "تأكيد طلب العرض التجريبي — فالكون للحلول الذكية"
-      : "Demo Request Confirmed — Falcon Smart Solutions",
+      ? "استلمنا طلب موعدك — فالكون للحلول الذكية"
+      : "Appointment Request Received — Falcon Smart Solutions",
     html: isArabic
       ? `
         <div dir="rtl" style="font-family: 'Tajawal', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 32px;">
@@ -103,13 +103,13 @@ export async function sendDemoConfirmation(data: {
           </div>
           <h2 style="color: #0F172A;">مرحباً ${data.name}! 🎉</h2>
           <p style="color: #334155; font-size: 16px; line-height: 1.8;">
-            شكراً لطلب العرض التجريبي. فريقنا سيتواصل معك خلال <strong>24 ساعة عمل</strong> لتحديد موعد مناسب.
+            شكراً لطلب الموعد. سيتواصل معك فريقنا لتأكيد وقت مناسب.
           </p>
           <div style="background: #F0FDFA; border-radius: 12px; padding: 24px; margin: 24px 0;">
-            <h3 style="color: #0E7490; margin-top: 0;">ماذا يتضمن العرض التجريبي:</h3>
+            <h3 style="color: #0E7490; margin-top: 0;">ما الذي سنناقشه:</h3>
             <ul style="color: #334155; line-height: 2;">
               <li>جولة حية في النظام مع سيناريوهات تناسب قطاعك</li>
-              <li>تحليل مخصص للعائد على الاستثمار</li>
+              <li>احتياجات فريقك وسير العمل الحالي</li>
               <li>خارطة طريق التنفيذ مع الجدول الزمني</li>
               <li>جلسة أسئلة وأجوبة مع خبير ERP</li>
             </ul>
@@ -130,13 +130,13 @@ export async function sendDemoConfirmation(data: {
           </div>
           <h2 style="color: #0F172A;">Hi ${data.name}! 🎉</h2>
           <p style="color: #334155; font-size: 16px; line-height: 1.8;">
-            Thank you for requesting a demo. Our team will reach out within <strong>24 business hours</strong> to schedule a convenient time.
+            Thank you for requesting an appointment. Our team will contact you to confirm a convenient time.
           </p>
           <div style="background: #F0FDFA; border-radius: 12px; padding: 24px; margin: 24px 0;">
-            <h3 style="color: #0E7490; margin-top: 0;">What your demo includes:</h3>
+            <h3 style="color: #0E7490; margin-top: 0;">What we'll discuss:</h3>
             <ul style="color: #334155; line-height: 2;">
               <li>Live product walkthrough tailored to your industry</li>
-              <li>Custom ROI analysis vs. your current system</li>
+              <li>Your team's requirements and current workflows</li>
               <li>Implementation roadmap with timeline</li>
               <li>Q&A session with an ERP specialist</li>
             </ul>
@@ -154,7 +154,7 @@ export async function sendDemoConfirmation(data: {
 
   // Also notify the sales team
   await notifySalesTeam({
-    type: "Demo Request",
+    type: "Appointment Request",
     contactName: data.name,
     email: data.to,
     phone: "",

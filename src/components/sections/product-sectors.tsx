@@ -31,8 +31,8 @@ export default async function ProductSectors({ slug }: { slug: string }) {
       heading={isAr ? "القطاعات التي نخدمها" : "Sectors we serve"}
       subheading={
         isAr
-          ? "اختر قطاعك واحصل على عرض سعر فوري لهذا المنتج"
-          : "Pick your sector and get an instant quote for this product"
+          ? "اختر قطاعك واحجز موعدًا لمناقشة متطلباتك"
+          : "Choose your sector and book an appointment to discuss your needs"
       }
     />
   );

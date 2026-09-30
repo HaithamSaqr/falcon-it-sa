@@ -42,7 +42,6 @@ export default async function OdooServicesPage({ params }: Props) {
 function OdooServicesContent({ isArabic }: { isArabic: boolean }) {
   const t = useTranslations("products");
   const tp = useTranslations("odooPage");
-  const tc = useTranslations("common");
 
   return (
     <>
@@ -99,7 +98,7 @@ function OdooServicesContent({ isArabic }: { isArabic: boolean }) {
             ))}
           </div>
           <div className="mt-10 text-center">
-            <Button variant="primary" size="md" href="/contact">
+            <Button variant="primary" size="md" href="/demo">
               {tp("servicesCtaText")}
             </Button>
           </div>
@@ -142,7 +141,7 @@ function OdooServicesContent({ isArabic }: { isArabic: boolean }) {
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-primary-500 font-bold">✓</span>
-                  <span>{isArabic ? "تقييم العائد الاستثماري لعمليات الأتمتة المقترحة للمستودعات والمالية" : "Cost-benefit ROI analysis for proposed warehouse & financial automations"}</span>
+                  <span>{isArabic ? "مناقشة أولويات الأتمتة في المستودعات والمالية" : "Discuss automation priorities for warehouse and finance workflows"}</span>
                 </li>
               </ul>
             </div>
@@ -370,7 +369,7 @@ function OdooServicesContent({ isArabic }: { isArabic: boolean }) {
             ))}
           </div>
           <div className="mt-12 text-center">
-            <Button variant="cta" size="lg" href="/contact">
+            <Button variant="cta" size="lg" href="/demo">
               {tp("howItWorksCtaText")}
             </Button>
           </div>
@@ -387,7 +386,7 @@ function OdooServicesContent({ isArabic }: { isArabic: boolean }) {
             <p className="mb-8 text-lg text-gray-300">
               {tp("midCtaSubtitle")}
             </p>
-            <Button variant="cta" size="lg" href="/contact">
+            <Button variant="cta" size="lg" href="/demo">
               {tp("midCtaButton")}
             </Button>
           </div>
@@ -476,43 +475,9 @@ function OdooServicesContent({ isArabic }: { isArabic: boolean }) {
             <p className="mb-10 text-lg text-gray-300">
               {tp("finalCtaSubtitle")}
             </p>
-            <form className="mx-auto grid max-w-lg gap-4 sm:grid-cols-2">
-              <input
-                type="text"
-                suppressHydrationWarning
-                placeholder={tp("formName")}
-                className="rounded-lg border border-white/20 bg-white/5 px-4 py-3 text-white placeholder:text-gray-400 focus:border-primary-500 focus:outline-none sm:col-span-1"
-              />
-              <input
-                type="email"
-                suppressHydrationWarning
-                placeholder={tp("formEmail")}
-                className="rounded-lg border border-white/20 bg-white/5 px-4 py-3 text-white placeholder:text-gray-400 focus:border-primary-500 focus:outline-none sm:col-span-1"
-              />
-              <input
-                type="tel"
-                suppressHydrationWarning
-                placeholder={tp("formPhone")}
-                className="rounded-lg border border-white/20 bg-white/5 px-4 py-3 text-white placeholder:text-gray-400 focus:border-primary-500 focus:outline-none sm:col-span-1"
-              />
-              <input
-                type="text"
-                suppressHydrationWarning
-                placeholder={tp("formCompany")}
-                className="rounded-lg border border-white/20 bg-white/5 px-4 py-3 text-white placeholder:text-gray-400 focus:border-primary-500 focus:outline-none sm:col-span-1"
-              />
-              <div className="sm:col-span-2">
-                <Button variant="cta" size="lg" className="w-full">
-                  {tp("formSubmit")}
-                </Button>
-              </div>
-            </form>
-            <p className="mt-4 text-sm text-gray-400">
-              {tp("formDisclaimer")}
-            </p>
-            <p className="mt-6 text-sm text-gray-400">
-              {tc("orCallUs")}: <span className="font-semibold text-white" dir="ltr">00966568406006</span>
-            </p>
+            <Button variant="cta" size="lg" href="/demo">
+              {isArabic ? "احجز موعدًا" : "Book an Appointment"}
+            </Button>
             <div className="mt-8 flex flex-wrap items-center justify-center gap-6 text-sm text-gray-400">
               {TRUST_BADGES.map((badge) => (
                 <span key={badge} className="flex items-center gap-2">

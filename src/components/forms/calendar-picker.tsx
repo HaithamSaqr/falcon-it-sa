@@ -61,10 +61,10 @@ export default function CalendarPicker({ onSelect, locale = "en" }: CalendarPick
   return (
     <div className="rounded-xl border-2 border-dashed border-primary-500/30 bg-primary-500/5 p-5">
       <h3 className="mb-1 text-base font-bold text-text-primary">
-        {isArabic ? "📅 اختر موعد العرض التجريبي" : "📅 Pick Your Demo Time"}
+        {isArabic ? "📅 اختر الوقت المفضل للموعد" : "📅 Choose Your Preferred Time"}
       </h3>
       <p className="mb-4 text-sm text-text-secondary">
-        {isArabic ? "اختياري — يمكنك الحجز الآن أو سنتواصل معك لاحقاً" : "Optional — book now or we'll reach out to schedule"}
+        {isArabic ? "اختياري — سنؤكد الموعد معك بعد إرسال الطلب" : "Optional — we'll confirm your appointment after you submit"}
       </p>
 
       {/* Date picker */}
@@ -123,8 +123,8 @@ export default function CalendarPicker({ onSelect, locale = "en" }: CalendarPick
             <div className="mt-3 flex items-center gap-2 rounded-lg bg-cta/10 px-4 py-2 text-sm font-medium text-cta">
               <span>✓</span>
               {isArabic
-                ? `تم اختيار ${selectedSlot} في ${selectedDate}`
-                : `Selected ${selectedSlot} on ${selectedDate}`}
+                ? `الوقت المفضل: ${selectedSlot} في ${selectedDate}`
+                : `Preferred time: ${selectedSlot} on ${selectedDate}`}
             </div>
           )}
         </div>
