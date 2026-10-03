@@ -1,0 +1,28 @@
+# Local throwaway Postgres for tests and development (not for production).
+# Start: npm run db:dev   Stop: docker compose -f docker-compose.dev.yml down
+# Connection: see .env.test (PGHOST/PGPORT/PGDATABASE/PGUSER/PGPASSWORD).
+name: falcon-v2
+services:
+  testdb:
+    image: postgres:16-alpine
+    container_name: falcon-v2-testdb
+    # Default bridge: no per-project network, so it works even when Docker has
+    # run out of address pools for new networks.
+    network_mode: bridge
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: falcon
+      POSTGRES_PASSWORD: falcon
+      POSTGRES_DB: falcon_test
+    ports:
+      - "55433:5432"
+    volumes:
+      - falcon-v2-testdb:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U falcon -d falcon_test"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+volumes:
+  falcon-v2-testdb:
