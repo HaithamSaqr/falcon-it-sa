@@ -16,6 +16,8 @@ import MobileBottomBar from "@/components/layout/mobile-bottom-bar";
 import SnapPixel from "@/components/layout/snap-pixel";
 import { SettingsProvider } from "@/components/providers/settings-provider";
 import { getPublicSettings } from "@/lib/public-settings";
+import { JsonLd } from "@/components/v2/json-ld";
+import { SITE_URL, organizationLd } from "@/lib/seo";
 
 import "@/app/globals.css";
 
@@ -43,10 +45,13 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   const isAr = locale === "ar";
+  // Pages that call buildMetadata add their own canonical and hreflang.
+  const metadataBase = new URL(SITE_URL);
   try {
     const [seo, integrations] = await Promise.all([getSeo(), getIntegrations()]);
     const g = integrations.google;
     return {
+      metadataBase,
       title: isAr ? seo.metaTitle.ar : seo.metaTitle.en,
       description: isAr ? seo.metaDescription.ar : seo.metaDescription.en,
       keywords: (isAr ? seo.metaKeywords.ar : seo.metaKeywords.en)
@@ -60,13 +65,12 @@ export async function generateMetadata({
         locale: isAr ? "ar_SA" : "en_US",
         type: "website",
       },
-      alternates: { languages: { en: "/en", ar: "/ar" } },
       ...(g?.enabled && g.verification
         ? { verification: { google: g.verification } }
         : {}),
     };
   } catch {
-    return {};
+    return { metadataBase };
   }
 }
 
@@ -118,6 +122,8 @@ export default async function LocaleLayout({
       <body
         className={cn(isRTL ? "font-arabic" : "font-sans", "antialiased")}
       >
+        <JsonLd data={organizationLd(publicSettings)} />
+
         {/* Google Tag Manager (noscript) */}
         {googleOn && g?.gtmId && (
           <noscript>

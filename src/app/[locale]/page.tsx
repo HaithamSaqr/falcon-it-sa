@@ -1,4 +1,6 @@
+import type { Metadata } from "next";
 import { setRequestLocale } from "next-intl/server";
+import { buildMetadata } from "@/lib/seo";
 import { getHome, getContent } from "@/lib/data-store";
 import Hero from "@/components/sections/hero";
 import ClientsStrip from "@/components/sections/clients-strip";
@@ -15,6 +17,18 @@ import Newsletter from "@/components/sections/newsletter";
 type Props = {
   params: Promise<{ locale: string }>;
 };
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { locale } = await params;
+  // Empty fallbacks: the home page uses the global title and description.
+  return buildMetadata({
+    page: "home",
+    path: "/",
+    locale,
+    fallbackTitle: { en: "", ar: "" },
+    fallbackDescription: { en: "", ar: "" },
+  });
+}
 
 export default async function HomePage({ params }: Props) {
   const { locale } = await params;

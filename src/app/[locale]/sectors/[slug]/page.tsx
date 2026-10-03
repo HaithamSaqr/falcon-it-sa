@@ -1,4 +1,6 @@
+import type { Metadata } from "next";
 import { setRequestLocale } from "next-intl/server";
+import { buildMetadata } from "@/lib/seo";
 import { notFound } from "next/navigation";
 import { getSector } from "@/lib/data-store";
 import Container from "@/components/ui/container";
@@ -8,15 +10,18 @@ type Props = {
   params: Promise<{ locale: string; slug: string }>;
 };
 
-export async function generateMetadata({ params }: Props) {
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale, slug } = await params;
   const sector = await getSector(slug);
   if (!sector) return {};
-  const isAr = locale === "ar";
-  return {
-    title: `${isAr ? sector.title.ar : sector.title.en} — Falcon ERP`,
-    description: isAr ? sector.description.ar : sector.description.en,
-  };
+  return buildMetadata({
+    page: `sector:${slug}`,
+    path: `/sectors/${slug}`,
+    locale,
+    fallbackTitle: sector.title.en || sector.title.ar ? sector.title : sector.name,
+    fallbackDescription:
+      sector.description.en || sector.description.ar ? sector.description : (sector.shortPromise ?? sector.description),
+  });
 }
 
 export default async function SectorPage({ params }: Props) {
