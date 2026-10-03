@@ -56,9 +56,17 @@ function isEmptyLabel(children: ReactNode): boolean {
   return false;
 }
 
-/** Internal (`/path`) links go through the locale-aware Link; everything else is a plain anchor. */
+/**
+ * Locale routes (`/demo`, `/sectors/x?y=1`) go through the locale-aware Link.
+ * API routes and file paths (`/brochure.pdf`, `/images/v2/x.png`) are not pages,
+ * so they must not get a locale prefix and stay plain anchors.
+ */
 function isInternal(href: string): boolean {
-  return href.startsWith("/") && !href.startsWith("//");
+  if (!href.startsWith("/") || href.startsWith("//")) return false;
+  const path = href.split(/[?#]/)[0];
+  if (path === "/api" || path.startsWith("/api/")) return false;
+  const last = path.split("/").pop() ?? "";
+  return !/\.[A-Za-z0-9]+$/.test(last);
 }
 
 /** Pill CTA. Primary has the brand fill with a nested arrow circle. */
@@ -91,7 +99,11 @@ export default function Button(props: ButtonProps) {
             <Icon name="ArrowUpRight" size={iconSize} />
           </span>
         ) : (
-          <Icon name="ArrowUpRight" size={iconSize} className="v2-icon-nudge shrink-0" />
+          // The nudge lives on a wrapper: the RTL flip is a scale on the svg, which
+          // would otherwise mirror the translate and push the arrow the wrong way.
+          <span className="v2-icon-nudge inline-flex shrink-0">
+            <Icon name="ArrowUpRight" size={iconSize} />
+          </span>
         ))}
     </>
   );

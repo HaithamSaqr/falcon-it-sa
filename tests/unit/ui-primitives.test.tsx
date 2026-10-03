@@ -134,6 +134,36 @@ describe("Button", () => {
     expect(html(<Button>{undefined}</Button>)).toBe("");
   });
 
+  it("keeps the nudge and the RTL flip on separate elements for ghost and link arrows", () => {
+    for (const variant of ["ghost", "link"] as const) {
+      const out = html(<Button href="/demo" variant={variant} withArrow>Go</Button>);
+      expect(out).toMatch(/<span class="v2-icon-nudge[^"]*"><svg[^>]*rtl:-scale-x-100/);
+      const svg = out.match(/<svg[^>]*>/)?.[0] ?? "";
+      expect(svg).not.toContain("v2-icon-nudge");
+    }
+  });
+
+  it("uses a plain anchor for API routes and file paths, with no locale prefix", () => {
+    for (const href of [
+      "/api/uploads/x.png",
+      "/api/leads/demo",
+      "/api",
+      "/brochure.pdf",
+      "/images/v2/x.png",
+      "/files/a.b.pdf?download=1",
+    ]) {
+      const out = html(<Button href={href}>Go</Button>);
+      expect(out, href).not.toContain("data-locale-link");
+      expect(out, href).toContain(`href="${href.replace(/&/g, "&amp;")}"`);
+    }
+  });
+
+  it("keeps locale routes, including dotted slugs in the middle of a path, on the Link", () => {
+    for (const href of ["/demo", "/sectors/real-estate?role=ceo", "/erp/odoo#modules", "/v1.2/about"]) {
+      expect(html(<Button href={href}>Go</Button>), href).toContain("data-locale-link");
+    }
+  });
+
   it("renders a native button when there is no href", () => {
     const out = html(<Button type="submit">Send</Button>);
     expect(out).toMatch(/^<button/);
