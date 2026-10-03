@@ -203,15 +203,22 @@ test.describe("mobile bottom bar", () => {
 test.describe("language toggle", () => {
   test("goes from /sectors/real-estate to /ar/sectors/real-estate", async ({ page }) => {
     await page.goto("/sectors/real-estate");
+    // Click after hydration: before it, a plain link to the unprefixed page is
+    // bounced back by the stored locale cookie (see task-7 report, concerns).
+    await page.waitForLoadState("networkidle");
     await page.locator('header a[lang="ar"]:visible').first().click();
-    await expect(page).toHaveURL(/\/ar\/sectors\/real-estate$/);
+    // A client navigation to a not-yet-compiled dev route can take a while when the suite runs in parallel.
+    await expect(page).toHaveURL(/\/ar\/sectors\/real-estate$/, { timeout: 20_000 });
     await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
   });
 
   test("goes back to English from /ar/sectors/real-estate", async ({ page }) => {
     await page.goto("/ar/sectors/real-estate");
+    // Click after hydration: before it, a plain link to the unprefixed page is
+    // bounced back by the stored locale cookie (see task-7 report, concerns).
+    await page.waitForLoadState("networkidle");
     await page.locator('header a[lang="en"]:visible').first().click();
-    await expect(page).toHaveURL(/\/sectors\/real-estate$/);
-    await expect(page.locator("html")).toHaveAttribute("lang", "en");
+    await expect(page).toHaveURL(/\/sectors\/real-estate$/, { timeout: 20_000 });
+    await expect(page.locator("html")).toHaveAttribute("lang", "en", { timeout: 20_000 });
   });
 });

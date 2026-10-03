@@ -2,25 +2,25 @@ import { cn } from "@/lib/utils";
 import Container from "@/components/v2/ui/container";
 import Section from "@/components/v2/ui/section";
 import { rootProps, type BlockProps } from "./context";
-import { Check, InlineLink, SectionHead, tx } from "./parts";
+import { Check, InlineLink, SectionHead, tn, tx } from "./parts";
 
 /** "An ERP is only as good as its setup.": the argument on one side, problem and fix rows on the other. */
 export default function SetupListBlock({ content: c, ctx, place }: BlockProps<"setup_list">) {
   const points = c.points
-    .map((p) => ({ problem: tx(ctx, p.problem), fix: tx(ctx, p.fix) }))
-    .filter((p) => p.problem !== "");
+    .filter((p) => tx(ctx, p.problem) !== "")
+    .map((p) => ({ problem: tn(ctx, p.problem), fix: tn(ctx, p.fix) }));
 
   return (
     <Section tone={place.tone} className="lg:py-[120px]" {...rootProps("setup_list", place)}>
       <Container className="grid items-start gap-10 lg:grid-cols-2 lg:gap-16 xl:gap-24">
         <SectionHead
           as={place.first ? "h1" : "h2"}
-          heading={tx(ctx, c.heading)}
-          intro={tx(ctx, c.intro)}
+          heading={tn(ctx, c.heading)}
+          intro={tn(ctx, c.intro)}
           className="gap-[22px]"
           introClassName="max-w-[460px] lg:leading-[1.6]"
         >
-          <InlineLink label={tx(ctx, c.link.label)} href={c.link.href} />
+          <InlineLink label={tn(ctx, c.link.label)} href={c.link.href} />
         </SectionHead>
         <ul className="flex min-w-0 flex-col">
           {points.map((p, i) => (

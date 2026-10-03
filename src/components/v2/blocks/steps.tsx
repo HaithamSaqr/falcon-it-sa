@@ -1,8 +1,8 @@
-import type { CSSProperties } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import type { SectionTone } from "@/components/v2/ui/section";
 
-export type Step = { title: string; description: string; duration: string };
+export type Step = { title: ReactNode; description: ReactNode; duration: ReactNode };
 
 // The dot's ring matches the band behind it, so the rail looks cut around each dot.
 const RING: Record<SectionTone, string> = {

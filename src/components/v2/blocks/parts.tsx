@@ -1,6 +1,6 @@
 import type { ElementType, ReactNode } from "react";
 import { Link } from "@/i18n/navigation";
-import { pickBi, type Bi } from "@/lib/blocks/bi";
+import { pickBi, pickBiLang, type Bi } from "@/lib/blocks/bi";
 import { boldRuns, splitHighlight } from "@/lib/blocks/text";
 import { demoHref } from "@/lib/blocks/cta";
 import { isExternalHref, isLocaleRoute } from "@/lib/href";
@@ -15,16 +15,47 @@ export function tx(ctx: RenderContext, v: Bi | null | undefined): string {
   return pickBi(v, ctx.locale);
 }
 
-/** Headline with its closing clause in brand blue (hero H1s). */
-export function Highlighted({ text }: { text: string }) {
-  const [lead, accent] = splitHighlight(text);
-  if (!accent) return <>{lead}</>;
+/** Marks text shown in the other language with its own `lang` and `dir` (bidi-isolated). */
+export function Lang({ lang, children }: { lang: "en" | "ar"; children: ReactNode }) {
   return (
+    <span lang={lang} dir={lang === "ar" ? "rtl" : "ltr"}>
+      {children}
+    </span>
+  );
+}
+
+/**
+ * Display node for a bilingual value: the locale text, or the other
+ * language's text wrapped in <Lang> when the locale side is blank. null when both are empty.
+ */
+export function tn(ctx: RenderContext, v: Bi | null | undefined): ReactNode {
+  const r = pickBiLang(v, ctx.locale);
+  if (!r.text) return null;
+  return r.fallback ? <Lang lang={r.lang}>{r.text}</Lang> : r.text;
+}
+
+/**
+ * Wraps already-built content for a bilingual value in <Lang> when that value
+ * is shown in the other language. Inline, so the block keeps the page's alignment.
+ */
+export function withLang(ctx: RenderContext, v: Bi | null | undefined, node: ReactNode): ReactNode {
+  const r = pickBiLang(v, ctx.locale);
+  return r.fallback ? <Lang lang={r.lang}>{node}</Lang> : node;
+}
+
+/** Headline with its closing clause in brand blue (hero H1s). */
+export function Highlighted({ ctx, value }: { ctx: RenderContext; value: Bi | null | undefined }) {
+  const r = pickBiLang(value, ctx.locale);
+  const [lead, accent] = splitHighlight(r.text);
+  const body = !accent ? (
+    <>{lead}</>
+  ) : (
     <>
       {lead}
       <span className={cn("text-brand", accent.length <= 24 && "sm:whitespace-nowrap")}>{accent}</span>
     </>
   );
+  return r.fallback ? <Lang lang={r.lang}>{body}</Lang> : body;
 }
 
 /** Admin text with `**bold**` runs; everything else is plain (escaped) text. */
@@ -45,8 +76,8 @@ export function RichLine({ text }: { text: string }) {
 }
 
 type SectionHeadProps = {
-  heading: string;
-  intro?: string;
+  heading: ReactNode;
+  intro?: ReactNode;
   /** h1 for the first block on a page, h2 otherwise. */
   as?: ElementType;
   className?: string;
@@ -143,12 +174,12 @@ export function PrimaryCta({
   className,
 }: {
   ctx: RenderContext;
-  label: string;
+  label: ReactNode;
   href: string;
   size?: ButtonSize;
   className?: string;
 }) {
-  if (!label) return null;
+  if (label === null || label === undefined || label === "") return null;
   const target = demoHref(href, ctx.demoUrl);
   const isDemo = target === ctx.demoUrl;
   if (isDemo && ctx.sector) {
@@ -169,7 +200,7 @@ export function PrimaryCta({
  * Secondary hero CTA: WhatsApp links get the WhatsApp glyph (home mockup),
  * everything else is an underlined text link (sector mockup).
  */
-export function SecondaryCta({ label, href, className }: { label: string; href: string; className?: string }) {
+export function SecondaryCta({ label, href, className }: { label: ReactNode; href: string; className?: string }) {
   if (!label || !href) return null;
   const whatsapp = /^https:\/\/(wa\.me|api\.whatsapp\.com)\//.test(href);
   if (whatsapp) {
@@ -200,7 +231,7 @@ export function SecondaryCta({ label, href, className }: { label: string; href: 
 }
 
 /** Inline text link in brand blue (section links such as "How we set it up"). */
-export function InlineLink({ label, href, className }: { label: string; href: string; className?: string }) {
+export function InlineLink({ label, href, className }: { label: ReactNode; href: string; className?: string }) {
   if (!label || !href) return null;
   return (
     <SmartLink

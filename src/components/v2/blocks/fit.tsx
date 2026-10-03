@@ -4,7 +4,7 @@ import Container from "@/components/v2/ui/container";
 import Section from "@/components/v2/ui/section";
 import type { FitContent } from "@/lib/blocks/schemas/fit";
 import { rootProps, type BlockProps, type RenderContext } from "./context";
-import { SectionHead, tx } from "./parts";
+import { SectionHead, tn, tx } from "./parts";
 
 // The two systems' official logos (brand marks, not editable copy); the option name is the alt text.
 const LOGOS = {
@@ -14,8 +14,8 @@ const LOGOS = {
 
 function Option({ option, side, ctx }: { option: FitContent["odoo"]; side: keyof typeof LOGOS; ctx: RenderContext }) {
   const logo = LOGOS[side];
-  const when = tx(ctx, option.when);
-  const points = option.points.map((p) => tx(ctx, p)).filter(Boolean);
+  const when = tn(ctx, option.when);
+  const points = option.points.filter((p) => tx(ctx, p) !== "").map((p) => tn(ctx, p));
   return (
     <article className="rounded-[26px] bg-[#EDF0F4] p-1.5 shadow-[inset_0_0_0_1px_rgba(11,26,51,0.05)] sm:rounded-[32px] sm:p-2">
       <div className="flex h-full flex-col gap-4 rounded-[20px] bg-surface p-6 sm:rounded-[25px] lg:gap-5 lg:px-[38px] lg:py-9">
@@ -45,11 +45,11 @@ function Option({ option, side, ctx }: { option: FitContent["odoo"]; side: keyof
 
 /** "Odoo or Falcon? We will tell you plainly.": when each system fits this sector. */
 export default function FitBlock({ content: c, ctx, place }: BlockProps<"fit">) {
-  const closing = tx(ctx, c.closing);
+  const closing = tn(ctx, c.closing);
   return (
     <Section tone={place.tone} {...rootProps("fit", place)}>
       <Container className="flex flex-col gap-10 lg:gap-12">
-        <SectionHead as={place.first ? "h1" : "h2"} heading={tx(ctx, c.heading)} intro={tx(ctx, c.intro)} className="max-w-[800px]" />
+        <SectionHead as={place.first ? "h1" : "h2"} heading={tn(ctx, c.heading)} intro={tn(ctx, c.intro)} className="max-w-[800px]" />
         <div className="grid gap-4 md:grid-cols-2 lg:gap-5">
           <Option option={c.odoo} side="odoo" ctx={ctx} />
           <Option option={c.falcon} side="falcon" ctx={ctx} />

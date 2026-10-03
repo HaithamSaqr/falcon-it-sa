@@ -1,11 +1,12 @@
 import type { ReactNode } from "react";
 import { pickBi } from "@/lib/blocks/bi";
+import { isSafeLink } from "@/lib/blocks/links";
 import { displayPhone, isHiddenPhone, isUnusableWhatsapp, telHref, type PublicSettings } from "@/lib/public-chrome";
 import Container from "@/components/v2/ui/container";
 import Section from "@/components/v2/ui/section";
 import Icon from "@/components/v2/ui/icon";
 import { rootProps, type BlockProps } from "./context";
-import { SectionHead, SmartLink, tx } from "./parts";
+import { SectionHead, SmartLink, tn } from "./parts";
 
 const SOCIAL: { key: keyof PublicSettings["social"]; icon: string; network: string }[] = [
   { key: "linkedin", icon: "LinkedinLogo", network: "LinkedIn" },
@@ -16,7 +17,7 @@ const SOCIAL: { key: keyof PublicSettings["social"]; icon: string; network: stri
   { key: "tiktok", icon: "TiktokLogo", network: "TikTok" },
 ];
 
-function Row({ icon, label, children }: { icon: string; label: string; children: ReactNode }) {
+function Row({ icon, label, children }: { icon: string; label: ReactNode; children: ReactNode }) {
   return (
     <li className="flex items-start gap-4 py-5 shadow-[inset_0_-1px_0_rgba(11,26,51,0.08)]">
       <span className="inline-flex size-11 shrink-0 items-center justify-center rounded-full bg-sky text-brand">
@@ -41,12 +42,13 @@ export default function ContactInfoBlock({ content: c, ctx, place }: BlockProps<
   // Digits only for wa.me; Egyptian, placeholder and blank numbers are never shown.
   const whatsapp = s && !isUnusableWhatsapp(s.company.whatsapp) ? s.company.whatsapp.replace(/\D/g, "").replace(/^00/, "") : "";
   const branches = s?.company.branches ?? [];
-  const socials = s ? SOCIAL.filter((x) => (s.social[x.key] ?? "").trim() !== "") : [];
+  // Settings-sourced links: only paths and https URLs are rendered.
+  const socials = s ? SOCIAL.filter((x) => isSafeLink((s.social[x.key] ?? "").trim())) : [];
 
   return (
     <Section tone={place.tone} className={place.first ? "pt-10 md:pt-14 lg:pt-[72px]" : undefined} {...rootProps("contact_info", place)}>
       <Container className="grid items-start gap-10 lg:grid-cols-2 lg:gap-16 xl:gap-24">
-        <SectionHead as={place.first ? "h1" : "h2"} heading={tx(ctx, c.heading)} intro={tx(ctx, c.intro)} />
+        <SectionHead as={place.first ? "h1" : "h2"} heading={tn(ctx, c.heading)} intro={tn(ctx, c.intro)} />
         <ul className="flex min-w-0 flex-col">
           {show.phone && phone && (
             <Row icon="Phone" label={ctx.labels.phone}>
@@ -71,13 +73,13 @@ export default function ContactInfoBlock({ content: c, ctx, place }: BlockProps<
           )}
           {show.address && !show.branches && branches[0] && pickBi(branches[0].address, lang) && (
             <Row icon="MapPin" label={ctx.labels.address}>
-              {pickBi(branches[0].address, lang)}
+              {tn(ctx, branches[0].address)}
             </Row>
           )}
           {show.branches &&
             branches.map((b) => (
-              <Row key={b.id} icon="MapPin" label={pickBi(b.name, lang) || ctx.labels.address}>
-                <span className="block font-normal">{pickBi(b.address, lang)}</span>
+              <Row key={b.id} icon="MapPin" label={tn(ctx, b.name) ?? ctx.labels.address}>
+                <span className="block font-normal">{tn(ctx, b.address)}</span>
                 {!isHiddenPhone(b.phone) && (
                   <a href={telHref(b.phone)} dir="ltr" className={`${LINK} mt-1 inline-block text-[15px] font-semibold`}>
                     {displayPhone(b.phone)}
@@ -91,7 +93,7 @@ export default function ContactInfoBlock({ content: c, ctx, place }: BlockProps<
               {socials.map((x) => (
                 <SmartLink
                   key={x.key}
-                  href={s!.social[x.key]}
+                  href={s!.social[x.key].trim()}
                   aria-label={x.network}
                   className="inline-flex size-10 items-center justify-center rounded-full bg-surface text-ink shadow-[inset_0_0_0_1px_rgba(11,26,51,0.12)] hover:bg-sky"
                 >

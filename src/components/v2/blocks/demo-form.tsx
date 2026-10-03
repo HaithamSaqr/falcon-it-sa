@@ -1,7 +1,7 @@
 import Container from "@/components/v2/ui/container";
 import Section from "@/components/v2/ui/section";
 import { rootProps, type BlockProps } from "./context";
-import { SectionHead, tx } from "./parts";
+import { SectionHead, tn } from "./parts";
 
 /**
  * Frames the demo booking form: heading, body and privacy note beside a white
@@ -9,7 +9,7 @@ import { SectionHead, tx } from "./parts";
  * passed in by the demo page through the renderer context.
  */
 export default function DemoFormBlock({ content: c, ctx, place }: BlockProps<"demo_form">) {
-  const note = tx(ctx, c.privacyNote);
+  const note = tn(ctx, c.privacyNote);
   return (
     <Section tone={place.tone} className={place.first ? "pt-10 md:pt-14 lg:pt-[72px]" : undefined} {...rootProps("demo_form", place)}>
       <Container
@@ -19,7 +19,7 @@ export default function DemoFormBlock({ content: c, ctx, place }: BlockProps<"de
             : "grid"
         }
       >
-        <SectionHead as={place.first ? "h1" : "h2"} heading={tx(ctx, c.heading)} intro={tx(ctx, c.body)}>
+        <SectionHead as={place.first ? "h1" : "h2"} heading={tn(ctx, c.heading)} intro={tn(ctx, c.body)}>
           {note && <p className="v2-copy mt-2 max-w-[470px] text-sm text-muted">{note}</p>}
         </SectionHead>
         {ctx.demoForm && (

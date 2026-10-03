@@ -1,7 +1,7 @@
 import Container from "@/components/v2/ui/container";
 import Section from "@/components/v2/ui/section";
 import { rootProps, type BlockProps } from "./context";
-import { PrimaryCta, tx } from "./parts";
+import { PrimaryCta, tn } from "./parts";
 
 /**
  * The committed brand-blue band (once per page): the promise on one side, a
@@ -9,16 +9,16 @@ import { PrimaryCta, tx } from "./parts";
  * pages the link carries `?sector=&role=`.
  */
 export default function BookingBlock({ content: c, ctx, place }: BlockProps<"booking">) {
-  const body = tx(ctx, c.body);
-  const noteTitle = tx(ctx, c.noteTitle);
-  const note = tx(ctx, c.note);
+  const body = tn(ctx, c.body);
+  const noteTitle = tn(ctx, c.noteTitle);
+  const note = tn(ctx, c.note);
   const H = place.first ? "h1" : "h2";
 
   return (
     <Section tone="brand" className="pb-28 md:pb-24 lg:pb-28" {...rootProps("booking", place)}>
       <Container className="grid items-start gap-8 lg:items-center lg:grid-cols-[minmax(0,1fr)_440px] lg:gap-16 xl:grid-cols-[minmax(0,1fr)_540px] xl:gap-24">
         <div className="flex min-w-0 flex-col gap-[18px] lg:gap-6">
-          <H className="v2-h2-xl">{tx(ctx, c.heading)}</H>
+          <H className="v2-h2-xl">{tn(ctx, c.heading)}</H>
           {body && (
             <p className="v2-copy max-w-[540px] text-base text-[#E3EFFB] lg:text-xl rtl:lg:leading-[1.9]">{body}</p>
           )}
@@ -37,7 +37,7 @@ export default function BookingBlock({ content: c, ctx, place }: BlockProps<"boo
             )}
             <PrimaryCta
               ctx={ctx}
-              label={tx(ctx, c.cta.label)}
+              label={tn(ctx, c.cta.label)}
               href={c.cta.href}
               className="mt-1 w-full justify-between"
             />

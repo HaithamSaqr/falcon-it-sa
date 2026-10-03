@@ -24,6 +24,9 @@ async function litStages(scope: Locator): Promise<string[]> {
 
 for (const path of PATHS) {
   test.describe(`blocks on ${path}`, () => {
+    // The full gallery is heavy in dev mode; the desktop project already checks
+    // both widths (390 and 1440), so the mobile project skips these loads.
+    test.skip(({ isMobile }) => isMobile, "full-gallery checks run once, in the desktop project, at both widths");
     test("every block has a heading or aria-label, no undefined, no empty images, FAQ JSON-LD, anchors", async ({ page }) => {
       test.setTimeout(120_000);
       await page.goto(path, { waitUntil: "domcontentloaded", timeout: 90_000 });
@@ -164,15 +167,90 @@ test("primary CTAs point at the demo url", async ({ page }) => {
   await expect(home.locator('[data-block-type="booking"]').getByRole("link", { name: "Book a demo" })).toHaveAttribute("href", "/demo");
 });
 
-test("hydrates without mismatches or page errors", async ({ page }) => {
-  const problems: string[] = [];
-  page.on("pageerror", (e) => problems.push(e.message));
-  page.on("console", (m) => {
-    if (m.type() === "error" && /hydrat|did not match|Each child in a list/i.test(m.text())) problems.push(m.text().slice(0, 200));
+for (const path of PATHS) {
+  test(`${path}: no console error or page error anywhere in the gallery`, async ({ page, isMobile }) => {
+    test.skip(isMobile, "full-gallery check runs once, in the desktop project");
+    // Nothing is allowlisted: missing images, hydration mismatches, key warnings
+    // and React errors all count.
+    test.setTimeout(150_000);
+    const problems: string[] = [];
+    page.on("pageerror", (e) => problems.push(`pageerror: ${e.message}`));
+    page.on("console", (m) => {
+      if (m.type() === "error") problems.push(`console: ${m.text().slice(0, 300)} @ ${m.location().url}`);
+    });
+    page.on("response", (r) => {
+      if (r.status() >= 400) problems.push(`http ${r.status()}: ${r.url()}`);
+    });
+    await page.goto(path, { timeout: 120_000 });
+    // Scroll the whole gallery so every lazy image is requested.
+    await page.evaluate(async () => {
+      for (let y = 0; y < document.body.scrollHeight; y += 700) {
+        window.scrollTo(0, y);
+        await new Promise((r) => setTimeout(r, 25));
+      }
+    });
+    await page.waitForLoadState("networkidle", { timeout: 60_000 });
+    expect(problems).toEqual([]);
   });
-  await page.goto(only("/dev-blocks", "home", "sector:real-estate", "fixtures", "faq", "contact"));
-  await page.waitForLoadState("networkidle");
-  expect(problems).toEqual([]);
+}
+
+test("text shown in the other language carries its own lang and dir", async ({ page }) => {
+  await page.goto(only("/ar/dev-blocks", "edge-blank-ar"));
+  const edge = group(page, "edge-blank-ar");
+  await expect(edge.locator('[lang="en"][dir="ltr"]', { hasText: "English only heading" })).toHaveCount(1);
+  await expect(edge.locator('[lang="en"][dir="ltr"]', { hasText: "English only paragraph" })).toHaveCount(1);
+  // Visiting /ar stores the locale cookie; clear it so /dev-blocks stays English.
+  await page.context().clearCookies();
+  await page.goto(only("/dev-blocks", "edge-blank-ar"));
+  await expect(group(page, "edge-blank-ar").locator('[lang="ar"][dir="rtl"]', { hasText: "عنوان بالعربية فقط" })).toHaveCount(1);
+});
+
+test("unlit stages keep readable text: no card-wide opacity, ink titles, muted descriptions", async ({ page }) => {
+  await page.goto(only("/dev-blocks", "sector:real-estate"));
+  const re = group(page, "sector:real-estate");
+  await re.getByRole("radio", { name: "Contractor" }).click();
+  await expect.poll(() => litStages(re)).toEqual(["2", "3", "6"]);
+  const stage1 = re.locator('[data-stage="1"]');
+  const styles = await stage1.evaluate((el) => ({
+    opacity: getComputedStyle(el).opacity,
+    title: getComputedStyle(el.querySelector("h3")!).color,
+    text: getComputedStyle(el.querySelector("p")!).color,
+    textOpacity: getComputedStyle(el.querySelector("p")!).opacity,
+  }));
+  expect(styles).toEqual({ opacity: "1", title: "rgb(11, 26, 51)", text: "rgb(91, 104, 128)", textOpacity: "1" });
+});
+
+test("FAQ items without an answer: no FAQPage JSON-LD for them, no accordion trigger", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 900 });
+  await page.goto(only("/dev-blocks", "edge-blank-ar"));
+  const edge = group(page, "edge-blank-ar");
+  await expect(edge.locator('[data-block-type="faq_ref"]')).toHaveCount(1);
+  await expect(edge.locator('script[type="application/ld+json"]')).toHaveCount(0);
+  await expect(edge.getByText("A question nobody answered yet").filter({ visible: true })).toHaveCount(1);
+  await expect(edge.locator("button", { hasText: "A question nobody answered yet" })).toHaveCount(0);
+});
+
+test("a role without content never hides the role switcher, and the sector hero always has an H1", async ({ page }) => {
+  await page.goto(only("/dev-blocks", "edge-roles", "edge-hero-roles"));
+  const pains = group(page, "edge-roles");
+  await pains.getByRole("radio", { name: "Second role" }).click();
+  await expect(pains.getByRole("radio", { name: "Second role" })).toHaveAttribute("aria-checked", "true");
+  await expect(pains.locator('[data-block-type="role_pains"]')).toHaveCount(1);
+  await expect(pains.locator('[data-block-type="role_pains"] h1, [data-block-type="role_pains"] h2').first()).toHaveText("Sound familiar?");
+
+  const hero = group(page, "edge-hero-roles");
+  await expect(hero.locator("h1")).toHaveText("Only the first role has a promise.");
+  await hero.getByRole("radio", { name: "Second role" }).click();
+  await expect(hero.getByRole("radio", { name: "Second role" })).toHaveAttribute("aria-checked", "true");
+  await expect(hero.locator("h1")).toHaveText("Only the first role has a promise.");
+});
+
+test("hero pills with no visible label still name their radiogroup", async ({ page }) => {
+  await page.goto(only("/ar/dev-blocks", "edge-blank-ar"));
+  await expect(group(page, "edge-blank-ar").getByRole("radiogroup", { name: "القطاعات" })).toHaveCount(1);
+  await page.context().clearCookies();
+  await page.goto(only("/dev-blocks", "edge-blank-ar"));
+  await expect(group(page, "edge-blank-ar").getByRole("radiogroup", { name: "Sectors" })).toHaveCount(1);
 });
 
 test("dev-blocks is not indexable", async ({ page }) => {

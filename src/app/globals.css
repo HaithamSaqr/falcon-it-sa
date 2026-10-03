@@ -410,11 +410,14 @@
     transition: opacity 280ms var(--ease-out-quint), background-color 280ms var(--ease-out-quint),
       box-shadow 280ms var(--ease-out-quint);
   }
+  /* Unlit (R12): only the frame, number, badge and modules recede; the title
+     stays ink and the description muted, both at full opacity (4.5:1+). */
   .v2-stage[data-lit="false"] {
-    opacity: .5;
     background: var(--color-page);
-    box-shadow: none;
+    box-shadow: inset 0 0 0 1px rgba(11, 26, 51, .06);
   }
+  .v2-stage-desc { color: var(--color-body); }
+  .v2-stage[data-lit="false"] .v2-stage-desc { color: var(--color-muted); }
   .v2-stage[data-lit="true"][data-changed="true"] {
     animation: v2-lit 320ms var(--ease-rise) both;
   }
@@ -436,6 +439,7 @@
     background: transparent;
     color: var(--color-muted);
     box-shadow: inset 0 0 0 2px #D3E3F3;
+    opacity: .6;
   }
   .v2-stage-inner { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
   .v2-stage-badge,
@@ -477,7 +481,10 @@
       background: var(--color-surface);
       box-shadow: 0 20px 40px -30px rgba(12, 60, 120, .5);
     }
-    .v2-stage[data-lit="false"] .v2-stage-card,
+    .v2-stage[data-lit="false"] .v2-stage-card {
+      background: var(--color-page);
+      box-shadow: inset 0 0 0 1px rgba(11, 26, 51, .05);
+    }
     .v2-stage[data-lit="false"] .v2-stage-inner {
       background: var(--color-page);
       box-shadow: none;
@@ -502,6 +509,7 @@
       line-height: 1.7;
       color: var(--color-brand);
     }
+    /* Muted at full opacity: still 4.5:1 on the page tone. */
     .v2-stage[data-lit="false"] .v2-stage-modules { color: var(--color-muted); }
   }
 }

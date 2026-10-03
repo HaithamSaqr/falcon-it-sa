@@ -11,7 +11,7 @@ import PillGroup from "./pills";
 export type HeroTileData = {
   image: string;
   alt: string;
-  caption: string;
+  caption: ReactNode;
   /** Second line ("See how we set it up"). */
   sub: string;
   /** "" means the tile is not a link. */
@@ -22,9 +22,9 @@ export type HeroTileData = {
 
 export type HeroPillData = {
   id: string;
-  label: string;
-  /** "" keeps the hero subtitle. */
-  subtitle: string;
+  label: ReactNode;
+  /** null keeps the hero subtitle. */
+  subtitle: ReactNode;
   tile: HeroTileData | null;
 };
 
@@ -54,12 +54,21 @@ export function HeroSectorSwitcher({ pills, children }: { pills: HeroPillData[];
   return <HeroContext.Provider value={value}>{children}</HeroContext.Provider>;
 }
 
-export function HeroSectorPills({ label, className }: { label: string; className?: string }) {
+export function HeroSectorPills({
+  label,
+  fallbackLabel,
+  className,
+}: {
+  label: ReactNode;
+  fallbackLabel: string;
+  className?: string;
+}) {
   const ctx = useContext(HeroContext);
   if (!ctx || ctx.pills.length === 0) return null;
   return (
     <PillGroup
       label={label}
+      fallbackLabel={fallbackLabel}
       options={ctx.pills.map((p) => ({ id: p.id, label: p.label }))}
       value={ctx.selected?.id ?? null}
       onChange={ctx.select}
@@ -69,7 +78,7 @@ export function HeroSectorPills({ label, className }: { label: string; className
   );
 }
 
-export function HeroSubtitle({ text, className }: { text: string; className?: string }) {
+export function HeroSubtitle({ text, className }: { text: ReactNode; className?: string }) {
   const ctx = useContext(HeroContext);
   const shown = ctx?.selected?.subtitle || text;
   if (!shown) return null;

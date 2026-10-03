@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { boldRuns, splitHighlight } from "@/lib/blocks/text";
-import { demoHref, sectorDemoHref } from "@/lib/blocks/cta";
+import { demoHref, safeDemoUrl, sectorDemoHref } from "@/lib/blocks/cta";
 
 describe("splitHighlight", () => {
   it("highlights the clause after the last internal break", () => {
@@ -52,5 +52,26 @@ describe("demo links", () => {
     expect(sectorDemoHref("https://cal.example/a#top", "retail", "owner")).toBe(
       "https://cal.example/a?sector=retail&role=owner#top",
     );
+  });
+});
+
+describe("pickBiLang", () => {
+  it("reports which language the text came from", async () => {
+    const { pickBiLang } = await import("@/lib/blocks/bi");
+    expect(pickBiLang({ en: "Hello", ar: "مرحبا" }, "ar")).toEqual({ text: "مرحبا", lang: "ar", fallback: false });
+    expect(pickBiLang({ en: "Hello", ar: "" }, "ar")).toEqual({ text: "Hello", lang: "en", fallback: true });
+    expect(pickBiLang({ en: " ", ar: "مرحبا" }, "en")).toEqual({ text: "مرحبا", lang: "ar", fallback: true });
+    expect(pickBiLang({ en: "", ar: "" }, "en")).toEqual({ text: "", lang: "en", fallback: false });
+    expect(pickBiLang(undefined, "ar")).toEqual({ text: "", lang: "ar", fallback: false });
+  });
+});
+
+describe("safeDemoUrl", () => {
+  it("keeps a safe path or https URL and falls back to /demo otherwise", () => {
+    expect(safeDemoUrl("/book")).toBe("/book");
+    expect(safeDemoUrl("https://cal.example/a")).toBe("https://cal.example/a");
+    for (const bad of ["", undefined, "javascript:alert(1)", "//evil.example", "http://x.example", "/a b"]) {
+      expect(safeDemoUrl(bad)).toBe("/demo");
+    }
   });
 });

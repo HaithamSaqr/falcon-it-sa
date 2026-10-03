@@ -1,13 +1,15 @@
 "use client";
 
-import { useId, useRef, type KeyboardEvent } from "react";
+import { useId, useRef, type KeyboardEvent, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
-export type PillOption = { id: string; label: string };
+export type PillOption = { id: string; label: ReactNode };
 
 type PillGroupProps = {
   /** Visible label beside (or above) the pills; also the group's accessible name. */
-  label: string;
+  label: ReactNode;
+  /** Accessible name when there is no visible label. */
+  fallbackLabel?: string;
   options: PillOption[];
   /** Selected id, or null for none. */
   value: string | null;
@@ -33,6 +35,7 @@ const SIZES = {
  */
 export default function PillGroup({
   label,
+  fallbackLabel,
   options,
   value,
   onChange,
@@ -80,7 +83,12 @@ export default function PillGroup({
           {label}
         </span>
       )}
-      <div role="radiogroup" aria-labelledby={label ? labelId : undefined} className="flex flex-wrap gap-2">
+      <div
+        role="radiogroup"
+        aria-labelledby={label ? labelId : undefined}
+        aria-label={label ? undefined : fallbackLabel}
+        className="flex flex-wrap gap-2"
+      >
         {options.map((o, i) => {
           const checked = o.id === value;
           return (

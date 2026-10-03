@@ -4,6 +4,13 @@
  * (`site_settings.demo_url`) moves every "Book a demo" button.
  */
 
+import { isSafeLink } from "./links";
+
+/** The configured demo url if it is a safe link (path or https URL), else `/demo`. */
+export function safeDemoUrl(v: string | null | undefined): string {
+  return typeof v === "string" && isSafeLink(v) ? v : "/demo";
+}
+
 export function demoHref(href: string | null | undefined, demoUrl: string): string {
   return !href || href === "/demo" ? demoUrl : href;
 }

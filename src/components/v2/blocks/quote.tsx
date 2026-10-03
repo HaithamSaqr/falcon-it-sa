@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 import Container from "@/components/v2/ui/container";
 import Section from "@/components/v2/ui/section";
 import { rootProps, type BlockProps } from "./context";
-import { tx } from "./parts";
+import { tn, tx, withLang } from "./parts";
 
 /** One real client quote in a quiet card, with the client logo beside it. */
 export default function QuoteBlock({ content: c, ctx, place }: BlockProps<"quote">) {
@@ -30,13 +30,19 @@ export default function QuoteBlock({ content: c, ctx, place }: BlockProps<"quote
         >
           <div className="flex min-w-0 flex-col gap-[22px]">
             <blockquote className="text-2xl font-bold leading-[1.25] tracking-[-0.02em] [overflow-wrap:anywhere] lg:text-[34px] rtl:font-semibold rtl:leading-[1.65] rtl:tracking-normal rtl:lg:text-[28px]">
-              {open}
-              {text}
-              {close}
+              {withLang(
+                ctx,
+                c.text,
+                <>
+                  {open}
+                  {text}
+                  {close}
+                </>,
+              )}
             </blockquote>
             {(name || by) && (
               <figcaption className="text-base text-body">
-                {name && <span className="font-bold text-ink rtl:font-semibold">{name}</span>}
+                {name && <span className="font-bold text-ink rtl:font-semibold">{tn(ctx, c.name)}</span>}
                 {name && by && (ctx.locale === "ar" ? "، " : ", ")}
                 {by}
               </figcaption>

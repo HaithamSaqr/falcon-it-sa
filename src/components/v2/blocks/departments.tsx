@@ -4,7 +4,7 @@ import Container from "@/components/v2/ui/container";
 import Section from "@/components/v2/ui/section";
 import Icon from "@/components/v2/ui/icon";
 import { rootProps, type BlockProps } from "./context";
-import { SectionHead, tx } from "./parts";
+import { SectionHead, tn, tx } from "./parts";
 
 /**
  * "One system. Every department.": heading, intro and a two-column list of
@@ -13,8 +13,8 @@ import { SectionHead, tx } from "./parts";
  */
 export default function DepartmentsBlock({ content: c, ctx, place }: BlockProps<"departments">) {
   const items = c.items
-    .map((it) => ({ icon: it.icon, title: tx(ctx, it.title), line: tx(ctx, it.line) }))
-    .filter((it) => it.title !== "");
+    .filter((it) => tx(ctx, it.title) !== "")
+    .map((it) => ({ icon: it.icon, title: tn(ctx, it.title), line: tn(ctx, it.line) }));
   const image = c.image ?? "";
 
   const list = (
@@ -50,8 +50,8 @@ export default function DepartmentsBlock({ content: c, ctx, place }: BlockProps<
         <div className="flex min-w-0 flex-col gap-9">
           <SectionHead
             as={place.first ? "h1" : "h2"}
-            heading={tx(ctx, c.heading)}
-            intro={tx(ctx, c.intro)}
+            heading={tn(ctx, c.heading)}
+            intro={tn(ctx, c.intro)}
             introClassName="max-w-[520px]"
           />
           {list}

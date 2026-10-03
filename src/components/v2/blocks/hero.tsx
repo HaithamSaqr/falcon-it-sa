@@ -11,7 +11,7 @@ import {
   type HeroTileData,
 } from "@/components/v2/islands/hero-sector-switcher";
 import { rootProps, type BlockProps } from "./context";
-import { Highlighted, PrimaryCta, SecondaryCta, tx } from "./parts";
+import { Highlighted, PrimaryCta, SecondaryCta, tn, tx } from "./parts";
 
 /** Product screenshot on the floating card while no sector is picked (design element, not content). */
 const MODULES_SHOT = "/images/v2/shot-apps-top.jpg";
@@ -21,23 +21,23 @@ const MODULES_SHOT = "/images/v2/shot-apps-top.jpg";
  * framed photo with a floating card. Pills swap the subtitle and the card.
  */
 export default function HeroBlock({ content: c, ctx, place }: BlockProps<"hero">) {
-  const title = tx(ctx, c.title);
   const pills: HeroPillData[] = c.sectorPills
-    .map((p, i) => {
-      const caption = tx(ctx, p.caption);
+    .map((p, i) => ({ p, i }))
+    .filter(({ p }) => tx(ctx, p.label) !== "")
+    .map(({ p, i }) => {
+      const caption = tn(ctx, p.caption);
       return {
         id: `p${i}`,
-        label: tx(ctx, p.label),
-        subtitle: tx(ctx, p.subtitle),
+        label: tn(ctx, p.label),
+        subtitle: tn(ctx, p.subtitle),
         tile:
           caption || p.image
             ? { image: p.image, alt: tx(ctx, p.alt), caption, sub: ctx.labels.seeSetup, href: p.href }
             : null,
       };
-    })
-    .filter((p) => p.label !== "");
+    });
 
-  const caption = tx(ctx, c.card.caption);
+  const caption = tn(ctx, c.card.caption);
   // With sector pills the card previews the modules; otherwise it captions the photo.
   const fallback: HeroTileData | null = caption
     ? pills.length > 0
@@ -58,18 +58,24 @@ export default function HeroBlock({ content: c, ctx, place }: BlockProps<"hero">
         >
           <div className="flex min-w-0 flex-col gap-6 lg:gap-[30px]">
             <h1 className="v2-display animate-rise">
-              <Highlighted text={title} />
+              <Highlighted ctx={ctx} value={c.title} />
             </h1>
             <div className="animate-rise rise-d1">
               <HeroSubtitle
-                text={tx(ctx, c.subtitle)}
+                text={tn(ctx, c.subtitle)}
                 className="v2-copy max-w-[540px] text-[17px] text-body lg:text-xl rtl:lg:leading-[1.9]"
               />
             </div>
-            {pills.length > 0 && <HeroSectorPills label={tx(ctx, c.sectorsLabel)} className="animate-rise rise-d2" />}
+            {pills.length > 0 && (
+              <HeroSectorPills
+                label={tn(ctx, c.sectorsLabel)}
+                fallbackLabel={ctx.labels.sectors}
+                className="animate-rise rise-d2"
+              />
+            )}
             <div className="animate-rise rise-d3 flex flex-wrap items-center gap-x-[26px] gap-y-4">
-              <PrimaryCta ctx={ctx} label={tx(ctx, c.primaryCta.label)} href={c.primaryCta.href} />
-              <SecondaryCta label={tx(ctx, c.secondaryCta.label)} href={c.secondaryCta.href} />
+              <PrimaryCta ctx={ctx} label={tn(ctx, c.primaryCta.label)} href={c.primaryCta.href} />
+              <SecondaryCta label={tn(ctx, c.secondaryCta.label)} href={c.secondaryCta.href} />
             </div>
           </div>
 

@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import Container from "@/components/v2/ui/container";
 import Section from "@/components/v2/ui/section";
 import { rootProps, type BlockProps } from "./context";
-import { InlineLink, tx } from "./parts";
+import { InlineLink, tn, tx } from "./parts";
 
 /** Client logo strip: a quiet line and greyed logos (clients table). Tucks under a hero. */
 export default function LogoWallBlock({ content: c, ctx, place }: BlockProps<"logo_wall">) {
@@ -21,8 +21,8 @@ export default function LogoWallBlock({ content: c, ctx, place }: BlockProps<"lo
       {...rootProps("logo_wall", place)}
     >
       <Container className="flex flex-col gap-4 lg:gap-[22px]">
-        {heading && <h2 className="text-[13px] font-normal leading-normal tracking-normal text-muted lg:text-sm">{heading}</h2>}
-        {tx(ctx, c.intro) && <p className="v2-copy text-[15px] text-body">{tx(ctx, c.intro)}</p>}
+        {heading && <h2 className="text-[13px] font-normal leading-normal tracking-normal text-muted lg:text-sm">{tn(ctx, c.heading)}</h2>}
+        {tx(ctx, c.intro) && <p className="v2-copy text-[15px] text-body">{tn(ctx, c.intro)}</p>}
         <ul
           className="grid grid-cols-4 items-center gap-x-[18px] gap-y-6 md:gap-x-8 lg:grid-cols-[repeat(var(--cols),minmax(0,1fr))] lg:gap-9"
           style={{ "--cols": cols } as CSSProperties}
@@ -39,7 +39,7 @@ export default function LogoWallBlock({ content: c, ctx, place }: BlockProps<"lo
             </li>
           ))}
         </ul>
-        <InlineLink label={tx(ctx, c.link.label)} href={c.link.href} className="mt-2" />
+        <InlineLink label={tn(ctx, c.link.label)} href={c.link.href} className="mt-2" />
       </Container>
     </Section>
   );

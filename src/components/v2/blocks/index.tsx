@@ -4,6 +4,7 @@ import type { Bi } from "@/lib/blocks/bi";
 import type { Block, BlockType } from "@/lib/blocks/types";
 import { getClients } from "@/lib/data-store";
 import { getPublicSettings } from "@/lib/public-settings";
+import { safeDemoUrl } from "@/lib/blocks/cta";
 import { V2_CLIENT_LOGOS } from "@/lib/blocks/seed/clients";
 import type { SectionTone } from "@/components/v2/ui/section";
 import { RoleProvider } from "@/components/v2/islands/role-provider";
@@ -185,7 +186,8 @@ export default async function BlockRenderer({ blocks, locale, context = {} }: Bl
 
   const ctx: RenderContext = {
     locale: lang,
-    demoUrl: context.demoUrl || settings?.primaryCta.demoUrl || "/demo",
+    // Settings come from the database: only a path or https URL is used.
+    demoUrl: safeDemoUrl(context.demoUrl || settings?.primaryCta.demoUrl),
     sector: context.sector ? { id: context.sector.id, name: context.sector.name } : undefined,
     roleAware: roleIds.length > 0,
     clients,

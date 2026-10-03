@@ -4,7 +4,7 @@ import { demoHref } from "@/lib/blocks/cta";
 import Container from "@/components/v2/ui/container";
 import Section from "@/components/v2/ui/section";
 import { rootProps, type BlockProps } from "./context";
-import { ArrowBadge, SectionHead, SmartLink, tx } from "./parts";
+import { ArrowBadge, SectionHead, SmartLink, tn, tx } from "./parts";
 
 // Static class names so Tailwind sees them: the closing card fills the rest of its row.
 const FILL_SPAN: Record<number, string> = { 4: "lg:col-span-4", 8: "lg:col-span-8", 12: "lg:col-span-12" };
@@ -16,12 +16,12 @@ const CARD =
 /** Equal sector cards (photo cards, then text-only cards) and the "Don't see your sector?" card. */
 export default function SectorGridBlock({ content: c, ctx, place }: BlockProps<"sector_grid">) {
   const cards = c.cards
-    .map((card) => ({ ...card, title: tx(ctx, card.title), line: tx(ctx, card.line), alt: tx(ctx, card.imageAlt) }))
-    .filter((card) => card.title !== "");
+    .filter((card) => tx(ctx, card.title) !== "")
+    .map((card) => ({ ...card, title: tn(ctx, card.title), line: tn(ctx, card.line), alt: tx(ctx, card.imageAlt) }));
   const other = {
-    title: tx(ctx, c.otherCard.title),
-    line: tx(ctx, c.otherCard.line),
-    cta: tx(ctx, c.otherCard.ctaLabel),
+    title: tn(ctx, c.otherCard.title),
+    line: tn(ctx, c.otherCard.line),
+    cta: tn(ctx, c.otherCard.ctaLabel),
     href: demoHref(c.otherCard.href, ctx.demoUrl),
   };
   // Every card spans 4 of 12 columns on desktop (2 of 2 columns below).
@@ -32,7 +32,7 @@ export default function SectorGridBlock({ content: c, ctx, place }: BlockProps<"
   return (
     <Section tone={place.tone} {...rootProps("sector_grid", place)}>
       <Container className="flex flex-col gap-10 lg:gap-12">
-        <SectionHead as={place.first ? "h1" : "h2"} heading={tx(ctx, c.heading)} intro={tx(ctx, c.intro)} className="max-w-[700px]" />
+        <SectionHead as={place.first ? "h1" : "h2"} heading={tn(ctx, c.heading)} intro={tn(ctx, c.intro)} className="max-w-[700px]" />
         <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-12">
           {cards.map((card, i) => (
             <li key={i} className="flex lg:col-span-4">

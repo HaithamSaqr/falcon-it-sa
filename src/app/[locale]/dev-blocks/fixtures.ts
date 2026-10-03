@@ -10,6 +10,10 @@ const bi = (en: string, ar = "") => ({ en, ar });
 export const TITLE_140 =
   "A deliberately long headline typed into the admin to check that every block wraps cleanly at phone width and on a wide desktop screen today.";
 
+/** 140 characters of Arabic, so the Arabic gallery wraps real Arabic text. */
+export const TITLE_140_AR =
+  "عنوان طويل عمدًا كتبه المسؤول في لوحة الإدارة ليتأكد أن كل قسم يلتف بشكل نظيف على عرض الجوال وعلى شاشة سطح المكتب العريضة اليوم أيضًا وغدًا.";
+
 const many = <T>(n: number, make: (i: number) => T): T[] => Array.from({ length: n }, (_, i) => make(i));
 const long = (i: number) =>
   bi(
@@ -30,7 +34,7 @@ export const EDGE_LONG: Block[] = toBlocks("edge-long", [
   {
     type: "hero",
     content: {
-      title: bi(TITLE_140, TITLE_140),
+      title: bi(TITLE_140, TITLE_140_AR),
       subtitle: long(0),
       primaryCta: { label: bi("Book a demo", "احجز عرضًا تجريبيًا"), href: "/demo" },
       secondaryCta: { label: bi("A secondary link with a long label", "رابط ثانوي بعنوان طويل"), href: "/contact" },
@@ -49,7 +53,7 @@ export const EDGE_LONG: Block[] = toBlocks("edge-long", [
   {
     type: "departments",
     content: {
-      heading: bi(TITLE_140, TITLE_140),
+      heading: bi(TITLE_140, TITLE_140_AR),
       intro: long(1),
       items: many(12, (i) => ({ icon: i === 3 ? "NotARealIcon" : "Calculator", title: long(i), line: long(i) })),
     },
@@ -57,7 +61,7 @@ export const EDGE_LONG: Block[] = toBlocks("edge-long", [
   {
     type: "sector_grid",
     content: {
-      heading: bi(TITLE_140, TITLE_140),
+      heading: bi(TITLE_140, TITLE_140_AR),
       intro: long(2),
       cards: many(12, (i) => ({
         title: long(i),
@@ -72,7 +76,7 @@ export const EDGE_LONG: Block[] = toBlocks("edge-long", [
   {
     type: "setup_list",
     content: {
-      heading: bi(TITLE_140, TITLE_140),
+      heading: bi(TITLE_140, TITLE_140_AR),
       intro: long(3),
       points: many(12, (i) => ({ problem: long(i), fix: long(i) })),
       link: { label: bi("How we set it up"), href: "/#how" },
@@ -81,7 +85,7 @@ export const EDGE_LONG: Block[] = toBlocks("edge-long", [
   {
     type: "erp_compare",
     content: {
-      heading: bi(TITLE_140, TITLE_140),
+      heading: bi(TITLE_140, TITLE_140_AR),
       intro: long(4),
       odoo: {
         logo: "/images/v2/logo-odoo.png",
@@ -106,7 +110,7 @@ export const EDGE_LONG: Block[] = toBlocks("edge-long", [
   {
     type: "process",
     content: {
-      heading: bi(TITLE_140, TITLE_140),
+      heading: bi(TITLE_140, TITLE_140_AR),
       intro: long(7),
       steps: many(10, (i) => ({ title: long(i), description: long(i), duration: bi("4 to 8 weeks") })),
     },
@@ -114,7 +118,7 @@ export const EDGE_LONG: Block[] = toBlocks("edge-long", [
   {
     type: "lifecycle",
     content: {
-      heading: bi(TITLE_140, TITLE_140),
+      heading: bi(TITLE_140, TITLE_140_AR),
       intro: long(8),
       yourRoleLabel: bi("Your role"),
       roles,
@@ -125,7 +129,7 @@ export const EDGE_LONG: Block[] = toBlocks("edge-long", [
   {
     type: "role_pains",
     content: {
-      heading: bi(TITLE_140, TITLE_140),
+      heading: bi(TITLE_140, TITLE_140_AR),
       intro: long(9),
       roles,
       pains: { a: { headline: bi(TITLE_140), items: many(12, (i) => ({ pain: long(i), fix: long(i) })) } },
@@ -134,14 +138,14 @@ export const EDGE_LONG: Block[] = toBlocks("edge-long", [
   {
     type: "faq_ref",
     content: {
-      heading: bi(TITLE_140, TITLE_140),
+      heading: bi(TITLE_140, TITLE_140_AR),
       items: many(12, (i) => ({ question: long(i), answer: long(i) })),
     },
   },
   {
     type: "rich_text",
     content: {
-      heading: bi(TITLE_140, TITLE_140),
+      heading: bi(TITLE_140, TITLE_140_AR),
       paragraphs: [
         bi("An unbroken token: https://example.com/a-very-long-path-without-any-spaces-at-all-to-break-on-0123456789"),
         ...many(12, long),
@@ -151,7 +155,7 @@ export const EDGE_LONG: Block[] = toBlocks("edge-long", [
   {
     type: "booking",
     content: {
-      heading: bi(TITLE_140, TITLE_140),
+      heading: bi(TITLE_140, TITLE_140_AR),
       body: long(10),
       cta: { label: bi("Book a demo", "احجز عرضًا تجريبيًا"), href: "/demo" },
       noteTitle: bi(TITLE_140),
@@ -175,9 +179,13 @@ export const EDGE_BLANK_AR: Block[] = toBlocks("edge-blank-ar", [
       subtitle: bi("English only subtitle", ""),
       primaryCta: { label: bi("Book a demo", ""), href: "/demo" },
       secondaryCta: { label: bi(""), href: "" },
+      // Pills with no visible label: the radiogroup still needs a name.
       sectorsLabel: bi(""),
       card: { image: "", alt: bi(""), caption: bi("") },
-      sectorPills: [],
+      sectorPills: [
+        { label: bi("Retail", "التجزئة"), subtitle: bi(""), image: "", alt: bi(""), caption: bi(""), href: "" },
+        { label: bi("Trading", "التجارة"), subtitle: bi(""), image: "", alt: bi(""), caption: bi(""), href: "" },
+      ],
     },
   },
   {
@@ -189,6 +197,48 @@ export const EDGE_BLANK_AR: Block[] = toBlocks("edge-blank-ar", [
         { icon: "NotARealIcon", title: bi("Unknown icon keeps its slot", ""), line: bi("English only line", "") },
         { icon: "Package", title: bi("", "عنوان بالعربية فقط"), line: bi("") },
       ],
+    },
+  },
+  {
+    type: "faq_ref",
+    content: {
+      heading: bi("Questions still being answered", ""),
+      items: [{ question: bi("A question nobody answered yet", ""), answer: bi("", "") }],
+    },
+  },
+]);
+
+const twoRoles = [
+  { id: "a", label: bi("First role", "الدور الأول") },
+  { id: "b", label: bi("Second role", "الدور الثاني") },
+];
+
+/** Pains with their own role switcher (no hero above) and no entry for the second role. */
+export const EDGE_ROLES: Block[] = toBlocks("edge-roles", [
+  {
+    type: "role_pains",
+    content: {
+      heading: bi("Sound familiar?", "هل يبدو هذا مألوفًا؟"),
+      intro: bi(""),
+      roles: twoRoles,
+      pains: { a: { headline: bi("Only the first role has pains."), items: [{ pain: bi("A pain"), fix: bi("Its fix") }] } },
+    },
+  },
+]);
+
+/** A sector hero whose stored promise lacks the second role (older or hand-edited rows). */
+export const EDGE_HERO_ROLES: Block[] = toBlocks("edge-hero-roles", [
+  {
+    type: "sector_hero",
+    content: {
+      roles: twoRoles,
+      rolePrompt: bi("Your role", "دورك"),
+      promise: { a: { title: bi("Only the first role has a promise."), subtitle: bi("") } },
+      photo: "",
+      photoAlt: bi(""),
+      trustLine: bi(""),
+      primaryCta: { label: bi("Book a demo", "احجز عرضًا تجريبيًا"), href: "/demo" },
+      secondaryCta: { label: bi(""), href: "" },
     },
   },
 ]);

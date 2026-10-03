@@ -4,7 +4,7 @@ import Container from "@/components/v2/ui/container";
 import Section from "@/components/v2/ui/section";
 import type { ErpCompareContent } from "@/lib/blocks/schemas/erp_compare";
 import { rootProps, type BlockProps, type RenderContext } from "./context";
-import { InlineLink, SectionHead, tx } from "./parts";
+import { InlineLink, SectionHead, tn, tx } from "./parts";
 
 const SIDES = {
   odoo: { band: "bg-odoo-tint", chip: "text-[#5E3E57]", logo: "h-[46px] lg:h-[58px]", gap: "gap-[22px]" },
@@ -13,9 +13,9 @@ const SIDES = {
 
 function Card({ card, side, ctx }: { card: ErpCompareContent["odoo"]; side: keyof typeof SIDES; ctx: RenderContext }) {
   const s = SIDES[side];
-  const chips = card.chips.map((x) => tx(ctx, x)).filter(Boolean);
-  const points = card.points.map((x) => tx(ctx, x)).filter(Boolean);
-  const body = tx(ctx, card.body);
+  const chips = card.chips.filter((x) => tx(ctx, x) !== "").map((x) => tn(ctx, x));
+  const points = card.points.filter((x) => tx(ctx, x) !== "").map((x) => tn(ctx, x));
+  const body = tn(ctx, card.body);
   return (
     <article className="rounded-[26px] bg-[#EAEFF5] p-1.5 shadow-[inset_0_0_0_1px_rgba(11,26,51,0.05)] sm:rounded-[32px] sm:p-2">
       <div className="h-full overflow-hidden rounded-[20px] bg-surface shadow-[0_1px_2px_rgba(11,26,51,0.05)] sm:rounded-[25px]">
@@ -41,7 +41,7 @@ function Card({ card, side, ctx }: { card: ErpCompareContent["odoo"]; side: keyo
         </div>
         <div className="flex flex-col gap-4 p-6 sm:pt-[34px] sm:pe-9 sm:pb-9 sm:ps-9">
           <h3 className="text-[22px] font-extrabold leading-[1.15] tracking-[-0.02em] [overflow-wrap:anywhere] lg:text-[26px] rtl:font-bold rtl:leading-[1.4] rtl:tracking-normal">
-            {tx(ctx, card.title)}
+            {tn(ctx, card.title)}
           </h3>
           {body && <p className="v2-copy text-base text-body lg:text-[17px]">{body}</p>}
           {points.length > 0 && (
@@ -51,7 +51,7 @@ function Card({ card, side, ctx }: { card: ErpCompareContent["odoo"]; side: keyo
               ))}
             </ul>
           )}
-          <InlineLink label={tx(ctx, card.link.label)} href={card.link.href} />
+          <InlineLink label={tn(ctx, card.link.label)} href={card.link.href} />
         </div>
       </div>
     </article>
@@ -63,7 +63,7 @@ export default function ErpCompareBlock({ content: c, ctx, place }: BlockProps<"
   return (
     <Section tone={place.tone} {...rootProps("erp_compare", place)}>
       <Container className="flex flex-col gap-10 lg:gap-12">
-        <SectionHead as={place.first ? "h1" : "h2"} heading={tx(ctx, c.heading)} intro={tx(ctx, c.intro)} />
+        <SectionHead as={place.first ? "h1" : "h2"} heading={tn(ctx, c.heading)} intro={tn(ctx, c.intro)} />
         <div className="grid gap-4 md:grid-cols-2 lg:gap-5">
           <Card card={c.odoo} side="odoo" ctx={ctx} />
           <Card card={c.falcon} side="falcon" ctx={ctx} />

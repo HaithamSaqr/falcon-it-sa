@@ -5,7 +5,7 @@ import Section from "@/components/v2/ui/section";
 import { RoleView } from "@/components/v2/islands/role-provider";
 import RoleSwitcher from "@/components/v2/islands/role-switcher";
 import { rootProps, type BlockProps } from "./context";
-import { Highlighted, PrimaryCta, SecondaryCta, tx } from "./parts";
+import { Highlighted, PrimaryCta, SecondaryCta, tn, tx } from "./parts";
 
 /** Product screenshot on the floating card (design element, not content). */
 const APPS_SHOT = "/images/v2/shot-apps-top.jpg";
@@ -16,8 +16,13 @@ const APPS_SHOT = "/images/v2/shot-apps-top.jpg";
  * rendered; the role switcher picks the one that shows.
  */
 export default function SectorHeroBlock({ content: c, ctx, place }: BlockProps<"sector_hero">) {
-  const roles = c.roles.map((r) => ({ id: r.id, label: tx(ctx, r.label) })).filter((r) => r.label !== "");
-  const sectorName = ctx.sector ? tx(ctx, ctx.sector.name) : "";
+  const roles = c.roles.filter((r) => tx(ctx, r.label) !== "").map((r) => ({ id: r.id, label: tn(ctx, r.label) }));
+  const sectorName = ctx.sector ? tn(ctx, ctx.sector.name) : null;
+  // Every role must show an H1: a role without its own promise borrows the
+  // first non-empty one, then the sector name.
+  const hasTitle = (id: string) => tx(ctx, c.promise[id]?.title) !== "";
+  const firstPromise = c.roles.map((r) => c.promise[r.id]).find((p) => p && tx(ctx, p.title) !== "");
+  const fallbackTitle = firstPromise?.title ?? ctx.sector?.name ?? { en: ctx.labels.sectors, ar: ctx.labels.sectors };
 
   return (
     <Section tone="page" className="pt-7 pb-12 md:pt-12 md:pb-20 lg:pt-[60px] lg:pb-[88px]" {...rootProps("sector_hero", place)}>
@@ -34,15 +39,20 @@ export default function SectorHeroBlock({ content: c, ctx, place }: BlockProps<"
               </span>
             </nav>
           )}
-          <RoleSwitcher label={tx(ctx, c.rolePrompt)} roles={roles} className="animate-rise rise-d1" />
+          <RoleSwitcher
+            label={tn(ctx, c.rolePrompt)}
+            fallbackLabel={ctx.labels.yourRole}
+            roles={roles}
+            className="animate-rise rise-d1"
+          />
           {c.roles.map((r) => {
-            const promise = c.promise[r.id];
-            if (!promise) return null;
-            const subtitle = tx(ctx, promise.subtitle);
+            const own = hasTitle(r.id) ? c.promise[r.id] : undefined;
+            const title = own?.title ?? fallbackTitle;
+            const subtitle = tn(ctx, (own ?? firstPromise)?.subtitle);
             return (
               <RoleView key={r.id} ids={[r.id]} className="flex flex-col gap-3.5 lg:gap-[22px]" enterClassName="animate-rise rise-d2">
                 <h1 className="v2-display xl:text-[56px] rtl:xl:text-[54px]">
-                  <Highlighted text={tx(ctx, promise.title)} />
+                  <Highlighted ctx={ctx} value={title} />
                 </h1>
                 {subtitle && (
                   <p className="v2-copy max-w-[540px] text-[17px] text-body lg:text-xl rtl:lg:leading-[1.9]">{subtitle}</p>
@@ -53,17 +63,17 @@ export default function SectorHeroBlock({ content: c, ctx, place }: BlockProps<"
           <div className="animate-rise rise-d3 flex flex-wrap items-center gap-x-[26px] gap-y-4 lg:mt-1">
             <PrimaryCta
               ctx={ctx}
-              label={tx(ctx, c.primaryCta.label)}
+              label={tn(ctx, c.primaryCta.label)}
               href={c.primaryCta.href}
               className="max-sm:w-full max-sm:justify-between"
             />
             <SecondaryCta
-              label={tx(ctx, c.secondaryCta.label)}
+              label={tn(ctx, c.secondaryCta.label)}
               href={c.secondaryCta.href}
               className="max-sm:hidden"
             />
           </div>
-          {tx(ctx, c.trustLine) && <p className="text-sm text-muted">{tx(ctx, c.trustLine)}</p>}
+          {tx(ctx, c.trustLine) && <p className="text-sm text-muted">{tn(ctx, c.trustLine)}</p>}
         </div>
 
         {c.photo && (

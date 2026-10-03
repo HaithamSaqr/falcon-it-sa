@@ -6,8 +6,8 @@ import { BLOCK_TYPES, type Block } from "@/lib/blocks/types";
 import { SEED } from "@/lib/blocks/seed";
 import { getPublicSettings } from "@/lib/public-settings";
 import { V2_SECTORS } from "@/lib/blocks/seed/sectors";
-import { validFixtures } from "../../../../tests/unit/fixtures/blocks";
-import { EDGE_BLANK_AR, EDGE_LONG } from "./fixtures";
+import { validFixtures } from "@/lib/blocks/fixtures";
+import { EDGE_BLANK_AR, EDGE_HERO_ROLES, EDGE_LONG, EDGE_ROLES } from "./fixtures";
 
 /**
  * Dev-only gallery of every block (Task 7): the populated fixtures, edge
@@ -50,6 +50,8 @@ export default async function DevBlocksPage({ params, searchParams }: Props) {
     { key: "fixtures", blocks: FIXTURES },
     { key: "edge-long", blocks: EDGE_LONG },
     { key: "edge-blank-ar", blocks: EDGE_BLANK_AR },
+    { key: "edge-roles", blocks: EDGE_ROLES },
+    { key: "edge-hero-roles", blocks: EDGE_HERO_ROLES },
   ];
 
   const shown = only.length > 0 ? groups.filter((g) => only.includes(g.key)) : groups;

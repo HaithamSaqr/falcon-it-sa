@@ -45,3 +45,20 @@ export function pickBi(v: Bi | null | undefined, locale: "en" | "ar"): string {
   if (typeof other === "string" && other.trim() !== "") return other;
   return "";
 }
+
+/**
+ * `pickBi` plus where the text came from: `fallback` is true when the locale
+ * side was empty and the other language is shown, so renderers can mark that
+ * text with its own `lang` and `dir`.
+ */
+export function pickBiLang(
+  v: Bi | null | undefined,
+  locale: "en" | "ar",
+): { text: string; lang: "en" | "ar"; fallback: boolean } {
+  const other = locale === "ar" ? "en" : "ar";
+  const own = v?.[locale];
+  if (typeof own === "string" && own.trim() !== "") return { text: own, lang: locale, fallback: false };
+  const alt = v?.[other];
+  if (typeof alt === "string" && alt.trim() !== "") return { text: alt, lang: other, fallback: true };
+  return { text: "", lang: locale, fallback: false };
+}
