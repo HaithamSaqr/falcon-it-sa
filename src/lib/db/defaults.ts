@@ -36,35 +36,35 @@ export const DEFAULT_CONTENT: SiteContent = {
   },
   testimonials: [
     {
-      id: "ts-1", name: "Ahmed Al-Rashid", role: "CFO", company: "Saudi Emar Developments",
+      id: "ts-1", enabled: false, name: "Ahmed Al-Rashid", role: "CFO", company: "Saudi Emar Developments",
       quote: {
         en: "Falcon ERP completely transformed our operations. We migrated from SAP in just 6 weeks and saved 60% on costs. Arabic support and ZATCA compliance were ready from day one.",
         ar: "فالكون ERP حوّل عملياتنا بالكامل. انتقلنا من SAP خلال 6 أسابيع فقط ووفرنا 60% من التكاليف. الدعم العربي والامتثال مع ZATCA كان جاهزًا من اليوم الأول.",
       },
     },
     {
-      id: "ts-2", name: "Mohammed Hassan", role: "IT Director", company: "Haddad Group",
+      id: "ts-2", enabled: false, name: "Mohammed Hassan", role: "IT Director", company: "Haddad Group",
       quote: {
         en: "We were using Excel to manage 8 branches. Falcon Cloud unified everything — inventory, accounting, and HR in one system. Stock reconciliation that took 3 days is now instant.",
         ar: "كنا نستخدم Excel لإدارة 8 فروع. فالكون كلاود وحّد كل شيء — المخزون، المحاسبة، والموارد البشرية في نظام واحد. تسوية المخزون التي كانت تستغرق 3 أيام أصبحت فورية.",
       },
     },
     {
-      id: "ts-3", name: "Khaled Al-Omari", role: "CEO", company: "Almada Construction",
+      id: "ts-3", enabled: false, name: "Khaled Al-Omari", role: "CEO", company: "Almada Construction",
       quote: {
         en: "We tried two Odoo partners before Falcon. The difference was night and day — they understood Saudi market requirements from the start. Localization is flawless and our data stays on our servers in Riyadh.",
         ar: "جربنا شريكين أودو قبل فالكون. الفرق كان كبير — فهموا متطلبات السوق السعودي من البداية. التعريب ممتاز والبيانات تبقى على خوادمنا في الرياض.",
       },
     },
     {
-      id: "ts-4", name: "Sara Al-Mutairi", role: "Operations Manager", company: "Nile Food Industries",
+      id: "ts-4", enabled: false, name: "Sara Al-Mutairi", role: "Operations Manager", company: "Nile Food Industries",
       quote: {
         en: "Falcon's POS system completely changed how we operate. Linking 5 restaurant branches in one system with real-time reports. We reduced waste by 30% in the first 3 months.",
         ar: "نظام نقاط البيع من فالكون غيّر طريقة عملنا تمامًا. ربط 5 فروع مطاعم في نظام واحد مع تقارير لحظية. تقليل الهدر بنسبة 30% خلال أول 3 أشهر.",
       },
     },
     {
-      id: "ts-5", name: "Abdulrahman Al-Subaie", role: "General Manager", company: "Delta Pharma Egypt",
+      id: "ts-5", enabled: false, name: "Abdulrahman Al-Subaie", role: "General Manager", company: "Delta Pharma Egypt",
       quote: {
         en: "The transition to Falcon was easier than we expected. Support team available 24/7 in Arabic. ZATCA Phase 2 compliance happened automatically — we didn't have to lift a finger.",
         ar: "الانتقال إلى فالكون كان أسهل مما توقعنا. فريق الدعم متاح 24/7 وباللغة العربية. امتثال المرحلة الثانية من ZATCA تم تلقائيًا بدون أي تدخل منا.",
@@ -267,6 +267,12 @@ export const DEFAULT_HOME: HomeContent = {
   },
 };
 
+/** v2 global primary CTA (site_settings.cta_label_*, demo_url). */
+export const DEFAULT_PRIMARY_CTA = {
+  label: { en: "Book a demo", ar: "احجز عرضًا تجريبيًا" },
+  demoUrl: "/demo",
+};
+
 export const DEFAULT_SETTINGS: SiteSettings = {
   company: {
     name: { en: "Falcon Smart Solutions", ar: "فالكون للحلول الذكية" },
@@ -301,6 +307,8 @@ export const DEFAULT_SETTINGS: SiteSettings = {
     tiktok: "",
   },
   loginUrl: "https://falcon-valley.com",
+  blogEnabled: false,
+  primaryCta: DEFAULT_PRIMARY_CTA,
   clientsSpeed: 3,
   whatsappRouting: { domains: [], countries: [] },
   landingCta: { mode: "whatsapp", url: "", label: { en: "", ar: "" }, note: { en: "", ar: "" } },
@@ -494,7 +502,8 @@ export const DEFAULT_BROCHURES: ProductBrochure[] = [
   {
     slug: "applications",
     title: { en: "Custom Applications", ar: "صناعة التطبيقات" },
-    enabled: true,
+    // Disabled until real content exists (owner answer 2026-10-03).
+    enabled: false,
     content: {
       en: `<h2>Custom applications</h2><p>From idea to launch, we design and build the apps your business needs — mobile, web and Odoo.</p><h3>Mobile apps — Android &amp; iOS</h3><p>Native and cross-platform mobile applications for Android and iPhone, with great UX, performance and store publishing.</p><h3>Custom &amp; bespoke applications</h3><p>Tailor-made software built around your exact processes — internal tools, portals and customer-facing products.</p><h3>Odoo apps &amp; modules</h3><p>Custom Odoo modules and apps that extend your ERP with the exact features your business needs.</p><ul><li>Android &amp; iOS mobile apps</li><li>Custom web applications</li><li>Custom Odoo modules &amp; integrations</li><li>UI/UX design, development &amp; maintenance</li></ul>`,
       ar: `<h2>صناعة التطبيقات</h2><p>من الفكرة إلى الإطلاق، نُصمّم ونبني التطبيقات التي تحتاجها أعمالك — جوال وويب وأودو.</p><h3>تطبيقات الجوال — أندرويد وآيفون</h3><p>تطبيقات جوال أصلية ومتعددة المنصات لأندرويد وآيفون، بتجربة استخدام ممتازة وأداء عالٍ ونشر على المتاجر.</p><h3>تطبيقات مخصّصة</h3><p>برمجيات مصمّمة حول عملياتك بالضبط — أدوات داخلية وبوابات ومنتجات موجّهة للعملاء.</p><h3>تطبيقات وموديولات أودو</h3><p>موديولات وتطبيقات أودو مخصّصة تُوسّع نظامك بالمزايا التي تحتاجها أعمالك تماماً.</p><ul><li>تطبيقات جوال أندرويد وآيفون</li><li>تطبيقات ويب مخصّصة</li><li>موديولات وتكاملات أودو مخصّصة</li><li>تصميم واجهات وتطوير وصيانة</li></ul>`,

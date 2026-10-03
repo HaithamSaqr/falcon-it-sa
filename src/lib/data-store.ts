@@ -42,6 +42,13 @@ import {
   DEFAULT_HOME,
 } from "@/lib/db/defaults";
 import * as store from "@/lib/db/store";
+import { withV2Sectors } from "@/lib/blocks/seed/sectors";
+
+// v2 page blocks and per-page SEO live in src/lib/blocks/store.ts.
+export { getPageBlocks, getPageSeo } from "@/lib/blocks/store";
+
+/** Sector fallback (not installed / DB down): the v2 sector list, same as after the data fix. */
+const FALLBACK_SECTORS = withV2Sectors(DEFAULT_SECTORS);
 
 // ═══════════════════════════════════════════════════════════════════
 // LEADS
@@ -354,23 +361,25 @@ export async function updateFooterLinks(links: FooterLink[]): Promise<void> {
 // SECTORS
 // ═══════════════════════════════════════════════════════════════════
 
+function fallbackSectors(onlyEnabled: boolean): Sector[] {
+  return onlyEnabled ? FALLBACK_SECTORS.filter((s) => s.enabled) : FALLBACK_SECTORS;
+}
+
 export async function getSectors(onlyEnabled = false): Promise<Sector[]> {
-  if (!isInstalledSync()) {
-    return onlyEnabled ? DEFAULT_SECTORS.filter((s) => s.enabled) : DEFAULT_SECTORS;
-  }
+  if (!isInstalledSync()) return fallbackSectors(onlyEnabled);
   try {
     return await store.readSectors(await getPool(), onlyEnabled);
   } catch {
-    return DEFAULT_SECTORS;
+    return fallbackSectors(onlyEnabled);
   }
 }
 
 export async function getSector(id: string): Promise<Sector | null> {
-  if (!isInstalledSync()) return DEFAULT_SECTORS.find((s) => s.id === id) ?? null;
+  if (!isInstalledSync()) return FALLBACK_SECTORS.find((s) => s.id === id) ?? null;
   try {
     return await store.readSector(await getPool(), id);
   } catch {
-    return DEFAULT_SECTORS.find((s) => s.id === id) ?? null;
+    return FALLBACK_SECTORS.find((s) => s.id === id) ?? null;
   }
 }
 

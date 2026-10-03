@@ -68,7 +68,7 @@ export default async function HomePage({ params }: Props) {
       cta2: { label: { en: "Discuss Your Requirements", ar: "ناقش متطلباتك" }, url: "/demo" },
     },
   };
-  const testimonials = content.testimonials.filter((item) =>
+  const testimonials = content.testimonials.filter((item) => item.enabled !== false &&
     !/\$|\bprice\b|\bcosts?\b|\bsav(?:ed|ings)\b|سعر|تكلفة|التكاليف|وفرنا/i.test(`${item.quote.en} ${item.quote.ar}`),
   );
   const faqs = content.faqs.filter((item) =>

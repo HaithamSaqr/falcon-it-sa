@@ -35,6 +35,7 @@ import {
   DEFAULT_SEO,
   DEFAULT_PRICING_BASE,
   DEFAULT_HOME,
+  DEFAULT_PRIMARY_CTA,
 } from "./defaults";
 
 function newId(prefix: string): string {
@@ -185,6 +186,14 @@ export async function readSettings(pool: Pool): Promise<SiteSettings> {
       tiktok: r.social_tiktok ?? "",
     },
     loginUrl: r.login_url || "https://falcon-valley.com",
+    blogEnabled: r.blog_enabled === true,
+    primaryCta: {
+      label: {
+        en: r.cta_label_en ?? DEFAULT_PRIMARY_CTA.label.en,
+        ar: r.cta_label_ar ?? DEFAULT_PRIMARY_CTA.label.ar,
+      },
+      demoUrl: r.demo_url || DEFAULT_PRIMARY_CTA.demoUrl,
+    },
     clientsSpeed: r.clients_speed == null ? 3 : Number(r.clients_speed),
     whatsappRouting,
     landingCta,
@@ -251,6 +260,22 @@ export async function writeSettings(pool: Pool, s: SiteSettings): Promise<void> 
       typeof s.clientsSpeed === "number" && s.clientsSpeed > 0 ? s.clientsSpeed : 3,
     ]
   );
+  // v2 columns: only touched when the payload carries them, so an older admin
+  // client that does not know these fields never resets them.
+  await pool.query(
+    `UPDATE site_settings SET
+       blog_enabled = COALESCE($1, blog_enabled),
+       cta_label_en = COALESCE($2, cta_label_en),
+       cta_label_ar = COALESCE($3, cta_label_ar),
+       demo_url     = COALESCE($4, demo_url)
+     WHERE id = 1`,
+    [
+      typeof s.blogEnabled === "boolean" ? s.blogEnabled : null,
+      s.primaryCta?.label?.en ?? null,
+      s.primaryCta?.label?.ar ?? null,
+      s.primaryCta?.demoUrl || null,
+    ]
+  );
   await writeBranches(pool, s.company.branches ?? []);
   await writeWhatsappRouting(pool, s.whatsappRouting ?? { domains: [], countries: [] });
 }
@@ -274,6 +299,7 @@ export async function readContent(pool: Pool): Promise<SiteContent> {
     company: r.company,
     quote: { en: r.quote_en, ar: r.quote_ar },
     image: r.image || undefined,
+    enabled: r.enabled !== false,
   }));
 
   const fRes = await pool.query(`SELECT * FROM faqs ORDER BY sort_order, id`);
@@ -312,13 +338,19 @@ export async function writeContent(pool: Pool, c: SiteContent): Promise<void> {
       ]
     );
 
+    // Keep each testimonial's enabled flag when the payload omits it (older admin UI).
+    const prevEnabled = new Map<string, boolean>(
+      (await client.query(`SELECT id, enabled FROM testimonials`)).rows.map((r) => [r.id, r.enabled])
+    );
     await client.query("DELETE FROM testimonials");
     for (let i = 0; i < c.testimonials.length; i++) {
       const t = c.testimonials[i];
+      const id = t.id || newId("ts");
+      const enabled = typeof t.enabled === "boolean" ? t.enabled : prevEnabled.get(id) ?? true;
       await client.query(
-        `INSERT INTO testimonials (id, name, role, company, quote_en, quote_ar, image, sort_order)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`,
-        [t.id || newId("ts"), t.name, t.role, t.company, t.quote?.en ?? "", t.quote?.ar ?? "", t.image ?? "", i]
+        `INSERT INTO testimonials (id, name, role, company, quote_en, quote_ar, image, sort_order, enabled)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)`,
+        [id, t.name, t.role, t.company, t.quote?.en ?? "", t.quote?.ar ?? "", t.image ?? "", i, enabled]
       );
     }
 
@@ -607,9 +639,9 @@ export async function seedContentExtras(pool: Pool): Promise<void> {
     for (let i = 0; i < DEFAULT_CONTENT.testimonials.length; i++) {
       const t = DEFAULT_CONTENT.testimonials[i];
       await pool.query(
-        `INSERT INTO testimonials (id, name, role, company, quote_en, quote_ar, image, sort_order)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`,
-        [t.id || newId("ts"), t.name, t.role, t.company, t.quote.en, t.quote.ar, t.image ?? "", i]
+        `INSERT INTO testimonials (id, name, role, company, quote_en, quote_ar, image, sort_order, enabled)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)`,
+        [t.id || newId("ts"), t.name, t.role, t.company, t.quote.en, t.quote.ar, t.image ?? "", i, t.enabled !== false]
       );
     }
   }
@@ -880,6 +912,8 @@ function rowToSector(r: any): Sector {
     featured: r.featured,
     enabled: r.enabled,
     sortOrder: r.sort_order,
+    photo: r.photo ?? "",
+    shortPromise: { en: r.short_promise_en ?? "", ar: r.short_promise_ar ?? "" },
   };
 }
 
@@ -949,6 +983,13 @@ export async function writeSectors(pool: Pool, sectors: Sector[]): Promise<void>
   const client = await pool.connect();
   try {
     await client.query("BEGIN");
+    // v2 fields the payload may omit (older admin UI): keep the stored values.
+    const prev = new Map<string, { photo: string; en: string; ar: string }>(
+      (await client.query(`SELECT id, photo, short_promise_en, short_promise_ar FROM sectors`)).rows.map((r) => [
+        r.id,
+        { photo: r.photo, en: r.short_promise_en, ar: r.short_promise_ar },
+      ])
+    );
     await client.query("DELETE FROM sectors");
     await client.query("DELETE FROM sector_video_domains");
     await client.query("DELETE FROM sector_video_countries");
@@ -958,8 +999,9 @@ export async function writeSectors(pool: Pool, sectors: Sector[]): Promise<void>
       const s = sectors[i];
       const sectorId = s.id || newId("sec");
       await client.query(
-        `INSERT INTO sectors (id, icon, gradient, name_en, name_ar, title_en, title_ar, description_en, description_ar, systems, video_url, featured, enabled, sort_order)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)`,
+        `INSERT INTO sectors (id, icon, gradient, name_en, name_ar, title_en, title_ar, description_en, description_ar, systems, video_url, featured, enabled, sort_order,
+                              photo, short_promise_en, short_promise_ar)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)`,
         [
           sectorId,
           s.icon ?? "",
@@ -975,6 +1017,9 @@ export async function writeSectors(pool: Pool, sectors: Sector[]): Promise<void>
           Boolean(s.featured),
           s.enabled !== false,
           i,
+          s.photo ?? prev.get(sectorId)?.photo ?? "",
+          s.shortPromise?.en ?? prev.get(sectorId)?.en ?? "",
+          s.shortPromise?.ar ?? prev.get(sectorId)?.ar ?? "",
         ]
       );
 
