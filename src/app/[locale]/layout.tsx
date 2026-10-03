@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Tajawal } from "next/font/google";
+import { Alexandria, Schibsted_Grotesk } from "next/font/google";
 import { NextIntlClientProvider, hasLocale } from "next-intl";
 import { getMessages, setRequestLocale } from "next-intl/server";
 import { notFound, redirect } from "next/navigation";
@@ -18,17 +18,17 @@ import { SettingsProvider } from "@/components/providers/settings-provider";
 
 import "@/app/globals.css";
 
-const inter = Inter({
+const schibsted = Schibsted_Grotesk({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700", "800"],
-  variable: "--font-inter",
+  variable: "--font-schibsted",
   display: "swap",
 });
 
-const tajawal = Tajawal({
+const alexandria = Alexandria({
   subsets: ["arabic"],
-  weight: ["400", "500", "700"],
-  variable: "--font-tajawal",
+  weight: ["300", "400", "500", "600", "700", "800"],
+  variable: "--font-alexandria",
   display: "swap",
 });
 
@@ -102,14 +102,16 @@ export default async function LocaleLayout({
   const snapOn = !!snap?.enabled && !!snap?.pixelId;
 
   return (
-    <html lang={locale} dir={isRTL ? "rtl" : "ltr"} suppressHydrationWarning>
+    <html
+      lang={locale}
+      dir={isRTL ? "rtl" : "ltr"}
+      // The font variables live on <html> so the `--font-sans` / `--font-arabic`
+      // theme tokens (declared on :root) can resolve them.
+      className={cn(schibsted.variable, alexandria.variable)}
+      suppressHydrationWarning
+    >
       <body
-        className={cn(
-          inter.variable,
-          tajawal.variable,
-          isRTL ? "font-arabic" : "font-sans",
-          "antialiased"
-        )}
+        className={cn(isRTL ? "font-arabic" : "font-sans", "antialiased")}
       >
         {/* Google Tag Manager (noscript) */}
         {googleOn && g?.gtmId && (

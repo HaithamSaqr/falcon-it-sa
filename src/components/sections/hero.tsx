@@ -28,7 +28,7 @@ export default function Hero({ data, isAr }: { data: HomeHero; isAr: boolean }) 
               </span>
             )}
 
-            <h1 className="text-4xl font-extrabold text-white sm:text-5xl lg:text-6xl">
+            <h1 className="animate-rise text-4xl font-extrabold text-white sm:text-5xl lg:text-6xl">
               {L(data.title)}
             </h1>
 

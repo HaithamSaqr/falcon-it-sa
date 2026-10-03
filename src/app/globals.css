@@ -58,12 +58,53 @@
   --radius-button: 12px;
 
   /* Fonts */
-  --font-sans: "Inter", "DM Sans", "Helvetica Neue", system-ui, sans-serif;
-  --font-arabic: "Tajawal", "IBM Plex Sans Arabic", "Arial", sans-serif;
+  /* next/font injects --font-schibsted / --font-alexandria on <html> (see [locale]/layout.tsx). */
+  --font-sans: var(--font-schibsted), "Helvetica Neue", system-ui, sans-serif;
+  --font-arabic: var(--font-alexandria), var(--font-schibsted), "Arial", system-ui, sans-serif;
 
   /* Animations */
   --animate-marquee: marquee 60s linear infinite;
   --animate-marquee-reverse: marquee-reverse 60s linear infinite;
+}
+
+/* ── V2 DESIGN TOKENS ──
+   `static` emits every variable even when no utility uses it yet, so inline
+   styles and tests can read them. These come after the legacy block on purpose:
+   v2 `surface` (#FFFFFF) replaces the legacy #F8FAFC until Task 13 removes the
+   old tokens. One accent only: brand blue. */
+@theme static {
+  --color-page: #F5F7FA;
+  --color-surface: #FFFFFF;
+  --color-ink: #0B1A33;
+  --color-body: #3A4860;
+  --color-muted: #5B6880;
+  --color-brand: #1466C2;
+  --color-brand-deep: #0D4F9E;
+  --color-sky: #E4F0FB;
+  --color-odoo-tint: #F6F1F5;
+
+  --ease-out-quint: cubic-bezier(.23, 1, .32, 1);
+  --ease-rise: cubic-bezier(.16, 1, .3, 1);
+
+  --animate-rise: rise 720ms var(--ease-rise) both;
+  --animate-swap: swap 280ms var(--ease-rise) both;
+  --animate-settle: settle 320ms var(--ease-rise) both;
+}
+
+/* Entrance keyframes: opacity + 14px rise + blur, one hero entrance per page. */
+@keyframes rise {
+  from { opacity: 0; transform: translateY(14px); filter: blur(6px); }
+  to { opacity: 1; transform: none; filter: none; }
+}
+
+@keyframes swap {
+  from { opacity: 0; transform: translateY(8px); filter: blur(4px); }
+  to { opacity: 1; transform: none; filter: none; }
+}
+
+@keyframes settle {
+  from { opacity: 0; transform: scale(.97); filter: blur(4px); }
+  to { opacity: 1; transform: none; filter: none; }
 }
 
 @keyframes marquee {
@@ -212,5 +253,54 @@
     .animate-marquee {
       animation: none;
     }
+  }
+}
+
+/* ── V2 MOTION ──
+   Stagger helpers for the hero entrance, v2 interaction transitions, and the
+   single reduced-motion switch that turns all of it off. */
+@layer utilities {
+  .rise-d1 { animation-delay: 70ms; }
+  .rise-d2 { animation-delay: 140ms; }
+  .rise-d3 { animation-delay: 210ms; }
+  .rise-d4 { animation-delay: 280ms; }
+
+  .v2-press {
+    transition: background-color 180ms var(--ease-out-quint), color 180ms var(--ease-out-quint),
+      box-shadow 180ms var(--ease-out-quint), transform 180ms var(--ease-out-quint);
+  }
+  .v2-press:active { transform: scale(.97); }
+
+  .v2-icon-nudge { transition: transform 220ms var(--ease-out-quint); }
+  .group:hover .v2-icon-nudge { transform: translate(2px, -2px); }
+  [dir="rtl"] .group:hover .v2-icon-nudge { transform: translate(-2px, -2px); }
+
+  .v2-lift {
+    transition: transform 260ms var(--ease-out-quint), box-shadow 260ms var(--ease-out-quint);
+  }
+  .v2-lift:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 30px 60px -36px rgba(12, 60, 120, .35);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-rise,
+  .animate-swap,
+  .animate-settle {
+    animation: none !important;
+  }
+
+  .v2-press,
+  .v2-icon-nudge,
+  .v2-lift {
+    transition: none !important;
+  }
+
+  .v2-press:active,
+  .v2-lift:hover,
+  .group:hover .v2-icon-nudge,
+  [dir="rtl"] .group:hover .v2-icon-nudge {
+    transform: none !important;
   }
 }
