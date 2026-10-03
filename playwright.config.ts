@@ -40,7 +40,7 @@ export default defineConfig({
     // (writes data/db-config.json from PG*), then the dev server starts.
     command: `node scripts/prepare-test-env.mjs && npx next dev -p ${port}`,
     url: baseURL,
-    reuseExistingServer: true,
+    reuseExistingServer: !process.env.CI,
     timeout: 180_000,
     env: { NEXT_TELEMETRY_DISABLED: "1" },
   },
