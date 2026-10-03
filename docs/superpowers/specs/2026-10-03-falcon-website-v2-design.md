@@ -137,7 +137,22 @@ Unchanged behaviour, restyled UI: `/demo` (calendar, `POST /api/leads/demo`), `/
 
 Security hardening (JWT fallback secret, Postgres password in `portainer-stack.yml`), WhatsApp API messaging, AI features, new blog posts, Egypt-specific pricing pages, an Arabic-first default locale switch.
 
-## 12. Open questions for the owner
+## 12. Owner answers (2026-10-03)
+
+| Question | Answer |
+|---|---|
+| Spec | Approved as written |
+| Privacy | App policy stays at `/privacy` (store link safe); website policy at `/privacy-policy`, linked from forms and footer |
+| Egypt office | Hidden until real data is entered in admin |
+| Extra products | Server management, Data management, Applications stay, on the v2 template, as supporting services (not in the primary nav) |
+| Applications brochure | Disabled until real content exists |
+| Claims | All four confirmed true and kept: free demo, Fatoora in both systems, broker commission calculation, client logos approved |
+| Company data | Unified national number 7049432656 (CR certificate, issued 2025-03-13); VAT 311410985900003 (VAT certificate, Falcon Smart Solution) |
+| WhatsApp | Existing admin routing values are used (no change) |
+| Phase durations | Seeded as typical ranges, admin-editable, marked for team confirmation in the pre-deploy review |
+| Client quote | Not fabricated. The quote block ships disabled until a real, approved quote is entered in admin |
+
+## 13. Original open questions (resolved above)
 
 1. **Privacy URL:** is `/privacy` linked from the Falcon Valley app store listing? If yes, the safest option is to leave the app policy at `/privacy` and publish the new website policy at `/privacy-policy` (linked from forms and the footer). If no, `/privacy` becomes the website policy and the app policy moves to `/apps/falcon-valley/privacy`.
 2. **Applications brochure:** provide the real content, or disable that brochure until it exists?
