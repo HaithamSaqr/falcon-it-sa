@@ -282,12 +282,28 @@
     transform: translateY(-3px);
     box-shadow: 0 30px 60px -36px rgba(12, 60, 120, .35);
   }
+
+  /* Mobile menu sheet (Radix Dialog): settles in from the island, overlay fades. */
+  .v2-sheet[data-state="open"] {
+    transform-origin: top center;
+    animation: settle 280ms var(--ease-rise) both;
+  }
+  .v2-overlay[data-state="open"] {
+    animation: v2-fade 200ms var(--ease-out-quint) both;
+  }
+}
+
+@keyframes v2-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .animate-rise,
   .animate-swap,
-  .animate-settle {
+  .animate-settle,
+  .v2-sheet[data-state="open"],
+  .v2-overlay[data-state="open"] {
     animation: none !important;
   }
 

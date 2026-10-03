@@ -760,5 +760,31 @@
         "excerpt": "دليل متخصص لشركات المقاولات والبناء حول كيفية استخدام نظام ERP لتتبع المشاريع والتكاليف والموارد بكفاءة."
       }
     }
+  },
+  "chrome": {
+    "mainNav": "القائمة الرئيسية",
+    "brandShort": "فالكون",
+    "sectors": "القطاعات",
+    "allSectors": "كل القطاعات",
+    "falconErp": "فالكون ERP",
+    "odoo": "أودو",
+    "about": "من نحن",
+    "contact": "تواصل معنا",
+    "openMenu": "فتح القائمة",
+    "closeMenu": "إغلاق القائمة",
+    "menuTitle": "القائمة",
+    "footerNav": "روابط التذييل",
+    "tagline": "نظام ERP للشركات المتنامية في السعودية: أودو وفالكون ERP، يطبّقه فريقنا بنفسه.",
+    "colSectors": "القطاعات",
+    "colSystems": "الأنظمة",
+    "colCompany": "الشركة",
+    "odooServices": "خدمات أودو",
+    "copyright": "© {year} {name}.",
+    "crNumber": "الرقم الوطني الموحد {number}",
+    "vatNumber": "الرقم الضريبي {number}",
+    "legal": "الروابط القانونية",
+    "whatsapp": "واتساب",
+    "whatsappChat": "تواصل معنا عبر واتساب",
+    "social": "فالكون على {network}"
   }
 }

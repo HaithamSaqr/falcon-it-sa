@@ -267,6 +267,14 @@ export const DEFAULT_HOME: HomeContent = {
   },
 };
 
+/** v2 company ids shown in the footer (site_settings.cr_number, vat_number). */
+export const DEFAULT_COMPANY_IDS = {
+  /** Unified national number (CR certificate, issued 2025-03-13). */
+  crNumber: "7049432656",
+  /** VAT certificate, Falcon Smart Solution. */
+  vatNumber: "311410985900003",
+};
+
 /** v2 global primary CTA (site_settings.cta_label_*, demo_url). */
 export const DEFAULT_PRIMARY_CTA = {
   label: { en: "Book a demo", ar: "احجز عرضًا تجريبيًا" },
@@ -293,6 +301,7 @@ export const DEFAULT_SETTINGS: SiteSettings = {
         phone: "+201000000000",
       },
     ],
+    ...DEFAULT_COMPANY_IDS,
   },
   notifications: {
     emailOnNewLead: true,
@@ -547,14 +556,14 @@ export const DEFAULT_SEO: SeoSettings = {
 };
 
 export const DEFAULT_FOOTER_LINKS: FooterLink[] = [
-  { id: "about", section: "about", label: { en: "About Us", ar: "من نحن" }, url: "/about" },
+  { id: "about", section: "about", label: { en: "About us", ar: "من نحن" }, url: "/about" },
   { id: "blog", section: "about", label: { en: "Blog", ar: "المدونة" }, url: "/blog" },
   { id: "careers", section: "about", label: { en: "Careers", ar: "الوظائف" }, url: "/careers" },
   { id: "faq", section: "support", label: { en: "FAQ", ar: "الأسئلة الشائعة" }, url: "/faq" },
-  { id: "help", section: "support", label: { en: "Help Center", ar: "مركز المساعدة" }, url: "/help" },
+  { id: "help", section: "support", label: { en: "Help center", ar: "مركز المساعدة" }, url: "/help" },
   { id: "webinars", section: "support", label: { en: "Webinars", ar: "الندوات" }, url: "/webinars" },
-  { id: "privacy", section: "legal", label: { en: "Privacy Policy", ar: "سياسة الخصوصية" }, url: "/privacy" },
-  { id: "terms", section: "legal", label: { en: "Terms of Service", ar: "الشروط والأحكام" }, url: "/terms" },
+  { id: "privacy", section: "legal", label: { en: "Privacy policy", ar: "سياسة الخصوصية" }, url: "/privacy-policy" },
+  { id: "terms", section: "legal", label: { en: "Terms of service", ar: "الشروط والأحكام" }, url: "/terms" },
 ];
 
 export const DEFAULT_INTEGRATIONS: IntegrationSettings = {

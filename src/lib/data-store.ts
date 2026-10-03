@@ -458,7 +458,7 @@ export async function getProducts(onlyEnabled = false): Promise<Product[]> {
   try {
     return await store.readProducts(await getPool(), onlyEnabled);
   } catch {
-    return DEFAULT_PRODUCTS;
+    return onlyEnabled ? DEFAULT_PRODUCTS.filter((p) => p.enabled) : DEFAULT_PRODUCTS;
   }
 }
 

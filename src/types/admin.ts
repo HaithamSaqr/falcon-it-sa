@@ -133,6 +133,10 @@ export interface SiteSettings {
     whatsapp: string;
     /** Dynamic list of office branches (admin can add/remove). */
     branches: Branch[];
+    /** v2: unified national number (CR). Missing on save = keep the stored value. */
+    crNumber?: string;
+    /** v2: VAT registration number. Missing on save = keep the stored value. */
+    vatNumber?: string;
   };
   notifications: {
     emailOnNewLead: boolean;

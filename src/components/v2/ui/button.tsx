@@ -1,6 +1,7 @@
 import type { AnchorHTMLAttributes, ButtonHTMLAttributes, ReactNode } from "react";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
+import { isLocaleRoute as isInternal } from "@/lib/href";
 import Icon from "./icon";
 
 export type ButtonVariant = "primary" | "ghost" | "link";
@@ -54,19 +55,6 @@ function isEmptyLabel(children: ReactNode): boolean {
   if (typeof children === "string") return children.trim() === "";
   if (Array.isArray(children)) return children.every(isEmptyLabel);
   return false;
-}
-
-/**
- * Locale routes (`/demo`, `/sectors/x?y=1`) go through the locale-aware Link.
- * API routes and file paths (`/brochure.pdf`, `/images/v2/x.png`) are not pages,
- * so they must not get a locale prefix and stay plain anchors.
- */
-function isInternal(href: string): boolean {
-  if (!href.startsWith("/") || href.startsWith("//")) return false;
-  const path = href.split(/[?#]/)[0];
-  if (path === "/api" || path.startsWith("/api/")) return false;
-  const last = path.split("/").pop() ?? "";
-  return !/\.[A-Za-z0-9]+$/.test(last);
 }
 
 /** Pill CTA. Primary has the brand fill with a nested arrow circle. */

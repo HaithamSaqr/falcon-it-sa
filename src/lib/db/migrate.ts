@@ -33,6 +33,7 @@ import {
 import {
   DEFAULT_SETTINGS,
   DEFAULT_CONTENT,
+  DEFAULT_COMPANY_IDS,
   DEFAULT_INTEGRATIONS,
   DEFAULT_SEO,
   DEFAULT_FOOTER_LINKS,
@@ -257,10 +258,46 @@ async function fixDemoTestimonials(c: PoolClient): Promise<void> {
   );
 }
 
+/**
+ * Fill the unified national number and VAT number shown in the footer.
+ * Only blanks are filled, so a value an admin already entered is kept.
+ */
+async function fixCompanyIds(c: PoolClient): Promise<void> {
+  await c.query(
+    `UPDATE site_settings SET
+       cr_number  = CASE WHEN trim(cr_number)  = '' THEN $1 ELSE cr_number  END,
+       vat_number = CASE WHEN trim(vat_number) = '' THEN $2 ELSE vat_number END
+     WHERE id = 1`,
+    [DEFAULT_COMPANY_IDS.crNumber, DEFAULT_COMPANY_IDS.vatNumber]
+  );
+}
+
+/** Old default footer labels that move to sentence case (matched exactly, so admin edits are kept). */
+const FOOTER_LABEL_FIXES: [id: string, from: string, to: string][] = [
+  ["about", "About Us", "About us"],
+  ["help", "Help Center", "Help center"],
+  ["privacy", "Privacy Policy", "Privacy policy"],
+  ["terms", "Terms of Service", "Terms of service"],
+];
+
+/**
+ * The footer links to the website privacy policy (/privacy-policy); the app
+ * policy stays at /privacy for the store listing. Untouched default labels
+ * move to sentence case.
+ */
+async function fixFooterLinks(c: PoolClient): Promise<void> {
+  for (const [id, from, to] of FOOTER_LABEL_FIXES) {
+    await c.query(`UPDATE footer_links SET label_en = $3 WHERE id = $1 AND label_en = $2`, [id, from, to]);
+  }
+  await c.query(`UPDATE footer_links SET url = '/privacy-policy' WHERE id = 'privacy' AND url = '/privacy'`);
+}
+
 const DATA_FIXES: [key: string, fix: (c: PoolClient) => Promise<void>][] = [
   ["v2-sector-slugs", fixSectorSlugs],
   ["v2-disable-applications-brochure", fixApplicationsBrochure],
   ["v2-disable-demo-testimonials", fixDemoTestimonials],
+  ["v2-company-ids", fixCompanyIds],
+  ["v2-footer-links", fixFooterLinks],
 ];
 
 /** Apply every pending one-off fix. A failing fix is logged and retried next boot; it never blocks the site. */

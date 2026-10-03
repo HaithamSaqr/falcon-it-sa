@@ -172,6 +172,8 @@ export async function readSettings(pool: Pool): Promise<SiteSettings> {
       phone: { ksa: r.phone_ksa, egypt: r.phone_egypt },
       whatsapp: r.whatsapp,
       branches,
+      crNumber: r.cr_number ?? "",
+      vatNumber: r.vat_number ?? "",
     },
     notifications: {
       emailOnNewLead: r.notif_email_on_new_lead,
@@ -267,13 +269,17 @@ export async function writeSettings(pool: Pool, s: SiteSettings): Promise<void> 
        blog_enabled = COALESCE($1, blog_enabled),
        cta_label_en = COALESCE($2, cta_label_en),
        cta_label_ar = COALESCE($3, cta_label_ar),
-       demo_url     = COALESCE($4, demo_url)
+       demo_url     = COALESCE($4, demo_url),
+       cr_number    = COALESCE($5, cr_number),
+       vat_number   = COALESCE($6, vat_number)
      WHERE id = 1`,
     [
       typeof s.blogEnabled === "boolean" ? s.blogEnabled : null,
       s.primaryCta?.label?.en ?? null,
       s.primaryCta?.label?.ar ?? null,
       s.primaryCta?.demoUrl || null,
+      typeof s.company.crNumber === "string" ? s.company.crNumber.trim() : null,
+      typeof s.company.vatNumber === "string" ? s.company.vatNumber.trim() : null,
     ]
   );
   await writeBranches(pool, s.company.branches ?? []);

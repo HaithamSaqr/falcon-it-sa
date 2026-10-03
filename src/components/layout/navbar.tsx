@@ -1,373 +1,153 @@
-"use client";
-
-import { useState, useEffect, useCallback } from "react";
-import { useTranslations, useLocale } from "next-intl";
-import * as Dialog from "@radix-ui/react-dialog";
-
-import { Link, usePathname } from "@/i18n/navigation";
+import Image from "next/image";
+import { getLocale, getTranslations } from "next-intl/server";
+import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
-import { NAV_ITEMS } from "@/lib/constants";
-import Button from "@/components/ui/button";
-import Container from "@/components/ui/container";
+import { pickBi } from "@/lib/blocks/bi";
+import type { PublicSettings } from "@/lib/public-chrome";
+import Button from "@/components/v2/ui/button";
+import Container from "@/components/v2/ui/container";
+import Icon from "@/components/v2/ui/icon";
 import LanguageToggle from "@/components/layout/language-toggle";
-import { useSettings } from "@/components/providers/settings-provider";
+import MobileMenu from "@/components/layout/mobile-menu";
+import NavLink from "@/components/layout/nav-link";
 
-/* ------------------------------------------------------------------ */
-/*  Types                                                              */
-/* ------------------------------------------------------------------ */
+const LINK =
+  "inline-flex items-center gap-1 whitespace-nowrap rounded-full text-[15px] leading-none text-ink no-underline transition-colors duration-200 hover:text-brand outline-brand focus-visible:outline-3 focus-visible:outline-offset-3";
+const ACTIVE = "font-semibold text-brand";
 
-type ResolvedChild = { href: string; label: string };
-type ResolvedItem = { key: string; href: string; label: string; children?: ResolvedChild[] };
-
-/**
- * Resolve the static NAV_ITEMS into ready-to-render items with localized
- * labels. The Products dropdown is populated from the admin-managed products
- * (via the public settings provider) so renaming a product in the dashboard
- * updates the menu. Falls back to the translation keys before data loads.
- */
-function useResolvedNav(): ResolvedItem[] {
-  const t = useTranslations();
-  const locale = useLocale();
-  const { products } = useSettings();
-  const isAr = locale === "ar";
-
-  return NAV_ITEMS.map((item) => {
-    const resolved: ResolvedItem = { key: item.key, href: item.href, label: t(`nav.${item.key}`) };
-    if ("children" in item) {
-      resolved.children =
-        products.length > 0
-          ? products.map((p) => ({ href: `/products/${p.slug}`, label: isAr ? p.name.ar : p.name.en }))
-          : item.children.map((c) => ({ href: c.href, label: t(`nav.${c.key}`) }));
-    }
-    return resolved;
-  });
-}
-
-/* ------------------------------------------------------------------ */
-/*  Sub-components                                                     */
-/* ------------------------------------------------------------------ */
-
-/** Desktop dropdown for nav items with children */
-function DesktopDropdown({
-  item,
-  pathname,
-}: {
-  item: ResolvedItem & { children: ResolvedChild[] };
-  pathname: string;
-}) {
-  return (
-    <div className="group relative">
-      <Link
-        href={item.href}
-        className={cn(
-          "inline-flex items-center gap-1 px-3 py-2 text-sm font-medium transition-colors",
-          pathname.startsWith(item.href)
-            ? "text-primary-500"
-            : "text-text-primary hover:text-primary-500",
-        )}
-      >
-        {item.label}
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 20 20"
-          fill="currentColor"
-          className="size-4 transition-transform group-hover:rotate-180"
-          aria-hidden="true"
-        >
-          <path
-            fillRule="evenodd"
-            d="M5.22 8.22a.75.75 0 011.06 0L10 11.94l3.72-3.72a.75.75 0 111.06 1.06l-4.25 4.25a.75.75 0 01-1.06 0L5.22 9.28a.75.75 0 010-1.06z"
-            clipRule="evenodd"
-          />
-        </svg>
-      </Link>
-
-      {/* Dropdown panel */}
-      <div
-        className={cn(
-          "pointer-events-none invisible absolute start-0 top-full z-50 pt-2 opacity-0",
-          "transition-all duration-200",
-          "group-hover:pointer-events-auto group-hover:visible group-hover:opacity-100",
-        )}
-      >
-        <div className="min-w-[220px] rounded-2xl bg-white p-2 shadow-card">
-          {item.children.map((child) => (
-            <Link
-              key={child.href}
-              href={child.href}
-              className={cn(
-                "block rounded-xl px-4 py-2.5 text-sm font-medium transition-colors",
-                pathname === child.href
-                  ? "bg-primary-50 text-primary-500"
-                  : "text-text-primary hover:bg-primary-50 hover:text-primary-500",
-              )}
-            >
-              {child.label}
-            </Link>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/** Single desktop nav link (no children) */
-function DesktopNavLink({ item, pathname }: { item: ResolvedItem; pathname: string }) {
+function Logo({ name, short, className }: { name: string; short: string; className?: string }) {
   return (
     <Link
-      href={item.href}
+      href="/"
       className={cn(
-        "px-3 py-2 text-sm font-medium transition-colors",
-        pathname === item.href
-          ? "text-primary-500"
-          : "text-text-primary hover:text-primary-500",
+        "flex shrink-0 items-center gap-2 rounded-full text-ink no-underline outline-brand focus-visible:outline-3 focus-visible:outline-offset-3 lg:gap-2.5",
+        className,
       )}
     >
-      {item.label}
+      <Image
+        src="/images/v2/falcon-mark.png"
+        alt={name}
+        width={43}
+        height={30}
+        priority
+        unoptimized
+        className="h-[26px] w-auto lg:h-[30px]"
+      />
+      <span className="text-base font-extrabold leading-none tracking-[-0.02em] rtl:font-bold rtl:tracking-normal lg:text-lg">
+        {short}
+      </span>
     </Link>
   );
 }
 
-/* ------------------------------------------------------------------ */
-/*  Mobile menu                                                        */
-/* ------------------------------------------------------------------ */
+/**
+ * Floating island navbar (server-rendered). Desktop: one line with the
+ * sectors menu (opens on hover and keyboard focus, no JavaScript needed),
+ * the two ERPs, About, Contact, the language link and the primary CTA.
+ * Below `lg`: logo, language link and a menu button that opens a sheet.
+ */
+export default async function Navbar({ settings }: { settings: PublicSettings }) {
+  const locale = await getLocale();
+  const lang = locale === "ar" ? "ar" : "en";
+  const t = await getTranslations("chrome");
 
-function MobileMenu({
-  open,
-  onOpenChange,
-}: {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-}) {
-  const t = useTranslations();
-  const pathname = usePathname();
-  const locale = useLocale();
-  const { loginUrl } = useSettings();
-  const navItems = useResolvedNav();
-  const isRTL = locale === "ar";
+  const companyName = pickBi(settings.company.name, lang) || "Falcon Smart Solutions";
+  const ctaLabel = pickBi(settings.primaryCta.label, lang);
+  const sectors = settings.sectors
+    .map((s) => ({ href: `/sectors/${s.slug}`, label: pickBi(s.name, lang) }))
+    .filter((s) => s.label !== "");
+  const links = [
+    { href: "/erp/odoo", label: t("odoo") },
+    { href: "/erp/falcon", label: t("falconErp") },
+    { href: "/about", label: t("about") },
+    { href: "/contact", label: t("contact") },
+  ];
 
   return (
-    <Dialog.Root open={open} onOpenChange={onOpenChange}>
-      <Dialog.Portal>
-        {/* Backdrop */}
-        <Dialog.Overlay
+    <header className="pointer-events-none sticky top-0 z-50 pt-3 lg:pt-5">
+      <Container className="px-3">
+        <nav
+          aria-label={t("mainNav")}
           className={cn(
-            "fixed inset-0 z-50 bg-black/40 backdrop-blur-sm",
-            "data-[state=open]:animate-in data-[state=open]:fade-in-0",
-            "data-[state=closed]:animate-out data-[state=closed]:fade-out-0",
+            "pointer-events-auto flex h-14 items-center gap-1.5 rounded-full bg-white/[0.88] ps-4 pe-1.5 backdrop-blur-[16px]",
+            "shadow-[0_0_0_1px_rgba(11,26,51,0.06),0_16px_32px_-24px_rgba(12,60,120,0.4)]",
+            "lg:h-16 lg:gap-6 lg:bg-white/[0.86] lg:ps-[22px] lg:pe-2.5 lg:shadow-[0_0_0_1px_rgba(11,26,51,0.06),0_20px_40px_-28px_rgba(12,60,120,0.35)] xl:gap-9",
           )}
-        />
-
-        {/* Panel */}
-        <Dialog.Content
-          className={cn(
-            "fixed inset-y-0 z-50 w-full max-w-sm bg-white shadow-xl",
-            "flex flex-col",
-            "focus:outline-none",
-            isRTL ? "start-0" : "start-0",
-            "data-[state=open]:animate-in data-[state=open]:slide-in-from-start",
-            "data-[state=closed]:animate-out data-[state=closed]:slide-out-to-start",
-            "duration-300",
-          )}
-          dir={isRTL ? "rtl" : "ltr"}
         >
-          <Dialog.Title className="sr-only">
-            {t("nav.mobileMenu")}
-          </Dialog.Title>
+          <Logo name={companyName} short={t("brandShort")} />
 
-          {/* Header */}
-          <div className="flex items-center justify-between border-b px-4 py-4">
-            <Link href="/" onClick={() => onOpenChange(false)}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src="/images/logos/falcon-logo.png"
-                alt="Falcon Smart Solutions"
-                className="h-10 w-auto"
-              />
-            </Link>
-
-            <Dialog.Close asChild>
-              <button
-                type="button"
-                className="rounded-lg p-2 text-text-secondary hover:bg-gray-100"
-                aria-label={t("common.close")}
+          {/* Desktop links */}
+          <ul className="hidden items-center gap-5 lg:flex xl:gap-7">
+            <li className="group/sectors relative">
+              <NavLink href="/sectors" className={LINK} activeClassName={ACTIVE}>
+                {t("sectors")}
+                <Icon
+                  name="CaretDown"
+                  size={14}
+                  className="transition-transform duration-200 group-hover/sectors:rotate-180 group-focus-within/sectors:rotate-180 motion-reduce:transition-none"
+                />
+              </NavLink>
+              <div
+                className={cn(
+                  "invisible absolute -start-5 top-full pt-4 opacity-0 transition-[opacity,visibility] duration-200 motion-reduce:transition-none",
+                  "group-hover/sectors:visible group-hover/sectors:opacity-100 group-focus-within/sectors:visible group-focus-within/sectors:opacity-100",
+                )}
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="size-5"
-                  aria-hidden="true"
-                >
-                  <path d="M18 6 6 18M6 6l12 12" />
-                </svg>
-              </button>
-            </Dialog.Close>
-          </div>
-
-          {/* Nav links */}
-          <nav className="flex-1 overflow-y-auto px-4 py-6">
-            <ul className="space-y-1">
-              {navItems.map((item) => (
-                <li key={item.key}>
-                  <Link
-                    href={item.href}
-                    onClick={() => onOpenChange(false)}
-                    className={cn(
-                      "block rounded-xl px-4 py-3 text-base font-medium transition-colors",
-                      pathname === item.href
-                        ? "bg-primary-50 text-primary-500"
-                        : "text-text-primary hover:bg-gray-50",
-                    )}
-                  >
-                    {item.label}
-                  </Link>
-
-                  {/* Sub-items */}
-                  {item.children?.map((child) => (
-                    <Link
-                      key={child.href}
-                      href={child.href}
-                      onClick={() => onOpenChange(false)}
-                      className={cn(
-                        "block rounded-xl py-2.5 ps-8 pe-4 text-sm font-medium transition-colors",
-                        pathname === child.href
-                          ? "text-primary-500"
-                          : "text-text-secondary hover:text-primary-500",
-                      )}
-                    >
-                      {child.label}
-                    </Link>
+                <ul className="w-[320px] rounded-[22px] bg-surface p-2 shadow-[0_0_0_1px_rgba(11,26,51,0.06),0_30px_60px_-30px_rgba(12,60,120,0.4)]">
+                  {sectors.map((s) => (
+                    <li key={s.href}>
+                      <NavLink
+                        href={s.href}
+                        className="flex min-h-11 items-center rounded-[14px] px-3.5 text-[15px] leading-snug text-ink no-underline transition-colors duration-200 hover:bg-page hover:text-brand outline-brand focus-visible:outline-3 focus-visible:-outline-offset-3"
+                        activeClassName="bg-sky font-semibold text-brand"
+                      >
+                        {s.label}
+                      </NavLink>
+                    </li>
                   ))}
-                </li>
-              ))}
-            </ul>
-          </nav>
+                  <li className="mt-1 pt-1 shadow-[inset_0_1px_0_rgba(11,26,51,0.08)]">
+                    <Link
+                      href="/sectors"
+                      className="group flex min-h-11 items-center justify-between rounded-[14px] px-3.5 text-[15px] font-semibold text-brand no-underline transition-colors duration-200 hover:bg-page outline-brand focus-visible:outline-3 focus-visible:-outline-offset-3"
+                    >
+                      {t("allSectors")}
+                      <span className="v2-icon-nudge inline-flex">
+                        <Icon name="ArrowUpRight" size={16} />
+                      </span>
+                    </Link>
+                  </li>
+                </ul>
+              </div>
+            </li>
+            {links.map((l) => (
+              <li key={l.href}>
+                <NavLink href={l.href} className={LINK} activeClassName={ACTIVE}>
+                  {l.label}
+                </NavLink>
+              </li>
+            ))}
+          </ul>
 
-          {/* Footer actions */}
-          <div className="border-t px-4 py-4 space-y-3">
-            <LanguageToggle className="w-full justify-center" />
+          <LanguageToggle className="ms-auto min-h-11 px-2.5 text-sm lg:min-h-0 lg:px-0 lg:text-[15px]" />
 
-            <a
-              href={loginUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-[var(--radius-button)] border-2 border-primary-500 px-6 text-base font-semibold text-primary-500 transition-all duration-200 hover:bg-primary-500 hover:text-white"
-            >
-              {t("nav.login")}
-            </a>
-
-            <Button variant="cta" href="/demo" className="w-full">
-              {t("nav.startTrial")}
-            </Button>
-          </div>
-        </Dialog.Content>
-      </Dialog.Portal>
-    </Dialog.Root>
-  );
-}
-
-/* ------------------------------------------------------------------ */
-/*  Navbar (main)                                                      */
-/* ------------------------------------------------------------------ */
-
-export default function Navbar() {
-  const t = useTranslations();
-  const pathname = usePathname();
-  const { loginUrl } = useSettings();
-  const navItems = useResolvedNav();
-  const [scrolled, setScrolled] = useState(false);
-  const [mobileOpen, setMobileOpen] = useState(false);
-
-  const handleScroll = useCallback(() => {
-    setScrolled(window.scrollY > 8);
-  }, []);
-
-  useEffect(() => {
-    handleScroll();
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, [handleScroll]);
-
-  return (
-    <header
-      className={cn(
-        "sticky top-0 z-50 w-full bg-white transition-shadow duration-300",
-        scrolled && "shadow-navbar",
-      )}
-    >
-      <Container className="flex h-16 items-center justify-between lg:h-[72px]">
-        {/* Logo */}
-        <Link href="/" className="shrink-0">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/images/logos/falcon-logo.png"
-            alt="Falcon Smart Solutions"
-            className="h-10 w-auto lg:h-12"
-          />
-        </Link>
-
-        {/* Desktop navigation (center) */}
-        <nav className="hidden lg:flex lg:items-center lg:gap-1">
-          {navItems.map((item) =>
-            item.children ? (
-              <DesktopDropdown
-                key={item.key}
-                item={item as ResolvedItem & { children: ResolvedChild[] }}
-                pathname={pathname}
-              />
-            ) : (
-              <DesktopNavLink key={item.key} item={item} pathname={pathname} />
-            ),
-          )}
-        </nav>
-
-        {/* Desktop right actions */}
-        <div className="hidden lg:flex lg:items-center lg:gap-2">
-          <LanguageToggle />
-
-          <a
-            href={loginUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="px-3 py-2 text-sm font-medium text-text-secondary transition-colors hover:text-primary-500"
-          >
-            {t("nav.login")}
-          </a>
-
-          <Button variant="cta" size="sm" href="/demo">
-            {t("nav.startTrial")}
+          <Button href={settings.primaryCta.demoUrl} className="hidden shrink-0 lg:inline-flex rtl:font-semibold">
+            {ctaLabel}
           </Button>
-        </div>
 
-        {/* Mobile hamburger */}
-        <button
-          type="button"
-          onClick={() => setMobileOpen(true)}
-          className="rounded-lg p-2 text-text-primary hover:bg-gray-100 lg:hidden"
-          aria-label={t("nav.openMenu")}
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={2}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="size-6"
-            aria-hidden="true"
-          >
-            <path d="M4 6h16M4 12h16M4 18h16" />
-          </svg>
-        </button>
-
-        {/* Mobile menu (Radix Dialog) */}
-        <MobileMenu open={mobileOpen} onOpenChange={setMobileOpen} />
+          <div className="lg:hidden">
+            <MobileMenu
+              links={[{ href: "/sectors", label: t("sectors") }, ...links]}
+              sectors={sectors}
+              labels={{ open: t("openMenu"), close: t("closeMenu"), title: t("menuTitle") }}
+              logo={<Logo name={companyName} short={t("brandShort")} />}
+              cta={
+                <Button href={settings.primaryCta.demoUrl} size="lg">
+                  {ctaLabel}
+                </Button>
+              }
+            />
+          </div>
+        </nav>
       </Container>
     </header>
   );

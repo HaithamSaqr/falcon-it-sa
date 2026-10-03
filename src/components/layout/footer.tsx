@@ -1,113 +1,60 @@
-"use client";
+import type { ReactNode } from "react";
+import Image from "next/image";
+import { getLocale, getTranslations } from "next-intl/server";
+import { Link } from "@/i18n/navigation";
+import { pickBi } from "@/lib/blocks/bi";
+import { isExternalHref, isLocaleRoute } from "@/lib/href";
+import { displayPhone, supportingServices, telHref, type PublicSettings } from "@/lib/public-chrome";
+import Container from "@/components/v2/ui/container";
+import Icon from "@/components/v2/ui/icon";
+import FooterGate from "@/components/layout/footer-gate";
 
-import { useTranslations, useLocale } from "next-intl";
-import { Link, usePathname } from "@/i18n/navigation";
-import { cn } from "@/lib/utils";
-import { NAV_ITEMS } from "@/lib/constants";
-import { useSettings } from "@/components/providers/settings-provider";
-import Container from "@/components/ui/container";
+type FooterLinkItem = { href: string; label: string };
 
-/* ------------------------------------------------------------------ */
-/*  Social icons (inline SVGs)                                         */
-/* ------------------------------------------------------------------ */
+const SOCIAL: { key: keyof PublicSettings["social"]; icon: string; network: string }[] = [
+  { key: "linkedin", icon: "LinkedinLogo", network: "LinkedIn" },
+  { key: "twitter", icon: "XLogo", network: "X" },
+  { key: "instagram", icon: "InstagramLogo", network: "Instagram" },
+  { key: "facebook", icon: "FacebookLogo", network: "Facebook" },
+  { key: "youtube", icon: "YoutubeLogo", network: "YouTube" },
+  { key: "tiktok", icon: "TiktokLogo", network: "TikTok" },
+];
 
-const SOCIAL_ICONS: Record<
-  string,
-  { label: string; path: string; viewBox?: string }
-> = {
-  linkedin: {
-    label: "LinkedIn",
-    path: "M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z",
-  },
-  twitter: {
-    label: "X (Twitter)",
-    path: "M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z",
-  },
-  facebook: {
-    label: "Facebook",
-    path: "M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z",
-  },
-  instagram: {
-    label: "Instagram",
-    path: "M12 0C8.74 0 8.333.015 7.053.072 5.775.132 4.905.333 4.14.63c-.789.306-1.459.717-2.126 1.384S.935 3.35.63 4.14C.333 4.905.131 5.775.072 7.053.012 8.333 0 8.74 0 12s.015 3.667.072 4.947c.06 1.277.261 2.148.558 2.913.306.788.717 1.459 1.384 2.126.667.666 1.336 1.079 2.126 1.384.766.296 1.636.499 2.913.558C8.333 23.988 8.74 24 12 24s3.667-.015 4.947-.072c1.277-.06 2.148-.262 2.913-.558.788-.306 1.459-.718 2.126-1.384.666-.667 1.079-1.335 1.384-2.126.296-.765.499-1.636.558-2.913.06-1.28.072-1.687.072-4.947s-.015-3.667-.072-4.947c-.06-1.277-.262-2.149-.558-2.913-.306-.789-.718-1.459-1.384-2.126C21.319 1.347 20.651.935 19.86.63c-.765-.297-1.636-.499-2.913-.558C15.667.012 15.26 0 12 0zm0 2.16c3.203 0 3.585.016 4.85.071 1.17.055 1.805.249 2.227.415.562.217.96.477 1.382.896.419.42.679.819.896 1.381.164.422.36 1.057.413 2.227.057 1.266.07 1.646.07 4.85s-.015 3.585-.074 4.85c-.061 1.17-.256 1.805-.421 2.227-.224.562-.479.96-.899 1.382-.419.419-.824.679-1.38.896-.42.164-1.065.36-2.235.413-1.274.057-1.649.07-4.859.07-3.211 0-3.586-.015-4.859-.074-1.171-.061-1.816-.256-2.236-.421-.569-.224-.96-.479-1.379-.899-.421-.419-.69-.824-.9-1.38-.165-.42-.359-1.065-.42-2.235-.045-1.26-.061-1.649-.061-4.844 0-3.196.016-3.586.061-4.861.061-1.17.255-1.814.42-2.234.21-.57.479-.96.9-1.381.419-.419.81-.689 1.379-.898.42-.166 1.051-.361 2.221-.421 1.275-.045 1.65-.06 4.859-.06l.045.03zm0 3.678a6.162 6.162 0 100 12.324 6.162 6.162 0 100-12.324zM12 16c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4zm7.846-10.405a1.441 1.441 0 11-2.882 0 1.441 1.441 0 012.882 0z",
-  },
-  youtube: {
-    label: "YouTube",
-    path: "M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z",
-  },
-  tiktok: {
-    label: "TikTok",
-    path: "M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z",
-  },
-};
-
-function SocialLink({
-  platform,
-  href,
-}: {
-  platform: string;
-  href: string;
-}) {
-  const icon = SOCIAL_ICONS[platform];
-  if (!icon || !href) return null;
+/** Locale routes use the locale-aware Link; external URLs open in a new tab. */
+function SmartLink({ href, className, children }: { href: string; className?: string; children: ReactNode }) {
+  if (isLocaleRoute(href)) {
+    return (
+      <Link href={href} className={className}>
+        {children}
+      </Link>
+    );
+  }
   return (
     <a
       href={href}
-      target="_blank"
-      rel="noopener noreferrer"
-      aria-label={icon.label}
-      className="inline-flex size-9 items-center justify-center rounded-lg text-text-on-dark/60 transition-colors hover:bg-white/10 hover:text-primary-400"
+      className={className}
+      {...(isExternalHref(href) ? { target: "_blank", rel: "noopener noreferrer" } : {})}
     >
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 24 24"
-        fill="currentColor"
-        className="size-[18px]"
-        aria-hidden="true"
-      >
-        <path d={icon.path} />
-      </svg>
+      {children}
     </a>
   );
 }
 
-/* ------------------------------------------------------------------ */
-/*  Footer column                                                      */
-/* ------------------------------------------------------------------ */
+const FOCUS = "outline-brand focus-visible:outline-3 focus-visible:outline-offset-3";
+const COLUMN_LINK = `rounded-sm text-[15px] leading-[1.3] rtl:leading-[1.5] text-body no-underline transition-colors duration-200 hover:text-brand ${FOCUS}`;
+const STRIP_LINK = `rounded-sm text-muted underline decoration-ink/25 underline-offset-[3px] transition-colors duration-200 hover:text-ink ${FOCUS}`;
 
-function FooterLinkItem({ label, href }: { label: string; href: string }) {
-  const cls = "text-sm text-text-on-dark/60 transition-colors hover:text-primary-400";
-  const isExternal = /^https?:\/\//i.test(href);
-  if (isExternal) {
-    return (
-      <a href={href} target="_blank" rel="noopener noreferrer" className={cls}>
-        {label}
-      </a>
-    );
-  }
+function Column({ title, links }: { title: string; links: FooterLinkItem[] }) {
+  if (links.length === 0) return null;
   return (
-    <Link href={href} className={cls}>
-      {label}
-    </Link>
-  );
-}
-
-function FooterColumn({
-  title,
-  links,
-}: {
-  title: string;
-  links: { label: string; href: string }[];
-}) {
-  return (
-    <div>
-      <h4 className="mb-4 text-sm font-semibold uppercase tracking-wider text-text-on-dark">
-        {title}
-      </h4>
-      <ul className="space-y-2.5">
-        {links.map((link, i) => (
-          <li key={`${link.href}-${i}`}>
-            <FooterLinkItem label={link.label} href={link.href} />
+    <div data-footer-column className="flex flex-col gap-2.5 text-[15px] leading-[1.3] rtl:leading-[1.5]">
+      <h2 className="text-[15px] font-bold leading-[1.3] tracking-normal text-ink">{title}</h2>
+      <ul className="flex flex-col gap-2.5">
+        {links.map((l, i) => (
+          <li key={`${l.href}-${i}`}>
+            <SmartLink href={l.href} className={COLUMN_LINK}>
+              {l.label}
+            </SmartLink>
           </li>
         ))}
       </ul>
@@ -115,190 +62,156 @@ function FooterColumn({
   );
 }
 
-/* ------------------------------------------------------------------ */
-/*  Footer (main)                                                      */
-/* ------------------------------------------------------------------ */
-
-/** Compact copyright + legal strip, reused by the minimal landing-page footer. */
-function FooterBottomStrip({
-  t,
-  legalLinks,
-}: {
-  t: ReturnType<typeof useTranslations>;
-  legalLinks: { label: string; href: string }[];
-}) {
+function Brand({ name, size = "md" }: { name: string; size?: "md" | "sm" }) {
   return (
-    <div className="flex flex-col items-center justify-between gap-3 sm:flex-row">
-      <p className="text-xs text-text-on-dark/40">
-        {t("footer.copyright", { year: new Date().getFullYear() })}
-      </p>
-      <div className="flex gap-6">
-        {legalLinks.map((link, i) => {
-          const isExternal = /^https?:\/\//i.test(link.href);
-          const cls = "text-xs text-text-on-dark/40 transition-colors hover:text-primary-400";
-          return isExternal ? (
-            <a key={i} href={link.href} target="_blank" rel="noopener noreferrer" className={cls}>
-              {link.label}
-            </a>
-          ) : (
-            <Link key={i} href={link.href} className={cls}>
-              {link.label}
-            </Link>
-          );
-        })}
-      </div>
-    </div>
+    <span className="flex items-center gap-2.5">
+      <Image
+        src="/images/v2/falcon-mark.png"
+        alt=""
+        width={40}
+        height={28}
+        unoptimized
+        className={size === "md" ? "h-7 w-auto" : "h-[26px] w-auto"}
+      />
+      <span
+        className={
+          size === "md"
+            ? "text-[17px] font-extrabold leading-none tracking-[-0.01em] text-ink rtl:font-bold rtl:tracking-normal"
+            : "text-base font-semibold leading-none text-ink"
+        }
+      >
+        {name}
+      </span>
+    </span>
   );
 }
 
-export default function Footer() {
-  const t = useTranslations();
-  const locale = useLocale();
-  const pathname = usePathname();
-  const { company, social, footerLinks } = useSettings();
-  const isAr = locale === "ar";
+/**
+ * v2 footer, rendered on the server from `getPublicSettings()` so every
+ * column is in the HTML before any JavaScript runs. Sector landing pages get
+ * the compact strip from the approved sector mockup.
+ */
+export default async function Footer({ settings }: { settings: PublicSettings }) {
+  const locale = await getLocale();
+  const lang = locale === "ar" ? "ar" : "en";
+  const t = await getTranslations("chrome");
+  const L = (v: { en: string; ar: string }) => pickBi(v, lang);
 
-  // Sector landing pages get a minimal footer (the page is already long).
-  const isLandingPage = /^\/sectors\/[^/]+/.test(pathname);
+  const name = L(settings.company.name) || "Falcon Smart Solutions";
+  const linksIn = (...sections: string[]): FooterLinkItem[] =>
+    settings.footerLinks
+      .filter((l) => sections.includes(l.section))
+      .map((l) => ({ href: l.url, label: L(l.label) }))
+      .filter((l) => l.label !== "");
 
-  const linksBy = (section: string) =>
-    (footerLinks ?? [])
-      .filter((l) => l.section === section)
-      .map((l) => ({ label: isAr ? l.label.ar : l.label.en, href: l.url }));
+  const sectorLinks: FooterLinkItem[] = [
+    ...settings.sectors.map((s) => ({ href: `/sectors/${s.slug}`, label: L(s.name) })).filter((l) => l.label),
+    { href: "/sectors", label: t("allSectors") },
+  ];
+  const systemLinks: FooterLinkItem[] = [
+    { href: "/erp/falcon", label: t("falconErp") },
+    { href: "/erp/odoo", label: t("odooServices") },
+    ...supportingServices(settings.products)
+      .map((p) => ({ href: `/products/${p.slug}`, label: L(p.name) }))
+      .filter((l) => l.label),
+    ...linksIn("products"),
+  ];
+  const companyLinks = linksIn("about", "support");
+  const legalLinks = linksIn("legal");
 
-  const aboutLinks = linksBy("about");
-  const supportLinks = linksBy("support");
-  const legalLinks = linksBy("legal");
+  const ids = [
+    settings.company.crNumber ? t("crNumber", { number: settings.company.crNumber }) : "",
+    settings.company.vatNumber ? t("vatNumber", { number: settings.company.vatNumber }) : "",
+  ].filter(Boolean);
+  const copyright = t("copyright", { year: new Date().getFullYear(), name });
+  const legalLine = ids.length ? `${copyright} ${ids.join(lang === "ar" ? "، " : ", ")}` : copyright;
 
-  // Minimal footer on sector landing pages — just the copyright/legal strip.
-  if (isLandingPage) {
-    return (
-      <footer className="bg-dark">
-        <Container className="py-6">
-          <FooterBottomStrip t={t} legalLinks={legalLinks} />
-        </Container>
-      </footer>
-    );
-  }
+  const legalNav =
+    legalLinks.length > 0 ? (
+      <nav aria-label={t("legal")}>
+        <ul className="flex flex-wrap gap-x-5 gap-y-2">
+          {legalLinks.map((l, i) => (
+            <li key={`${l.href}-${i}`}>
+              <SmartLink href={l.href} className={STRIP_LINK}>
+                {l.label}
+              </SmartLink>
+            </li>
+          ))}
+        </ul>
+      </nav>
+    ) : null;
 
-  const productItems = NAV_ITEMS.find((item) => item.key === "products");
-  const productLinks =
-    "children" in (productItems ?? {})
-      ? (productItems as Extract<typeof productItems, { children: unknown }>)!.children.map(
-        (child) => ({
-          label: t(`nav.${child.key}`),
-          href: child.href,
-        }),
-      )
-      : [];
+  const socials = SOCIAL.filter((s) => (settings.social[s.key] ?? "").trim() !== "");
+  const email = settings.company.email?.trim();
+
+  const full = (
+    <Container className="flex flex-col gap-10 pb-[104px] pt-14 lg:pb-[88px]">
+      <div className="grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-3 lg:grid-cols-[minmax(0,1.6fr)_repeat(3,minmax(0,1fr))] lg:gap-12">
+        <div className="col-span-2 flex flex-col gap-3.5 sm:col-span-3 lg:col-span-1">
+          <Link href="/" className={`w-fit rounded-full no-underline ${FOCUS}`}>
+            <Brand name={name} />
+          </Link>
+          <p className="max-w-[340px] text-[15px] leading-[1.6] text-body">{t("tagline")}</p>
+          <address className="flex flex-col gap-1.5 text-[15px] not-italic leading-[1.4] text-body">
+            {settings.company.branches.map((b) => (
+              <span key={b.id} className="flex flex-wrap gap-x-2">
+                <span>{L(b.address)}</span>
+                <a href={telHref(b.phone)} dir="ltr" className={COLUMN_LINK}>
+                  {displayPhone(b.phone)}
+                </a>
+              </span>
+            ))}
+            {email && (
+              <a href={`mailto:${email}`} className={`${COLUMN_LINK} w-fit`}>
+                {email}
+              </a>
+            )}
+          </address>
+          {socials.length > 0 && (
+            <ul className="-ms-3 flex flex-wrap">
+              {socials.map((s) => (
+                <li key={s.key}>
+                  <a
+                    href={settings.social[s.key]}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={t("social", { network: s.network })}
+                    className="inline-flex size-11 items-center justify-center rounded-full text-muted transition-colors duration-200 hover:bg-surface hover:text-brand outline-brand focus-visible:outline-3 focus-visible:-outline-offset-3"
+                  >
+                    <Icon name={s.icon} size={20} />
+                  </a>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+        <Column title={t("colSectors")} links={sectorLinks} />
+        <Column title={t("colSystems")} links={systemLinks} />
+        <Column title={t("colCompany")} links={companyLinks} />
+      </div>
+
+      <div className="flex flex-col gap-3 pt-6 text-[13px] leading-normal text-muted shadow-[inset_0_1px_0_rgba(11,26,51,0.08)] sm:flex-row sm:items-start sm:justify-between sm:gap-8">
+        <p>{legalLine}</p>
+        {legalNav}
+      </div>
+    </Container>
+  );
+
+  const compact = (
+    <Container className="flex flex-col gap-4 pb-[104px] pt-9 text-[13px] leading-normal text-muted lg:flex-row lg:items-center lg:justify-between lg:pb-[88px]">
+      <Link href="/" className={`w-fit rounded-full no-underline ${FOCUS}`}>
+        <Brand name={name} size="sm" />
+      </Link>
+      <div className="flex flex-col gap-2 lg:items-end">
+        <p>{legalLine}</p>
+        {legalNav}
+      </div>
+    </Container>
+  );
 
   return (
-    <footer className="bg-dark">
-      <Container className="py-16">
-        {/* Grid */}
-        <div className="grid gap-12 sm:grid-cols-2 lg:grid-cols-4">
-          {/* Column 1 — Brand */}
-          <div className="sm:col-span-2 lg:col-span-1">
-            {/* Logo */}
-            <Link href="/" className="inline-block">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src="/images/logos/falcon-logo.png"
-                alt="Falcon Smart Solutions"
-                className="h-12 w-auto brightness-0 invert"
-              />
-            </Link>
-
-            <p className="mt-4 max-w-xs text-sm leading-relaxed text-text-on-dark/60">
-              {t("footer.description")}
-            </p>
-
-            {/* Contact info */}
-            <div className="mt-6 space-y-3">
-              {/* Phone */}
-              <a
-                href={`tel:${company.phone.ksa}`}
-                className="flex items-center gap-2 text-sm text-text-on-dark/60 transition-colors hover:text-primary-400"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                  className="size-4 shrink-0"
-                  aria-hidden="true"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M2 3.5A1.5 1.5 0 013.5 2h1.148a1.5 1.5 0 011.465 1.175l.716 3.223a1.5 1.5 0 01-.65 1.548l-.344.258a.25.25 0 00-.075.196c.186 1.613 1.08 3.742 3.392 5.313a.237.237 0 00.208.023l.384-.129a1.5 1.5 0 011.577.376l2.27 2.27A1.5 1.5 0 0113.5 18h-1.09a3.5 3.5 0 01-3.24-2.17l-.1-.253a14.254 14.254 0 01-3.648-3.648l-.253-.1A3.5 3.5 0 013 8.591V3.5z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-                {company.phone.ksa}
-              </a>
-
-              {/* Email */}
-              <a
-                href={`mailto:${company.email}`}
-                className="flex items-center gap-2 text-sm text-text-on-dark/60 transition-colors hover:text-primary-400"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                  className="size-4 shrink-0"
-                  aria-hidden="true"
-                >
-                  <path d="M3 4a2 2 0 00-2 2v1.161l8.441 4.221a1.25 1.25 0 001.118 0L19 7.162V6a2 2 0 00-2-2H3z" />
-                  <path d="M19 8.839l-7.77 3.885a2.75 2.75 0 01-2.46 0L1 8.839V14a2 2 0 002 2h14a2 2 0 002-2V8.839z" />
-                </svg>
-                {company.email}
-              </a>
-            </div>
-
-            {/* Social icons */}
-            <div className="mt-6 flex gap-1">
-              {Object.entries(social).map(([platform, href]) => (
-                <SocialLink key={platform} platform={platform} href={href} />
-              ))}
-            </div>
-          </div>
-
-          {/* Column 2 — About */}
-          <FooterColumn title={t("footer.aboutFalcon")} links={aboutLinks} />
-
-          {/* Column 3 — Support */}
-          <FooterColumn title={t("footer.supportHub")} links={supportLinks} />
-
-          {/* Column 4 — Products */}
-          <FooterColumn title={t("footer.products")} links={productLinks} />
-        </div>
-
-        {/* Bottom bar */}
-        <div className="mt-12 border-t border-white/10 pt-8">
-          <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
-            <p className="text-xs text-text-on-dark/40">
-              {t("footer.copyright", { year: new Date().getFullYear() })}
-            </p>
-
-            <div className="flex gap-6">
-              {legalLinks.map((link, i) => {
-                const isExternal = /^https?:\/\//i.test(link.href);
-                const cls =
-                  "text-xs text-text-on-dark/40 transition-colors hover:text-primary-400";
-                return isExternal ? (
-                  <a key={i} href={link.href} target="_blank" rel="noopener noreferrer" className={cls}>
-                    {link.label}
-                  </a>
-                ) : (
-                  <Link key={i} href={link.href} className={cls}>
-                    {link.label}
-                  </Link>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      </Container>
+    <footer className="bg-page">
+      <FooterGate full={full} compact={compact} />
     </footer>
   );
 }

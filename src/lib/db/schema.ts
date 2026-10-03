@@ -88,7 +88,9 @@ CREATE TABLE IF NOT EXISTS site_settings (
   blog_enabled           boolean NOT NULL DEFAULT false,
   cta_label_en           text NOT NULL DEFAULT 'Book a demo',
   cta_label_ar           text NOT NULL DEFAULT 'احجز عرضًا تجريبيًا',
-  demo_url               text NOT NULL DEFAULT '/demo'
+  demo_url               text NOT NULL DEFAULT '/demo',
+  cr_number              text NOT NULL DEFAULT '',
+  vat_number             text NOT NULL DEFAULT ''
 );
 
 -- SEO settings (single row, id = 1)
@@ -464,6 +466,8 @@ ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS blog_enabled boolean NOT NULL
 ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS cta_label_en text NOT NULL DEFAULT 'Book a demo';
 ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS cta_label_ar text NOT NULL DEFAULT 'احجز عرضًا تجريبيًا';
 ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS demo_url text NOT NULL DEFAULT '/demo';
+ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS cr_number text NOT NULL DEFAULT '';
+ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS vat_number text NOT NULL DEFAULT '';
 `;
 
 export async function ensureSchema(pool: Pool): Promise<void> {

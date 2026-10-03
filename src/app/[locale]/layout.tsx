@@ -15,6 +15,7 @@ import WhatsAppWidget from "@/components/layout/whatsapp-widget";
 import MobileBottomBar from "@/components/layout/mobile-bottom-bar";
 import SnapPixel from "@/components/layout/snap-pixel";
 import { SettingsProvider } from "@/components/providers/settings-provider";
+import { getPublicSettings } from "@/lib/public-settings";
 
 import "@/app/globals.css";
 
@@ -92,6 +93,10 @@ export default async function LocaleLayout({
   const messages = await getMessages();
   const isRTL = locale === "ar";
 
+  // Chrome data (nav, footer, WhatsApp) rendered on the server; the client
+  // provider only adds geo-based WhatsApp routing on top.
+  const publicSettings = await getPublicSettings();
+
   // Marketing tags — injected only when enabled in Integrations.
   const integrations = await getIntegrations().catch(() => null);
   const g = integrations?.google;
@@ -129,10 +134,10 @@ export default async function LocaleLayout({
         {snapOn && <SnapPixel pixelId={snap!.pixelId} />}
 
         <NextIntlClientProvider locale={locale} messages={messages}>
-          <SettingsProvider>
-            <Navbar />
+          <SettingsProvider initial={publicSettings}>
+            <Navbar settings={publicSettings} />
             <main>{children}</main>
-            <Footer />
+            <Footer settings={publicSettings} />
             <WhatsAppWidget />
             <MobileBottomBar />
           </SettingsProvider>

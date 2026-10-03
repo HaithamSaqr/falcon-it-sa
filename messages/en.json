@@ -760,5 +760,31 @@
         "excerpt": "A specialized guide for construction companies on using ERP to track projects, costs, and resources efficiently."
       }
     }
+  },
+  "chrome": {
+    "mainNav": "Main",
+    "brandShort": "Falcon",
+    "sectors": "Sectors",
+    "allSectors": "All sectors",
+    "falconErp": "Falcon ERP",
+    "odoo": "Odoo",
+    "about": "About",
+    "contact": "Contact",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
+    "menuTitle": "Menu",
+    "footerNav": "Footer",
+    "tagline": "ERP for growing companies in Saudi Arabia: Odoo and Falcon ERP, implemented by our own team.",
+    "colSectors": "Sectors",
+    "colSystems": "Systems",
+    "colCompany": "Company",
+    "odooServices": "Odoo services",
+    "copyright": "© {year} {name}.",
+    "crNumber": "Unified national number {number}",
+    "vatNumber": "VAT {number}",
+    "legal": "Legal",
+    "whatsapp": "WhatsApp",
+    "whatsappChat": "Chat with us on WhatsApp",
+    "social": "Falcon on {network}"
   }
 }
