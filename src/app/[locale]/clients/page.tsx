@@ -1,33 +1,43 @@
-import { setRequestLocale, getLocale } from "next-intl/server";
-import { getClients, getClientTags } from "@/lib/data-store";
-import Container from "@/components/ui/container";
-import ClientsGrid from "@/components/sections/clients-grid";
+import type { Metadata } from "next";
+import { setRequestLocale } from "next-intl/server";
+import { getPageBlocks } from "@/lib/blocks/store";
+import { b, noCta } from "@/lib/blocks/fields";
+import { generalBookingBlock } from "@/lib/blocks/seed/common";
+import { seedPage } from "@/lib/blocks/seed/helpers";
+import type { Block } from "@/lib/blocks/types";
+import { pageMetadata } from "@/lib/page-meta";
+import BlockPage from "@/components/v2/block-page";
 
 type Props = { params: Promise<{ locale: string }> };
 
-export async function generateMetadata({ params }: Props) {
+/**
+ * The clients page when the CMS holds no `clients` blocks: the full logo wall
+ * (clients table, bundled approved logos as the fallback) and the booking block.
+ */
+const DEFAULT_BLOCKS: Block[] = seedPage("clients", [
+  {
+    type: "logo_wall",
+    content: {
+      heading: b("Our clients", "عملاؤنا"),
+      intro: b(
+        "Companies across Saudi Arabia that run on ERPs our team implemented.",
+        "شركات في السعودية تعمل على أنظمة ERP طبّقها فريقنا.",
+      ),
+      limit: 60,
+      link: noCta(),
+    },
+  },
+  generalBookingBlock(),
+]).map((blk, i) => ({ ...blk, id: `default:clients:${i}` }) as Block);
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
-  return { title: locale === "ar" ? "عملاؤنا — Falcon" : "Our Clients — Falcon" };
+  return pageMetadata("clients", locale);
 }
 
 export default async function ClientsPage({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const [clients, tags] = await Promise.all([getClients(), getClientTags()]);
-  const isAr = (await getLocale()) === "ar";
-
-  return (
-    <section className="py-16 lg:py-24">
-      <Container>
-        <h1 className="mb-12 text-center text-3xl font-extrabold text-text-primary sm:text-4xl">
-          {isAr ? "عملاؤنا" : "Our Clients"}
-        </h1>
-        {clients.length === 0 ? (
-          <p className="text-center text-text-secondary">{isAr ? "لا يوجد عملاء بعد." : "No clients yet."}</p>
-        ) : (
-          <ClientsGrid clients={clients} tags={tags} />
-        )}
-      </Container>
-    </section>
-  );
+  const stored = await getPageBlocks("clients");
+  return <BlockPage page="clients" locale={locale} blocks={stored.length > 0 ? stored : DEFAULT_BLOCKS} />;
 }

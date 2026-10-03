@@ -8,6 +8,9 @@ try {
   // .env.test missing: fall back to whatever is already in the environment.
 }
 
+/** Specs that change site-wide settings; they run in their own project, last. */
+const BLOG_ENABLED = /blog-enabled\.spec\.ts$/;
+
 const baseURL = process.env.E2E_BASE_URL ?? "http://localhost:3100";
 const port = new URL(baseURL).port || "3100";
 
@@ -16,6 +19,9 @@ export default defineConfig({
   outputDir: "test-results",
   reporter: [["list"], ["html", { open: "never", outputFolder: "playwright-report" }]],
   fullyParallel: true,
+  // Every worker hits the one dev server below; past ~6 the first compiles of
+  // each route queue up and page loads time out. E2E_WORKERS overrides.
+  workers: Number(process.env.E2E_WORKERS) || 6,
   use: {
     baseURL,
     trace: "retain-on-failure",
@@ -23,16 +29,25 @@ export default defineConfig({
   projects: [
     {
       name: "desktop",
+      testIgnore: BLOG_ENABLED,
       use: { ...devices["Desktop Chrome"], viewport: { width: 1440, height: 900 } },
     },
     {
       name: "mobile",
+      testIgnore: BLOG_ENABLED,
       use: {
         ...devices["Desktop Chrome"],
         viewport: { width: 390, height: 844 },
         isMobile: true,
         hasTouch: true,
       },
+    },
+    {
+      // Flips site_settings.blog_enabled, so it runs alone after the others.
+      name: "blog-enabled",
+      testMatch: BLOG_ENABLED,
+      dependencies: ["desktop", "mobile"],
+      use: { ...devices["Desktop Chrome"], viewport: { width: 1440, height: 900 } },
     },
   ],
   webServer: {

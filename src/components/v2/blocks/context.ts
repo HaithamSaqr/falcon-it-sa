@@ -41,6 +41,8 @@ export type RenderContext = {
   anchors: string[];
   /** The demo booking form, rendered inside `demo_form`. */
   demoForm?: ReactNode;
+  /** The contact form, rendered beside the details in `contact_info`. */
+  contactForm?: ReactNode;
   labels: BlockLabels;
 };
 

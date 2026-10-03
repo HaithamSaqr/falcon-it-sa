@@ -2,6 +2,8 @@
 
 import { useEffect, useState, useCallback } from "react";
 import type { CalendarSlot } from "@/types/admin";
+import { cn } from "@/lib/utils";
+import { FIELD } from "./styles";
 
 interface CalendarPickerProps {
   onSelect: (datetime: string | null) => void;
@@ -59,43 +61,44 @@ export default function CalendarPicker({ onSelect, locale = "en" }: CalendarPick
   const maxDate = formatDate(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000));
 
   return (
-    <div className="rounded-xl border-2 border-dashed border-primary-500/30 bg-primary-500/5 p-5">
-      <h3 className="mb-1 text-base font-bold text-text-primary">
-        {isArabic ? "📅 اختر الوقت المفضل للموعد" : "📅 Choose Your Preferred Time"}
+    <div className="rounded-2xl bg-page p-5 shadow-[inset_0_0_0_1px_rgba(11,26,51,0.08)]">
+      <h3 className="mb-1 text-base font-bold text-ink rtl:font-semibold">
+        {isArabic ? "اختر الوقت المفضل للموعد" : "Choose a preferred time"}
       </h3>
-      <p className="mb-4 text-sm text-text-secondary">
-        {isArabic ? "اختياري — سنؤكد الموعد معك بعد إرسال الطلب" : "Optional — we'll confirm your appointment after you submit"}
+      <p className="mb-4 text-sm text-body">
+        {isArabic ? "اختياري. نؤكد الموعد معك بعد إرسال الطلب." : "Optional. We confirm the appointment with you after you submit."}
       </p>
 
       {/* Date picker */}
       <div className="mb-4">
-        <label className="mb-1.5 block text-sm font-medium text-text-primary">
+        <label htmlFor="demo-date" className="mb-1.5 block text-sm font-semibold text-ink">
           {isArabic ? "التاريخ" : "Date"}
         </label>
         <input
+          id="demo-date"
           type="date"
           value={selectedDate}
           min={today}
           max={maxDate}
           onChange={(e) => handleDateChange(e.target.value)}
-          className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm text-text-primary focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+          className={FIELD}
         />
       </div>
 
       {/* Time slots */}
       {selectedDate && (
         <div>
-          <label className="mb-2 block text-sm font-medium text-text-primary">
-            {isArabic ? "الأوقات المتاحة" : "Available Times"}
-          </label>
+          <p className="mb-2 block text-sm font-semibold text-ink">
+            {isArabic ? "الأوقات المتاحة" : "Available times"}
+          </p>
 
           {loading ? (
-            <div className="flex items-center justify-center py-6 text-sm text-text-secondary">
-              {isArabic ? "جاري التحميل..." : "Loading slots..."}
-            </div>
+            <p className="py-6 text-center text-sm text-body">
+              {isArabic ? "جارٍ تحميل الأوقات" : "Loading times"}
+            </p>
           ) : slots.length === 0 ? (
-            <p className="py-4 text-center text-sm text-text-secondary">
-              {isArabic ? "لا توجد أوقات متاحة في هذا اليوم" : "No available slots on this day"}
+            <p className="py-4 text-center text-sm text-body">
+              {isArabic ? "لا توجد أوقات متاحة في هذا اليوم" : "No available times on this day"}
             </p>
           ) : (
             <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
@@ -105,13 +108,16 @@ export default function CalendarPicker({ onSelect, locale = "en" }: CalendarPick
                   type="button"
                   disabled={!slot.available}
                   onClick={() => handleSlotClick(slot)}
-                  className={`rounded-lg border px-3 py-2 text-center text-sm font-medium transition-colors ${
+                  aria-pressed={selectedSlot === slot.start}
+                  dir="ltr"
+                  className={cn(
+                    "v2-press h-11 rounded-full text-center text-sm font-semibold outline-brand focus-visible:outline-3 focus-visible:outline-offset-2",
                     selectedSlot === slot.start
-                      ? "border-primary-500 bg-primary-500 text-white"
+                      ? "bg-brand text-white"
                       : slot.available
-                      ? "border-gray-300 bg-white text-text-primary hover:border-primary-500 hover:bg-primary-500/5"
-                      : "cursor-not-allowed border-gray-200 bg-gray-100 text-gray-400 line-through"
-                  }`}
+                        ? "bg-surface text-ink shadow-[inset_0_0_0_1px_rgba(11,26,51,0.16)] hover:bg-sky"
+                        : "cursor-not-allowed bg-surface/60 text-muted line-through",
+                  )}
                 >
                   {slot.start}
                 </button>
@@ -120,12 +126,11 @@ export default function CalendarPicker({ onSelect, locale = "en" }: CalendarPick
           )}
 
           {selectedSlot && (
-            <div className="mt-3 flex items-center gap-2 rounded-lg bg-cta/10 px-4 py-2 text-sm font-medium text-cta">
-              <span>✓</span>
+            <p className="mt-3 rounded-xl bg-sky px-4 py-2 text-sm font-semibold text-brand-deep">
               {isArabic
                 ? `الوقت المفضل: ${selectedSlot} في ${selectedDate}`
                 : `Preferred time: ${selectedSlot} on ${selectedDate}`}
-            </div>
+            </p>
           )}
         </div>
       )}

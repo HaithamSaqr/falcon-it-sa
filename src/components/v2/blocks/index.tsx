@@ -57,6 +57,8 @@ export type BlockRendererContext = {
   roleParam?: string;
   /** The demo booking form, shown inside a `demo_form` block. */
   demoForm?: ReactNode;
+  /** The contact form, shown beside the details of a `contact_info` block. */
+  contactForm?: ReactNode;
 };
 
 type BlockRendererProps = {
@@ -194,6 +196,7 @@ export default async function BlockRenderer({ blocks, locale, context = {} }: Bl
     settings,
     anchors: places.map((p) => p.id).filter((id): id is string => Boolean(id)),
     demoForm: context.demoForm,
+    contactForm: context.contactForm,
     labels,
   };
 
