@@ -28,25 +28,6 @@ export const COMPANY = {
   demo: "https://erp.falcon-v.com",
 } as const;
 
-export const NAV_ITEMS = [
-  { key: "home", href: "/" },
-  {
-    key: "products",
-    href: "/products",
-    children: [
-      { key: "falconDesktop", href: "/products/falcon-erp-desktop" },
-      { key: "falconCloud", href: "/products/falcon-cloud" },
-      { key: "odooServices", href: "/products/odoo-services" },
-      { key: "serverManagement", href: "/products/server-management" },
-      { key: "dataManagement", href: "/products/data-management" },
-      { key: "applications", href: "/products/applications" },
-    ],
-  },
-  { key: "demo", href: "/demo" },
-  { key: "about", href: "/about" },
-  { key: "contact", href: "/contact" },
-] as const;
-
 export const INDUSTRIES = [
   "retail",
   "manufacturing",

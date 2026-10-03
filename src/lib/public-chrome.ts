@@ -96,8 +96,13 @@ export const PLACEHOLDER_PHONE = "+201000000000";
 /** Saudi WhatsApp number used whenever a stored or routed number is unusable. */
 export const SAUDI_WHATSAPP_FALLBACK = "966568406006";
 
-/** Products that moved to the /erp pages; every other product is a supporting service. */
-export const ERP_PRODUCT_SLUGS = new Set(["falcon-erp-desktop", "falcon-cloud", "odoo-services"]);
+/** Products that moved to the /erp pages (old slug to new path); every other product is a supporting service. */
+export const ERP_PRODUCT_PAGE: Record<string, string> = {
+  "falcon-erp-desktop": "/erp/falcon",
+  "falcon-cloud": "/erp/falcon",
+  "odoo-services": "/erp/odoo",
+};
+export const ERP_PRODUCT_SLUGS = new Set(Object.keys(ERP_PRODUCT_PAGE));
 
 /** Digits only, without a leading international `00`. */
 function intlDigits(phone: string): string {

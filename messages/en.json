@@ -77,24 +77,6 @@
       "imagePlaceholder": "Falcon Integration Ecosystem"
     }
   },
-  "products": {
-    "heading": "Falcon solutions extend across your entire business",
-    "subheading": "Choose the deployment that fits your business.",
-    "desktopErp": {
-      "name": "Falcon Desktop ERP",
-      "description": "Full on-premise control with complete data sovereignty"
-    },
-    "cloudErp": {
-      "name": "Falcon Cloud ERP",
-      "description": "Work from anywhere, sync everywhere"
-    },
-    "odooServices": {
-      "name": "Odoo Services",
-      "description": "MENA-compliant Odoo implementations"
-    },
-    "learnMore": "Learn More",
-    "bookAppointment": "Book an Appointment"
-  },
   "ctaBanner": {
     "headline": "E-Invoicing built for MENA compliance.",
     "subtitle": "Join 500+ businesses already using Falcon ERP.",

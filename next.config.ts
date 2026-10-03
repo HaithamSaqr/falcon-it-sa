@@ -25,6 +25,16 @@ const SECTOR_RETIRED = [
   "nonprofit",
 ];
 
+/**
+ * The three pre-v2 ERP product pages now live under /erp. Same rule as above:
+ * permanent, both locales.
+ */
+const PRODUCT_MOVED: Record<string, string> = {
+  "falcon-erp-desktop": "falcon",
+  "falcon-cloud": "falcon",
+  "odoo-services": "odoo",
+};
+
 const nextConfig: NextConfig = {
   output: "standalone",
   images: {
@@ -40,6 +50,11 @@ const nextConfig: NextConfig = {
       ...SECTOR_RETIRED.map((from) => ({
         source: `${prefix}/sectors/${from}`,
         destination: `${prefix}/sectors`,
+        permanent: true,
+      })),
+      ...Object.entries(PRODUCT_MOVED).map(([from, to]) => ({
+        source: `${prefix}/products/${from}`,
+        destination: `${prefix}/erp/${to}`,
         permanent: true,
       })),
     ]);

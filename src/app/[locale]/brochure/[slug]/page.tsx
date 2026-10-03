@@ -1,6 +1,7 @@
 import { setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { getBrochure } from "@/lib/data-store";
+import { ERP_PRODUCT_PAGE } from "@/lib/public-chrome";
 import { Link } from "@/i18n/navigation";
 import Container from "@/components/ui/container";
 
@@ -27,7 +28,7 @@ export default async function BrochurePage({ params }: Props) {
     <article className="pb-16">
       {/* Back link + title stay in a readable container */}
       <Container className="max-w-5xl pt-8">
-        <Link href={`/products/${slug}`} className="mb-6 inline-flex items-center gap-1.5 text-sm font-medium text-text-secondary transition-colors hover:text-primary-500">
+        <Link href={ERP_PRODUCT_PAGE[slug] ?? `/products/${slug}`} className="mb-6 inline-flex items-center gap-1.5 text-sm font-medium text-text-secondary transition-colors hover:text-primary-500">
           <span className="rtl:rotate-180">←</span>
           {isAr ? "العودة للمنتج" : "Back to product"}
         </Link>

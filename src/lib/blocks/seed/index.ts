@@ -5,6 +5,8 @@
  *
  * One file per page.
  */
+import type { Bi } from "../bi";
+import type { BlockContentMap } from "../types";
 import type { SeedBlock } from "./helpers";
 import { HOME_SEED } from "./home";
 import { SECTOR_REAL_ESTATE_SEED } from "./sector-real-estate";
@@ -52,3 +54,11 @@ export const SEED: Record<string, SeedBlock[]> = {
 
 /** Page keys in a stable order (admin page list). */
 export const SEED_PAGES: readonly string[] = Object.keys(SEED);
+
+/** Title and subtitle of a page's seeded hero, for fallback page metadata. */
+export function seedHero(page: string): { title: Bi; subtitle: Bi } | null {
+  const hero = SEED[page]?.find((x) => x.type === "hero");
+  if (!hero) return null;
+  const { title, subtitle } = hero.content as BlockContentMap["hero"];
+  return { title, subtitle };
+}

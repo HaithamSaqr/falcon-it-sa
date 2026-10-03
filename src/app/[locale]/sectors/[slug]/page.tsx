@@ -1,12 +1,11 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { breadcrumbLd, buildMetadata, localizedPath } from "@/lib/seo";
+import { buildMetadata } from "@/lib/seo";
 import { getSector } from "@/lib/data-store";
 import { getPageBlocks } from "@/lib/blocks/store";
 import { pickBi } from "@/lib/blocks/bi";
-import BlockRenderer from "@/components/v2/blocks";
-import JsonLd from "@/components/v2/json-ld";
+import PageBlocks from "@/components/v2/page-blocks";
 
 type Props = {
   params: Promise<{ locale: string; slug: string }>;
@@ -35,9 +34,8 @@ export default async function SectorPage({ params, searchParams }: Props) {
   if (!sector || !sector.enabled) notFound();
 
   const lang = locale === "ar" ? "ar" : "en";
-  const [blocks, nav, chrome, query] = await Promise.all([
+  const [blocks, chrome, query] = await Promise.all([
     getPageBlocks(`sector:${slug}`),
-    getTranslations({ locale: lang, namespace: "nav" }),
     getTranslations({ locale: lang, namespace: "chrome" }),
     searchParams,
   ]);
@@ -47,19 +45,14 @@ export default async function SectorPage({ params, searchParams }: Props) {
   const role = [query.role].flat()[0];
 
   return (
-    <>
-      <JsonLd
-        data={breadcrumbLd([
-          { name: nav("home"), url: localizedPath("/", lang) },
-          { name: chrome("sectors"), url: localizedPath("/sectors", lang) },
-          { name: pickBi(sector.name, lang), url: localizedPath(`/sectors/${slug}`, lang) },
-        ])}
-      />
-      <BlockRenderer
-        blocks={blocks}
-        locale={locale}
-        context={{ sector: { id: slug, name: sector.name }, roleParam: role }}
-      />
-    </>
+    <PageBlocks
+      blocks={blocks}
+      locale={locale}
+      crumbs={[
+        { name: chrome("sectors"), path: "/sectors" },
+        { name: pickBi(sector.name, lang), path: `/sectors/${slug}` },
+      ]}
+      context={{ sector: { id: slug, name: sector.name }, roleParam: role }}
+    />
   );
 }

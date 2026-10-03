@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { cn } from "@/lib/utils";
 import Container from "@/components/v2/ui/container";
 import Section from "@/components/v2/ui/section";
 import Icon from "@/components/v2/ui/icon";
@@ -12,6 +13,10 @@ import {
 } from "@/components/v2/islands/hero-sector-switcher";
 import { rootProps, type BlockProps } from "./context";
 import { Highlighted, PrimaryCta, SecondaryCta, tn, tx } from "./parts";
+
+/** A brand logo as the card image (`/images/v2/logo-odoo.png`): shown whole on a tint, not cropped like a photo. */
+const isLogo = (src: string) => /\/logo-[^/]+$/.test(src);
+const LOGO_TINT = (src: string) => (/logo-odoo/.test(src) ? "bg-odoo-tint" : "bg-[#EAF3FB]");
 
 /** Product screenshot on the floating card while no sector is picked (design element, not content). */
 const MODULES_SHOT = "/images/v2/shot-apps-top.jpg";
@@ -83,14 +88,24 @@ export default function HeroBlock({ content: c, ctx, place }: BlockProps<"hero">
             <div className="animate-rise rise-d4 relative pb-24 lg:h-[500px] lg:pb-0 xl:h-[560px]">
               {hasPhoto && (
                 <div className="rounded-[26px] bg-ink/[0.035] p-1.5 shadow-[inset_0_0_0_1px_rgba(11,26,51,0.06)] sm:rounded-[30px] sm:p-2 lg:absolute lg:end-0 lg:top-0 lg:w-[87.5%]">
-                  <div className="overflow-hidden rounded-[20px] bg-surface shadow-[0_40px_80px_-40px_rgba(12,60,120,0.4)] sm:rounded-[22px]">
+                  <div
+                    className={cn(
+                      "overflow-hidden rounded-[20px] shadow-[0_40px_80px_-40px_rgba(12,60,120,0.4)] sm:rounded-[22px]",
+                      isLogo(c.card.image) ? LOGO_TINT(c.card.image) : "bg-surface",
+                    )}
+                  >
                     <Image
                       src={c.card.image}
                       alt={tx(ctx, c.card.alt)}
                       width={1120}
                       height={968}
                       preload
-                      className="block h-[250px] w-full object-cover sm:h-[360px] lg:h-[430px] xl:h-[484px]"
+                      className={cn(
+                        "block h-[250px] w-full sm:h-[360px] lg:h-[430px] xl:h-[484px]",
+                        isLogo(c.card.image)
+                          ? "object-contain p-12 mix-blend-multiply sm:p-20 lg:p-24"
+                          : "object-cover",
+                      )}
                     />
                   </div>
                 </div>
