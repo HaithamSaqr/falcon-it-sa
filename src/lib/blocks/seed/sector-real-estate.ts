@@ -23,7 +23,7 @@ export const SECTOR_REAL_ESTATE_SEED = seedPage("sector:real-estate", [
     type: "sector_hero",
     content: {
       roles,
-      rolePrompt: b("I am a", "أنا"),
+      rolePrompt: b("Your role", "دورك"),
       promise: {
         dev: {
           title: b("Know every unit's profit before you sell it.", "اعرف ربح كل وحدة قبل أن تبيعها."),

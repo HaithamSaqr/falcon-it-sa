@@ -11,7 +11,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { Pool, type PoolConfig } from "pg";
-import { ensureReady } from "@/lib/db/migrate";
+import { ensureReady, seedPageBlocks } from "@/lib/db/migrate";
 import * as dbStore from "@/lib/db/store";
 import { SEED, SEED_PAGES } from "@/lib/blocks/seed";
 import { V2_SECTORS, withV2Sectors } from "@/lib/blocks/seed/sectors";
@@ -99,6 +99,21 @@ describe("SEED", () => {
         walk(b.content, "");
       }
     }
+  });
+
+  it("never mentions Egypt (the Egypt office is hidden)", () => {
+    const arabicWord = /[\u0600-\u06FF]+/g;
+    const hidden = new Set(["مصر", "مصري", "مصرية", "القاهرة", "قاهرة"]);
+    const strip = (w: string) => w.replace(/^(و|ب|ل|ف)/, "");
+    for (const [page, blocks] of Object.entries(SEED)) {
+      for (const s of strings(blocks)) {
+        expect(/egypt|cairo/i.test(s), `${page}: ${s}`).toBe(false);
+        for (const w of s.match(arabicWord) ?? []) {
+          expect(hidden.has(w) || hidden.has(strip(w)), `${page}: ${s}`).toBe(false);
+        }
+      }
+    }
+    for (const s of strings(V2_SECTORS)) expect(/egypt|مصر|القاهرة/i.test(s), s).toBe(false);
   });
 
   it("has no em or en dash anywhere", () => {
@@ -367,17 +382,19 @@ describe.skipIf(!canUseDb)("page blocks on a fresh database", () => {
   });
 
   it("getPageBlocks serves the seed for a page with no rows and no seeded marker", async () => {
-    const key = "page-seeded:sector:real-estate";
-    await pool.query(`DELETE FROM data_fixes WHERE key = $1`, [key]);
+    // Set up its own state on a page no other test touches, then restore it.
+    const page = "sector:trading";
+    await pool.query(`DELETE FROM page_blocks WHERE page = $1`, [page]);
+    await pool.query(`DELETE FROM data_fixes WHERE key = $1`, [`page-seeded:${page}`]);
     try {
-      expect(await count(pool, `SELECT count(*) AS n FROM page_blocks WHERE page = 'sector:real-estate'`)).toBe(0);
-      const blocks = await getPageBlocks("sector:real-estate", pool);
-      expect(shape(blocks)).toEqual(shape(SEED["sector:real-estate"].filter((b) => b.enabled)));
+      const blocks = await getPageBlocks(page, pool);
+      expect(shape(blocks)).toEqual(shape(SEED[page].filter((b) => b.enabled)));
       // A page with no seed and no rows is still empty.
       expect(await getPageBlocks("no-such-page", pool)).toEqual([]);
     } finally {
-      await pool.query(`INSERT INTO data_fixes (key) VALUES ($1) ON CONFLICT DO NOTHING`, [key]);
+      await seedPageBlocks(pool);
     }
+    expect(await count(pool, `SELECT count(*) AS n FROM page_blocks WHERE page = $1`, [page])).toBe(SEED[page].length);
   });
 
   it("savePageBlocks with one invalid block throws and leaves the previous rows intact", async () => {

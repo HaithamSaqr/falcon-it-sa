@@ -113,7 +113,7 @@ export const SECTOR_RETAIL_SEED = seedPage(
       store: {
         headline: b(
           "Run the store with stock you trust and a till that balances.",
-          "أدِر الفرع بمخزون تثق به وصندوق يتطابق.",
+          "أدِر الفرع بمخزون تثق به وصندوق مطابق.",
         ),
         points: [
           b("Receiving checked against the order", "الاستلام يُطابق أمر الشراء"),
@@ -162,7 +162,7 @@ export const SECTOR_RETAIL_SEED = seedPage(
           },
           {
             pain: b("Stock losses found at the annual count", "خسائر المخزون تُكتشف في الجرد السنوي"),
-            fix: b("Too late to know where they happened.", "بعد فوات معرفة أين حدثت."),
+            fix: b("Too late to know where they happened.", "وقد فات الأوان لمعرفة أين حدثت."),
           },
         ],
       },

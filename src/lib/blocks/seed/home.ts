@@ -95,8 +95,8 @@ export const HOME_SEED = seedPage("home", [
     type: "logo_wall",
     content: {
       heading: b(
-        "Companies across Saudi Arabia and Egypt run on ERPs our team implemented",
-        "شركات في السعودية ومصر تعمل على أنظمة ERP طبّقها فريقنا",
+        "Companies across Saudi Arabia run on ERPs our team implemented",
+        "شركات في السعودية تعمل على أنظمة ERP طبّقها فريقنا",
       ),
       intro: b(""),
       limit: 8,
@@ -257,7 +257,7 @@ export const HOME_SEED = seedPage("home", [
         ],
         points: [
           b("On your own servers, inside your network", "على سيرفراتك، داخل شبكتك"),
-          b("Arabic-first, quick for accountants to learn", "عربي أولًا، وسريع التعلّم على المحاسبين"),
+          b("Arabic-first, quick for accountants to learn", "عربي أولًا، ويتعلّمه المحاسبون بسرعة"),
           b("Desktop, Cloud in the browser, or hybrid", "سطح المكتب، أو كلاود من المتصفح، أو الاثنان معًا"),
         ],
         link: { label: b("Explore Falcon ERP", "اكتشف فالكون ERP"), href: "/erp/falcon" },

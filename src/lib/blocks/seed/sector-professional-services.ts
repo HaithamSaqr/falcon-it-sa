@@ -82,7 +82,7 @@ export const SECTOR_PROFESSIONAL_SERVICES_SEED = seedPage(
         title: b("Billing", "الفوترة"),
         description: b(
           "Invoices from milestones, retainers or hours, issued as Fatoora e-invoices.",
-          "فواتير حسب المراحل أو الاشتراكات أو الساعات، تصدر إلكترونيًا عبر فاتورة.",
+          "فواتير حسب المراحل أو الساعات أو الأتعاب الشهرية الثابتة، متوافقة مع منصة فاتورة.",
         ),
         modules: b("Accounting, e-invoicing", "الحسابات، الفوترة الإلكترونية"),
         roles: ["pm", "fin"],
@@ -101,11 +101,11 @@ export const SECTOR_PROFESSIONAL_SERVICES_SEED = seedPage(
       partner: {
         headline: b(
           "Every week: utilisation, margin and billing per project and client.",
-          "كل أسبوع: نسبة الاستغلال والهامش والفوترة لكل مشروع وعميل.",
+          "كل أسبوع: نسبة إشغال الفريق والهامش والفوترة لكل مشروع وعميل.",
         ),
         points: [
           b("Margin per project and per client", "الهامش لكل مشروع ولكل عميل"),
-          b("Team utilisation, billable against non-billable", "استغلال الفريق، القابل للفوترة مقابل غير القابل"),
+          b("Team utilisation, billable against non-billable", "نسبة الساعات القابلة للفوترة مقابل غير القابلة لكل فريق"),
           b("Projects over budget flagged early", "المشاريع المتجاوزة للميزانية تظهر مبكرًا"),
           b("Work done but not yet billed", "الأعمال المنجزة غير المفوترة بعد"),
         ],
@@ -125,7 +125,7 @@ export const SECTOR_PROFESSIONAL_SERVICES_SEED = seedPage(
       fin: {
         headline: b("Invoices from the work itself, not from reminders.", "فواتير من العمل نفسه، لا من التذكير."),
         points: [
-          b("Billing by milestone, retainer or hours", "فوترة حسب المراحل أو الاشتراكات أو الساعات"),
+          b("Billing by milestone, retainer or hours", "فوترة حسب المراحل أو الساعات أو الأتعاب الشهرية الثابتة"),
           b("Unbilled time flagged before month-end", "الوقت غير المفوتر يظهر قبل نهاية الشهر"),
           b("Project expenses recharged to clients where agreed", "مصروفات المشروع تُحمَّل على العميل حيث اتُّفق"),
           b("Fatoora e-invoices issued from the same system", "الفواتير الإلكترونية تصدر من النظام نفسه"),
@@ -211,7 +211,7 @@ export const SECTOR_PROFESSIONAL_SERVICES_SEED = seedPage(
             ),
           },
           {
-            pain: b("Retainers tracked in a spreadsheet", "الاشتراكات الشهرية في ملف Excel"),
+            pain: b("Retainers tracked in a spreadsheet", "الأتعاب الشهرية الثابتة في ملف Excel"),
             fix: b("How many hours are used against them, nobody knows.", "وكم استُهلك منها، لا أحد يعرف."),
           },
           {
@@ -246,7 +246,7 @@ export const SECTOR_PROFESSIONAL_SERVICES_SEED = seedPage(
             "Projects, tasks and documents in the same system as the accounts",
             "المشاريع والمهام والمستندات في النظام نفسه مع الحسابات",
           ),
-          b("Arabic-first, quick for accountants to learn", "عربي أولًا، وسريع التعلّم على المحاسبين"),
+          b("Arabic-first, quick for accountants to learn", "عربي أولًا، ويتعلّمه المحاسبون بسرعة"),
           b("On your internal network, or Falcon Cloud in the browser", "على شبكتك الداخلية، أو فالكون كلاود من المتصفح"),
         ],
       },
@@ -281,11 +281,11 @@ export const SECTOR_PROFESSIONAL_SERVICES_SEED = seedPage(
       {
         question: b(
           "We bill fixed fees, by the hour and on retainer. One system?",
-          "نفوتر بمبلغ ثابت وبالساعة وباشتراك شهري، هل يكفي نظام واحد؟",
+          "نفوتر بمبلغ ثابت وبالساعة وبأتعاب شهرية ثابتة، هل يكفي نظام واحد؟",
         ),
         answer: b(
-          "Yes. Each project can bill by milestone, by hours worked or on a retainer, and all of it lands in the same accounts.",
-          "نعم. كل مشروع يمكن أن يُفوتر حسب المراحل أو الساعات أو الاشتراك، وكلها تصل للحسابات نفسها.",
+          "In Odoo, billing by milestone or by timesheet hours is standard, and retainers are set up as part of your scope. In Falcon ERP we confirm the billing setup for your contracts in the blueprint. Either way, everything lands in the same accounts.",
+          "في أودو، الفوترة حسب المراحل أو حسب ساعات العمل المسجّلة متاحة بشكل أساسي، والأتعاب الشهرية الثابتة نجهّزها ضمن نطاق مشروعك. وفي فالكون ERP نؤكد إعداد الفوترة لعقودك في المخطط. وفي الحالتين تصل كلها إلى الحسابات نفسها.",
         ),
       },
       FATOORA_FAQ,

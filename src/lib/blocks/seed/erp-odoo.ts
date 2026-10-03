@@ -38,7 +38,7 @@ export const ERP_ODOO_SEED = seedPage("erp:odoo", [
       items: [
         {
           icon: "Rocket",
-          title: b("Implementation", "التطبيق"),
+          title: b("Implementation", "التنفيذ"),
           line: b(
             "Requirements, configuration, data migration, testing and go-live, with hands-on training.",
             "تحليل المتطلبات والإعداد وترحيل البيانات والاختبار والتشغيل، مع تدريب عملي.",
@@ -81,7 +81,7 @@ export const ERP_ODOO_SEED = seedPage("erp:odoo", [
           title: b("Saudi setup", "الإعداد السعودي"),
           line: b(
             "Fatoora e-invoicing, Arabic localisation and VAT configured for Saudi Arabia.",
-            "الفوترة الإلكترونية عبر فاتورة، والتعريب، وإعداد ضريبة القيمة المضافة للسعودية.",
+            "الفوترة الإلكترونية المتوافقة مع منصة فاتورة، والتعريب، وإعداد ضريبة القيمة المضافة للسعودية.",
           ),
         },
       ],
@@ -90,7 +90,10 @@ export const ERP_ODOO_SEED = seedPage("erp:odoo", [
   {
     type: "setup_list",
     content: {
-      heading: b("Most Odoo projects fail on setup, not software.", "معظم مشاريع أودو تتعثر في الإعداد، لا في البرنامج."),
+      heading: b(
+        "When an Odoo project goes wrong, it is usually the setup, not the software.",
+        "حين يتعثر مشروع أودو، فالسبب غالبًا في الإعداد، لا في البرنامج.",
+      ),
       intro: b(
         "Odoo can run almost any business. Whether it runs yours depends on how it is configured.",
         "أودو قادر على تشغيل أغلب الأنشطة، أما أن يشغّل نشاطك أنت فيعتمد على طريقة إعداده.",
@@ -104,7 +107,7 @@ export const ERP_ODOO_SEED = seedPage("erp:odoo", [
           ),
         },
         {
-          problem: b("An implementation that has to be redone", "تطبيق يحتاج إلى إعادة"),
+          problem: b("An implementation that has to be redone", "تنفيذ يحتاج إلى إعادة"),
           fix: b(
             "A written blueprint agreed before we build, so the scope does not drift.",
             "مخطط مكتوب نتفق عليه قبل البناء، فلا ينحرف النطاق.",

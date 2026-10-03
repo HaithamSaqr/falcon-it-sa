@@ -91,7 +91,7 @@ export const SECTOR_TRADING_SEED = seedPage(
         title: b("Invoicing & collection", "الفوترة والتحصيل"),
         description: b(
           "Fatoora e-invoices, customer statements and overdue balances per rep.",
-          "فواتير إلكترونية عبر فاتورة، وكشوف حساب العملاء، والمتأخرات لكل مندوب.",
+          "فواتير إلكترونية متوافقة مع منصة فاتورة، وكشوف حساب العملاء، والمتأخرات لكل مندوب.",
         ),
         modules: b("Accounting, e-invoicing", "الحسابات، الفوترة الإلكترونية"),
         roles: ["owner", "sales"],
@@ -296,8 +296,8 @@ export const SECTOR_TRADING_SEED = seedPage(
       {
         question: b("Can each customer have its own price list?", "هل يمكن أن يكون لكل عميل قائمة أسعار خاصة؟"),
         answer: b(
-          "Yes. Price lists and discounts are set per customer or customer group, and reps quote only from them.",
-          "نعم. قوائم الأسعار والخصومات تُضبط لكل عميل أو فئة عملاء، والمندوب يعرض منها فقط.",
+          "In Odoo, price lists per customer or customer group are standard. In Falcon ERP we confirm your pricing rules in the blueprint. Either way, reps quote only from the agreed lists.",
+          "في أودو، قوائم الأسعار لكل عميل أو فئة عملاء متاحة بشكل أساسي. وفي فالكون ERP نؤكد قواعد التسعير لديك في المخطط. وفي الحالتين يعرض المندوب من القوائم المعتمدة فقط.",
         ),
       },
       FATOORA_FAQ,

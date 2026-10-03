@@ -121,8 +121,8 @@ export function clientsWall(limit = 8): SeedInput {
     type: "logo_wall",
     content: {
       heading: b(
-        "Companies across Saudi Arabia and Egypt run on ERPs our team implemented",
-        "شركات في السعودية ومصر تعمل على أنظمة ERP طبّقها فريقنا",
+        "Companies across Saudi Arabia run on ERPs our team implemented",
+        "شركات في السعودية تعمل على أنظمة ERP طبّقها فريقنا",
       ),
       intro: b(""),
       limit,
@@ -149,7 +149,7 @@ export function bookingBlock(heading: Bi, body: Bi): SeedInput {
 
 /** Same answer on every page: both systems issue Fatoora e-invoices (owner confirmed). */
 export const FATOORA_FAQ = {
-  question: b("Does it issue Fatoora e-invoices?", "هل يصدر الفواتير الإلكترونية عبر فاتورة؟"),
+  question: b("Does it issue Fatoora e-invoices?", "هل يصدر فواتير إلكترونية متوافقة مع منصة فاتورة؟"),
   answer: b(
     "Yes. Both Odoo and Falcon ERP issue ZATCA Fatoora e-invoices, and we set it up as part of the implementation.",
     "نعم. أودو وفالكون ERP كلاهما يصدر الفواتير الإلكترونية عبر منصة فاتورة من هيئة الزكاة والضريبة والجمارك، ونجهّز الربط ضمن التطبيق.",
@@ -183,7 +183,7 @@ export function sectorBlocks(spec: SectorSpec): SeedInput[] {
   if (!sector) throw new Error(`Unknown v2 sector ${spec.slug}`);
   const hero: BlockContentMap["sector_hero"] = {
     roles: spec.roles,
-    rolePrompt: b("I am", "أنا"),
+    rolePrompt: b("Your role", "دورك"),
     promise: spec.promise,
     photo: sector.photo,
     photoAlt: sector.photoAlt,
@@ -270,7 +270,7 @@ export function erpFitBlock(): SeedInput {
         ),
         points: [
           b("On your own servers, inside your network", "على سيرفراتك، داخل شبكتك"),
-          b("Arabic-first, quick for accountants to learn", "عربي أولًا، وسريع التعلّم على المحاسبين"),
+          b("Arabic-first, quick for accountants to learn", "عربي أولًا، ويتعلّمه المحاسبون بسرعة"),
           b("Desktop, Cloud in the browser, or hybrid", "سطح المكتب، أو كلاود من المتصفح، أو الاثنان معًا"),
         ],
       },

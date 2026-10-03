@@ -91,7 +91,7 @@ export const SECTOR_MANUFACTURING_SEED = seedPage(
         title: b("Invoicing & collection", "الفوترة والتحصيل"),
         description: b(
           "Fatoora e-invoices, customer balances and the margin on every product.",
-          "فواتير إلكترونية عبر فاتورة، وأرصدة العملاء، وهامش كل منتج.",
+          "فواتير إلكترونية متوافقة مع منصة فاتورة، وأرصدة العملاء، وهامش كل منتج.",
         ),
         modules: b("Accounting, e-invoicing", "الحسابات، الفوترة الإلكترونية"),
         roles: ["owner", "fin"],
@@ -261,7 +261,7 @@ export const SECTOR_MANUFACTURING_SEED = seedPage(
           b("On your internal network, or Falcon Cloud in the browser", "على شبكتك الداخلية، أو فالكون كلاود من المتصفح"),
           b(
             "Arabic-first, quick for accountants and storekeepers to learn",
-            "عربي أولًا، وسريع التعلّم على المحاسبين وأمناء المستودعات",
+            "عربي أولًا، ويتعلّمه المحاسبون وأمناء المستودعات بسرعة",
           ),
         ],
       },
@@ -296,8 +296,8 @@ export const SECTOR_MANUFACTURING_SEED = seedPage(
       {
         question: b("We make to order and to stock. One system?", "نصنّع حسب الطلب وللمخزون، هل يكفي نظام واحد؟"),
         answer: b(
-          "Yes. A sales order can start production, and stock items can be replenished from minimum levels.",
-          "نعم. أمر البيع يمكن أن يُطلق الإنتاج، وأصناف المخزون تُعاد تعبئتها حسب الحد الأدنى.",
+          "In Odoo this is standard: a sales order can start production, and reordering rules replenish stock items at minimum levels. Falcon ERP reorders at minimum levels, and we confirm in the blueprint how orders start production in your flow.",
+          "في أودو هذا متاح بشكل أساسي: أمر البيع يمكن أن يُطلق الإنتاج، وأصناف المخزون يُعاد طلبها عند الحد الأدنى. وفالكون ERP يعيد الطلب عند الحد الأدنى، ونؤكد في المخطط كيف تُطلق الطلبات الإنتاج في دورتك.",
         ),
       },
       FATOORA_FAQ,

@@ -113,12 +113,12 @@ export const SECTOR_HOSPITALITY_SEED = seedPage(
       branch: {
         headline: b(
           "Run the branch from one screen: sales, stock, staff and cash.",
-          "أدِر الفرع من شاشة واحدة: المبيعات والمخزون والموظفين والنقدية.",
+          "أدِر الفرع من شاشة واحدة: المبيعات والمخزون والموظفون والنقدية.",
         ),
         points: [
           b(
             "Shift close with cash, card and delivery sales side by side",
-            "إقفال الوردية والنقد والشبكة ومبيعات التوصيل جنبًا إلى جنب",
+            "إقفال الوردية بالنقد والشبكة ومبيعات التوصيل جنبًا إلى جنب",
           ),
           b("Stock requests to the central kitchen or suppliers", "طلبات المخزون من المطبخ المركزي أو الموردين"),
           b("Waste and staff meals recorded, not hidden", "الهدر ووجبات الموظفين مسجّلة، لا مخفية"),
@@ -249,7 +249,7 @@ export const SECTOR_HOSPITALITY_SEED = seedPage(
             "POS, kitchen screen and hotel modules in the same system as the accounts",
             "نقاط البيع وشاشة المطبخ والفندق في النظام نفسه مع الحسابات",
           ),
-          b("Arabic-first, quick for cashiers and accountants to learn", "عربي أولًا، وسريع التعلّم على الكاشير والمحاسب"),
+          b("Arabic-first, quick for cashiers and accountants to learn", "عربي أولًا، ويتعلّمه الكاشير والمحاسب بسرعة"),
           b("On your internal network, or Falcon Cloud in the browser", "على شبكتك الداخلية، أو فالكون كلاود من المتصفح"),
         ],
       },
@@ -281,16 +281,16 @@ export const SECTOR_HOSPITALITY_SEED = seedPage(
       {
         question: b("Do sales reduce stock by recipe?", "هل تنقص المبيعات المخزون حسب الوصفة؟"),
         answer: b(
-          "Yes. Each dish sold reduces its ingredients by the recipe quantities, so you can compare actual and theoretical food cost.",
-          "نعم. كل طبق يُباع ينقص مكوّناته حسب كميات الوصفة، فتقارن تكلفة الطعام الفعلية بالمفترضة.",
+          "That is what we set up in the blueprint: each dish linked to its recipe, so sales reduce the ingredients and you can compare actual and theoretical food cost. We confirm how it works in your chosen system before we build.",
+          "هذا ما نجهّزه في المخطط: كل طبق مربوط بوصفته، فتنقص المبيعات مكوّناته وتقارن تكلفة الطعام الفعلية بالمفترضة. ونؤكد طريقة عمل ذلك في النظام الذي تختاره قبل أن نبدأ البناء.",
         ),
       },
       FATOORA_FAQ,
       {
         question: b("Can we add branches later?", "هل يمكن إضافة فروع لاحقًا؟"),
         answer: b(
-          "Yes. A new branch uses the same menu, recipes and setup, with its own stock and reports.",
-          "نعم. الفرع الجديد يأخذ القائمة والوصفات والإعداد نفسه، بمخزونه وتقاريره الخاصة.",
+          "Yes. We set up a new branch on the same menu, recipes and setup, with its own stock and reports.",
+          "نعم. نجهّز الفرع الجديد على القائمة والوصفات والإعداد نفسه، بمخزونه وتقاريره الخاصة.",
         ),
       },
     ],

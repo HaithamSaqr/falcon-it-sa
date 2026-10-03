@@ -118,8 +118,8 @@ export const ERP_FALCON_SEED = seedPage("erp:falcon", [
     content: {
       heading: b("Desktop, Cloud or both.", "ديسكتوب أو كلاود، أو الاثنان."),
       intro: b(
-        "Pick where Falcon ERP runs. We plan it with you in the blueprint.",
-        "اختر أين يعمل فالكون ERP، ونخطط لذلك معك في المخطط.",
+        "Pick where Falcon ERP runs. We agree it with you before we start.",
+        "اختر أين يعمل فالكون ERP، ونتفق على ذلك معك قبل البدء.",
       ),
       items: [
         {
@@ -155,7 +155,7 @@ export const ERP_FALCON_SEED = seedPage("erp:falcon", [
       heading: b("Built for how your team works.", "مبني على طريقة عمل فريقك."),
       intro: b(
         "Falcon ERP is our own product, so we can shape it around Saudi requirements and the way your accountants work.",
-        "فالكون ERP منتجنا الخاص، لذلك نستطيع تشكيله حول المتطلبات السعودية وطريقة عمل محاسبيك.",
+        "فالكون ERP منتجنا الخاص، لذلك نستطيع تكييفه وفق المتطلبات السعودية وطريقة عمل محاسبيك.",
       ),
       points: [
         {
@@ -169,7 +169,7 @@ export const ERP_FALCON_SEED = seedPage("erp:falcon", [
           problem: b("A system the accountants avoid", "نظام يتجنّبه المحاسبون"),
           fix: b(
             "Arabic-first screens and reports, quick for accountants to learn.",
-            "شاشات وتقارير عربية أولًا، سريعة التعلّم على المحاسبين.",
+            "شاشات وتقارير عربية أولًا، يتعلّمها المحاسبون بسرعة.",
           ),
         },
         {
