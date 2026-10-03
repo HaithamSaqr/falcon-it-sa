@@ -57,23 +57,25 @@ function isEmptyLabel(children: ReactNode): boolean {
   return false;
 }
 
-/** Pill CTA. Primary has the brand fill with a nested arrow circle. */
-export default function Button(props: ButtonProps) {
-  const {
-    variant = "primary",
-    size = "md",
-    withArrow = variant === "primary",
-    className,
-    children,
-    ...rest
-  } = props;
+/** The pill classes, for links rendered by islands (e.g. the role-aware booking link). */
+export function buttonClasses(variant: ButtonVariant = "primary", size: ButtonSize = "md", className?: string) {
+  return cn(BASE, VARIANTS[variant][size], className);
+}
 
-  if (isEmptyLabel(children)) return null;
-
-  const classes = cn(BASE, VARIANTS[variant][size], className);
+/** Label plus the trailing arrow, for links rendered by islands (server-rendered, so the icon stays server-side). */
+export function ButtonContent({
+  variant = "primary",
+  size = "md",
+  withArrow = variant === "primary",
+  children,
+}: {
+  variant?: ButtonVariant;
+  size?: ButtonSize;
+  withArrow?: boolean;
+  children: ReactNode;
+}) {
   const iconSize = size === "lg" ? 18 : 16;
-
-  const content = (
+  return (
     <>
       <span>{children}</span>
       {withArrow &&
@@ -94,6 +96,27 @@ export default function Button(props: ButtonProps) {
           </span>
         ))}
     </>
+  );
+}
+
+/** Pill CTA. Primary has the brand fill with a nested arrow circle. */
+export default function Button(props: ButtonProps) {
+  const {
+    variant = "primary",
+    size = "md",
+    withArrow = variant === "primary",
+    className,
+    children,
+    ...rest
+  } = props;
+
+  if (isEmptyLabel(children)) return null;
+
+  const classes = buttonClasses(variant, size, className);
+  const content = (
+    <ButtonContent variant={variant} size={size} withArrow={withArrow}>
+      {children}
+    </ButtonContent>
   );
 
   if ("href" in rest && typeof rest.href === "string") {

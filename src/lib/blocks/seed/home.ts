@@ -153,6 +153,11 @@ export const HOME_SEED = seedPage("home", [
           line: b("The numbers you need, every morning, on your phone.", "الأرقام التي تحتاجها، كل صباح، على جوالك."),
         },
       ],
+      image: "/images/v2/photo-hero-office.jpg",
+      imageAlt: b(
+        "A finance manager reviewing the Falcon ERP sales dashboard on a monitor, Riyadh skyline behind",
+        "مدير مالي يراجع لوحة مبيعات فالكون ERP على الشاشة، وخلفه أفق الرياض",
+      ),
     },
   },
   {

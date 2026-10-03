@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { biSchema, biRequiredSchema } from "../bi";
-import { iconSchema, b } from "../fields";
+import { iconSchema, imageSchema, b } from "../fields";
 
 const departmentSchema = z.object({
   icon: iconSchema,
@@ -12,6 +12,9 @@ export const departmentsSchema = z.object({
   heading: biRequiredSchema,
   intro: biSchema,
   items: z.array(departmentSchema).max(16),
+  /** Optional photo beside the list (home). Missing or "" means a full-width list. */
+  image: imageSchema.optional(),
+  imageAlt: biSchema.optional(),
 });
 
 export type DepartmentsContent = z.infer<typeof departmentsSchema>;

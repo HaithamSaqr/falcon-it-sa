@@ -1,4 +1,4 @@
-import type { ElementType, ReactNode } from "react";
+import type { ElementType, HTMLAttributes, ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
 export type SectionTone = "page" | "surface" | "brand";
@@ -9,7 +9,7 @@ const TONES: Record<SectionTone, string> = {
   brand: "bg-brand text-white",
 };
 
-type SectionProps = {
+type SectionProps = Omit<HTMLAttributes<HTMLElement>, "className" | "children"> & {
   tone?: SectionTone;
   /** Anchor target, e.g. `book` for `#book` links. */
   id?: string;
@@ -28,9 +28,10 @@ export default function Section({
   className,
   children,
   as: Tag = "section",
+  ...rest
 }: SectionProps) {
   return (
-    <Tag id={id} className={cn("scroll-mt-24 py-16 md:py-24 lg:py-28", TONES[tone], className)}>
+    <Tag id={id} className={cn("scroll-mt-24 py-16 md:py-24 lg:py-28", TONES[tone], className)} {...rest}>
       {children}
     </Tag>
   );

@@ -786,5 +786,21 @@
     "whatsapp": "WhatsApp",
     "whatsappChat": "Chat with us on WhatsApp",
     "social": "Falcon on {network}"
+  },
+  "blocks": {
+    "seeModules": "See the modules",
+    "seeSetup": "See how we set it up",
+    "modulesAlt": "Falcon ERP apps: accounting, sales, CRM, projects, property management and more",
+    "appsAlt": "Falcon ERP apps: projects, property management, CRM, accounting, sales and more",
+    "breadcrumb": "Breadcrumb",
+    "quoteRole": "{role} at {company}",
+    "phone": "Phone",
+    "whatsapp": "WhatsApp",
+    "email": "Email",
+    "address": "Address",
+    "branches": "Our offices",
+    "social": "Follow us",
+    "faqTitle": "Questions",
+    "yourRole": "Your role"
   }
 }

@@ -291,6 +291,24 @@
   .v2-overlay[data-state="open"] {
     animation: v2-fade 200ms var(--ease-out-quint) both;
   }
+
+  /* Photo inside a lifting card: a slow 3% zoom on hover. */
+  .v2-zoom { transition: transform 600ms var(--ease-out-quint); }
+  .group:hover .v2-zoom { transform: scale(1.03); }
+
+  /* Client logos: grey and quiet until hovered. */
+  .v2-logo {
+    filter: grayscale(1);
+    opacity: .6;
+    mix-blend-mode: multiply;
+    transition: opacity 220ms var(--ease-out-quint), filter 220ms var(--ease-out-quint);
+  }
+  .v2-logo:hover { filter: none; opacity: 1; }
+
+  /* FAQ accordion (Radix): height follows the measured content. */
+  .v2-accordion-content { overflow: hidden; }
+  .v2-accordion-content[data-state="open"] { animation: accordion-expand 220ms var(--ease-out-quint) both; }
+  .v2-accordion-content[data-state="closed"] { animation: accordion-collapse 200ms var(--ease-out-quint) both; }
 }
 
 @keyframes v2-fade {
@@ -298,23 +316,219 @@
   to { opacity: 1; }
 }
 
+/* A stage lighting up when the role changes (mockup `lit`). */
+@keyframes v2-lit {
+  from { opacity: .5; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* ── V2 TYPE ──
+   Latin: Schibsted Grotesk 800, tight leading, negative tracking.
+   Arabic: Alexandria 700, open leading, no tracking, light (300) body copy.
+   Sizes step up at md (768), lg (1024) and xl (1280); xl is the 1440 mockup.
+   These are components, so a Tailwind utility on the same element still wins. */
+@layer components {
+  .v2-display {
+    font-size: 36px;
+    line-height: 1.05;
+    letter-spacing: -0.035em;
+    font-weight: 800;
+    text-wrap: balance;
+    overflow-wrap: anywhere;
+  }
+  .v2-h2 {
+    font-size: 30px;
+    line-height: 1.08;
+    letter-spacing: -0.03em;
+    font-weight: 800;
+    text-wrap: balance;
+    overflow-wrap: anywhere;
+  }
+  .v2-h2-xl {
+    font-size: 32px;
+    line-height: 1.06;
+    letter-spacing: -0.035em;
+    font-weight: 800;
+    text-wrap: balance;
+    overflow-wrap: anywhere;
+  }
+  .v2-title {
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    overflow-wrap: anywhere;
+  }
+  /* Paragraph copy: the size comes from a utility, leading and weight from here. */
+  .v2-copy {
+    line-height: 1.55;
+    text-wrap: pretty;
+    overflow-wrap: anywhere;
+  }
+
+  [dir="rtl"] .v2-display { font-size: 32px; line-height: 1.4; letter-spacing: 0; font-weight: 700; }
+  [dir="rtl"] .v2-h2 { font-size: 28px; line-height: 1.4; letter-spacing: 0; font-weight: 700; }
+  [dir="rtl"] .v2-h2-xl { font-size: 30px; line-height: 1.38; letter-spacing: 0; font-weight: 700; }
+  [dir="rtl"] .v2-title { font-weight: 700; letter-spacing: 0; }
+  [dir="rtl"] .v2-copy { line-height: 1.85; font-weight: 300; }
+
+  @media (width >= 48rem) {
+    .v2-display { font-size: 48px; }
+    .v2-h2 { font-size: 40px; line-height: 1.06; }
+    .v2-h2-xl { font-size: 44px; }
+    [dir="rtl"] .v2-display { font-size: 42px; line-height: 1.35; }
+    [dir="rtl"] .v2-h2 { font-size: 38px; line-height: 1.36; }
+    [dir="rtl"] .v2-h2-xl { font-size: 40px; line-height: 1.32; }
+  }
+  @media (width >= 64rem) {
+    .v2-display { font-size: 54px; }
+    .v2-h2 { font-size: 46px; line-height: 1.05; letter-spacing: -0.035em; }
+    .v2-h2-xl { font-size: 52px; line-height: 1.03; letter-spacing: -0.04em; }
+    [dir="rtl"] .v2-display { font-size: 48px; line-height: 1.32; }
+    [dir="rtl"] .v2-h2 { font-size: 44px; line-height: 1.34; letter-spacing: 0; }
+    [dir="rtl"] .v2-h2-xl { font-size: 48px; line-height: 1.3; letter-spacing: 0; }
+  }
+  @media (width >= 80rem) {
+    .v2-display { font-size: 62px; line-height: 1.04; letter-spacing: -0.04em; }
+    .v2-h2 { font-size: 52px; line-height: 1.04; }
+    .v2-h2-xl { font-size: 60px; line-height: 1.02; }
+    [dir="rtl"] .v2-display { font-size: 54px; line-height: 1.3; letter-spacing: 0; }
+    [dir="rtl"] .v2-h2 { font-size: 50px; line-height: 1.32; }
+    [dir="rtl"] .v2-h2-xl { font-size: 54px; line-height: 1.28; }
+  }
+
+  /* ── Lifecycle stage ──
+     Phone: one row per stage (number beside the text), lit rows outlined.
+     Desktop: a column per stage, number on the rail, double-bezel card. */
+  .v2-stage {
+    position: relative;
+    display: grid;
+    grid-template-columns: 36px minmax(0, 1fr);
+    gap: 12px;
+    padding: 16px;
+    border-radius: 20px;
+    background: var(--color-surface);
+    box-shadow: inset 0 0 0 1.5px rgba(20, 102, 194, .35), 0 16px 32px -26px rgba(12, 60, 120, .6);
+    transition: opacity 280ms var(--ease-out-quint), background-color 280ms var(--ease-out-quint),
+      box-shadow 280ms var(--ease-out-quint);
+  }
+  .v2-stage[data-lit="false"] {
+    opacity: .5;
+    background: var(--color-page);
+    box-shadow: none;
+  }
+  .v2-stage[data-lit="true"][data-changed="true"] {
+    animation: v2-lit 320ms var(--ease-rise) both;
+  }
+  .v2-stage-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 999px;
+    background: var(--color-brand);
+    color: #fff;
+    font-family: var(--font-sans);
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1;
+  }
+  .v2-stage[data-lit="false"] .v2-stage-num {
+    background: transparent;
+    color: var(--color-muted);
+    box-shadow: inset 0 0 0 2px #D3E3F3;
+  }
+  .v2-stage-inner { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+  .v2-stage-badge,
+  .v2-stage-modules { display: none; }
+
+  @media (width >= 64rem) {
+    .v2-stage,
+    .v2-stage[data-lit="false"] {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      padding: 0;
+      border-radius: 0;
+      background: none;
+      box-shadow: none;
+    }
+    .v2-stage-num {
+      width: 44px;
+      height: 44px;
+      font-size: 16px;
+      box-shadow: 0 0 0 6px var(--color-surface);
+    }
+    .v2-stage[data-lit="false"] .v2-stage-num {
+      background: var(--color-surface);
+      box-shadow: inset 0 0 0 2px #D3E3F3, 0 0 0 6px var(--color-surface);
+    }
+    .v2-stage-card {
+      flex-grow: 1;
+      padding: 6px;
+      border-radius: 24px;
+      background: rgba(20, 102, 194, .08);
+      box-shadow: inset 0 0 0 1px rgba(20, 102, 194, .18);
+    }
+    .v2-stage-inner {
+      height: 100%;
+      gap: 10px;
+      padding: 20px 18px;
+      border-radius: 19px;
+      background: var(--color-surface);
+      box-shadow: 0 20px 40px -30px rgba(12, 60, 120, .5);
+    }
+    .v2-stage[data-lit="false"] .v2-stage-card,
+    .v2-stage[data-lit="false"] .v2-stage-inner {
+      background: var(--color-page);
+      box-shadow: none;
+    }
+    .v2-stage-badge {
+      display: inline-flex;
+      align-self: flex-start;
+      border-radius: 999px;
+      background: var(--color-sky);
+      padding: 4px 10px;
+      font-size: 12px;
+      font-weight: 600;
+      line-height: 15px;
+      color: var(--color-brand);
+    }
+    .v2-stage[data-lit="false"] .v2-stage-badge { visibility: hidden; }
+    .v2-stage-modules {
+      display: block;
+      margin-top: auto;
+      font-size: 13px;
+      font-weight: 500;
+      line-height: 1.7;
+      color: var(--color-brand);
+    }
+    .v2-stage[data-lit="false"] .v2-stage-modules { color: var(--color-muted); }
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-rise,
   .animate-swap,
   .animate-settle,
   .v2-sheet[data-state="open"],
-  .v2-overlay[data-state="open"] {
+  .v2-overlay[data-state="open"],
+  .v2-stage[data-lit="true"][data-changed="true"],
+  .v2-accordion-content[data-state] {
     animation: none !important;
   }
 
   .v2-press,
   .v2-icon-nudge,
-  .v2-lift {
+  .v2-lift,
+  .v2-zoom,
+  .v2-logo,
+  .v2-stage {
     transition: none !important;
   }
 
   .v2-press:active,
   .v2-lift:hover,
+  .group:hover .v2-zoom,
   .group:hover .v2-icon-nudge,
   [dir="rtl"] .group:hover .v2-icon-nudge {
     transform: none !important;

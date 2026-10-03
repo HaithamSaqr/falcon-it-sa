@@ -786,5 +786,21 @@
     "whatsapp": "واتساب",
     "whatsappChat": "تواصل معنا عبر واتساب",
     "social": "فالكون على {network}"
+  },
+  "blocks": {
+    "seeModules": "شاهد الوحدات",
+    "seeSetup": "شاهد كيف نضبطه لك",
+    "modulesAlt": "تطبيقات فالكون ERP: الحسابات، المبيعات، CRM، المشاريع، إدارة الأملاك وغيرها",
+    "appsAlt": "وحدات فالكون ERP: المشاريع، إدارة الأملاك، CRM، الحسابات، المبيعات وغيرها",
+    "breadcrumb": "مسار التنقل",
+    "quoteRole": "{role} في {company}",
+    "phone": "الهاتف",
+    "whatsapp": "واتساب",
+    "email": "البريد الإلكتروني",
+    "address": "العنوان",
+    "branches": "مكاتبنا",
+    "social": "تابعنا",
+    "faqTitle": "أسئلة",
+    "yourRole": "دورك"
   }
 }
