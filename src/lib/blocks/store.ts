@@ -17,7 +17,8 @@ import { isSafeImage } from "./fields";
 import { parseBlock } from "./registry";
 import { isBlockType, type Block } from "./types";
 import { SEED, SEED_PAGES } from "./seed";
-import { insertBlocks, lockPage, markPageSeeded } from "./db";
+import { insertBlocks, lockPage, markPageSeeded, pageSeededKey } from "./db";
+import { withTransaction } from "@/lib/db/tx";
 
 export interface PageSeo {
   page: string;
@@ -74,6 +75,12 @@ export async function getPageBlocks(page: string, pool?: Pool): Promise<Block[]>
       `${SELECT_BLOCKS} WHERE page = $1 AND enabled = true ORDER BY sort_order, id`,
       [page],
     );
+    if (res.rows.length === 0 && (SEED[page]?.length ?? 0) > 0) {
+      // No rows and never seeded or saved (seeding failed or has not run yet):
+      // serve the seed. A page the admin cleared carries the marker and stays empty.
+      const marked = await db.query(`SELECT 1 FROM data_fixes WHERE key = $1`, [pageSeededKey(page)]);
+      if (marked.rowCount === 0) return seedBlocks(page, true);
+    }
     const blocks: Block[] = [];
     for (const r of res.rows) {
       const parsed = parseBlock(r.type, r.content, rowMeta(r));
@@ -128,20 +135,12 @@ export async function savePageBlocks(page: string, blocks: Block[], pool?: Pool)
   });
 
   const db = pool ?? (await getPool());
-  const client = await db.connect();
-  try {
-    await client.query("BEGIN");
+  await withTransaction(db, async (client) => {
     await lockPage(client, page);
     await client.query(`DELETE FROM page_blocks WHERE page = $1`, [page]);
     await insertBlocks(client, page, rows);
     await markPageSeeded(client, page);
-    await client.query("COMMIT");
-  } catch (err) {
-    await client.query("ROLLBACK").catch(() => {});
-    throw err;
-  } finally {
-    client.release();
-  }
+  });
 }
 
 /** Every known page (seed pages first, then any other stored page) with its block count. */

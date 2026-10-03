@@ -292,6 +292,22 @@ describe.skipIf(!canUseDb)("page blocks on a fresh database", () => {
     await savePageBlocks("sector:real-estate", [], pool);
     await ensureReady(pool);
     expect(await getPageBlocksAdmin("sector:real-estate", pool)).toEqual([]);
+    // Public read: the admin cleared it deliberately (marker present), so it stays empty.
+    expect(await getPageBlocks("sector:real-estate", pool)).toEqual([]);
+  });
+
+  it("getPageBlocks serves the seed for a page with no rows and no seeded marker", async () => {
+    const key = "page-seeded:sector:real-estate";
+    await pool.query(`DELETE FROM data_fixes WHERE key = $1`, [key]);
+    try {
+      expect(await count(pool, `SELECT count(*) AS n FROM page_blocks WHERE page = 'sector:real-estate'`)).toBe(0);
+      const blocks = await getPageBlocks("sector:real-estate", pool);
+      expect(shape(blocks)).toEqual(shape(SEED["sector:real-estate"].filter((b) => b.enabled)));
+      // A page with no seed and no rows is still empty.
+      expect(await getPageBlocks("no-such-page", pool)).toEqual([]);
+    } finally {
+      await pool.query(`INSERT INTO data_fixes (key) VALUES ($1) ON CONFLICT DO NOTHING`, [key]);
+    }
   });
 
   it("savePageBlocks with one invalid block throws and leaves the previous rows intact", async () => {

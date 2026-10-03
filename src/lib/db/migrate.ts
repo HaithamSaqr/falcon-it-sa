@@ -6,6 +6,7 @@
 
 import type { Pool, PoolClient } from "pg";
 import { ensureSchema } from "./schema";
+import { withTransaction } from "./tx";
 import { SEED } from "@/lib/blocks/seed";
 import type { SeedBlock } from "@/lib/blocks/seed";
 import { V2_SECTORS, V2_SECTOR_SLUGS } from "@/lib/blocks/seed/sectors";
@@ -205,22 +206,14 @@ export async function ensureReady(pool: Pool): Promise<void> {
  * fix twice and a failed fix leaves nothing behind (it is retried next boot).
  */
 async function runOnce(pool: Pool, key: string, fix: (c: PoolClient) => Promise<void>): Promise<void> {
-  const client = await pool.connect();
-  try {
-    await client.query("BEGIN");
+  await withTransaction(pool, async (client) => {
     await client.query(`SELECT pg_advisory_xact_lock(hashtext($1))`, [key]);
     const done = await client.query(`SELECT 1 FROM data_fixes WHERE key = $1`, [key]);
     if (done.rowCount === 0) {
       await fix(client);
       await client.query(`INSERT INTO data_fixes (key) VALUES ($1)`, [key]);
     }
-    await client.query("COMMIT");
-  } catch (err) {
-    await client.query("ROLLBACK").catch(() => {});
-    throw err;
-  } finally {
-    client.release();
-  }
+  });
 }
 
 /**
@@ -293,22 +286,19 @@ export async function runDataFixes(pool: Pool): Promise<void> {
 export async function seedPageBlocks(pool: Pool, seed: Record<string, SeedBlock[]> = SEED): Promise<void> {
   for (const [page, blocks] of Object.entries(seed)) {
     if (blocks.length === 0) continue; // nothing to seed yet; do not mark the page
-    const client = await pool.connect();
     try {
-      await client.query("BEGIN");
-      await lockPage(client, page);
-      const marked = await client.query(`SELECT 1 FROM data_fixes WHERE key = $1`, [pageSeededKey(page)]);
-      if (marked.rowCount === 0) {
-        const existing = await client.query(`SELECT count(*)::int AS n FROM page_blocks WHERE page = $1`, [page]);
-        if (existing.rows[0].n === 0) await insertBlocks(client, page, blocks);
-        await markPageSeeded(client, page);
-      }
-      await client.query("COMMIT");
+      // Connecting happens inside the try too: a seeding failure never rejects ensureReady.
+      await withTransaction(pool, async (client) => {
+        await lockPage(client, page);
+        const marked = await client.query(`SELECT 1 FROM data_fixes WHERE key = $1`, [pageSeededKey(page)]);
+        if (marked.rowCount === 0) {
+          const existing = await client.query(`SELECT count(*)::int AS n FROM page_blocks WHERE page = $1`, [page]);
+          if (existing.rows[0].n === 0) await insertBlocks(client, page, blocks);
+          await markPageSeeded(client, page);
+        }
+      });
     } catch (err) {
-      await client.query("ROLLBACK").catch(() => {});
       console.error(`[migrate] seeding page "${page}" failed (will retry next boot):`, err);
-    } finally {
-      client.release();
     }
   }
 }
