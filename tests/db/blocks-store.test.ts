@@ -81,9 +81,9 @@ describe("SEED", () => {
     }
   });
 
-  it("home and sector:real-estate are seeded in both languages", () => {
-    for (const page of ["home", "sector:real-estate"]) {
-      expect(SEED[page].length).toBeGreaterThan(5);
+  it("every page is seeded in both languages", () => {
+    for (const page of EXPECTED_PAGES) {
+      expect(SEED[page].length, page).toBeGreaterThan(0);
       for (const b of SEED[page]) {
         // Every Bi with English text also has Arabic text, and vice versa.
         const walk = (v: unknown, at: string) => {
@@ -130,6 +130,76 @@ describe("SEED", () => {
       expect(src.startsWith("/images/v2/"), src).toBe(true);
       expect(fs.existsSync(path.join(process.cwd(), "public", src)), src).toBe(true);
     }
+  });
+
+  it("seeds every sector page with the real-estate structure and the brief's roles", () => {
+    const roles: Record<string, string[]> = {
+      "real-estate": ["dev", "con", "bro"],
+      manufacturing: ["owner", "plant", "fin"],
+      trading: ["owner", "sales", "wh"],
+      hospitality: ["owner", "branch", "kitchen"],
+      retail: ["owner", "store", "ecom"],
+      logistics: ["owner", "fleet", "fin"],
+      "professional-services": ["partner", "pm", "fin"],
+    };
+    const order = ["sector_hero", "logo_wall", "lifecycle", "role_pains", "fit", "plan", "quote", "faq_ref", "booking"];
+    for (const s of V2_SECTORS) {
+      const blocks = SEED[`sector:${s.slug}`];
+      expect(blocks.map((x) => x.type), s.slug).toEqual(order);
+      const hero = blocks[0].content as { roles: { id: string }[]; photo: string; promise: Record<string, unknown> };
+      expect(hero.roles.map((r) => r.id), s.slug).toEqual(roles[s.slug]);
+      expect(hero.photo).toBe(s.photo);
+      expect(Object.keys(hero.promise).sort()).toEqual([...roles[s.slug]].sort());
+      const lc = blocks[2].content as { stages: { roles: string[] }[]; summary: Record<string, unknown> };
+      expect(lc.stages, s.slug).toHaveLength(6);
+      expect(Object.keys(lc.summary).sort()).toEqual([...roles[s.slug]].sort());
+      // Every role lights at least one stage.
+      for (const r of roles[s.slug]) expect(lc.stages.some((st) => st.roles.includes(r)), `${s.slug} ${r}`).toBe(true);
+      const pains = blocks[3].content as { pains: Record<string, { items: unknown[] }> };
+      for (const r of roles[s.slug]) expect(pains.pains[r]?.items.length, `${s.slug} ${r}`).toBeGreaterThan(2);
+      const plan = blocks[5].content as { steps: { duration: { en: string } }[] };
+      expect(plan.steps.map((st) => st.duration.en)).toEqual(["1 day", "1 to 2 weeks", "4 to 8 weeks", "1 to 2 weeks"]);
+      expect(blocks[6].enabled).toBe(false);
+    }
+  });
+
+  it("uses only Phosphor icon names that exist", () => {
+    const dir = path.join(process.cwd(), "node_modules", "@phosphor-icons", "react", "dist", "csr");
+    for (const [page, blocks] of Object.entries(SEED)) {
+      for (const blk of blocks) {
+        const items = (blk.content as { items?: { icon?: string }[] }).items ?? [];
+        for (const it of items) {
+          if (!it.icon) continue;
+          expect(fs.existsSync(path.join(dir, `${it.icon}.es.js`)), `${page}: ${it.icon}`).toBe(true);
+        }
+      }
+    }
+  });
+
+  it("keeps the ERP, product and legal pages factual", () => {
+    const text = (page: string) => strings(SEED[page]).join("\n");
+    // Falcon ERP is Falcon's own product, never presented as built on Odoo:
+    // the only mention is the FAQ question, and its answer is "No."
+    const mentions = strings(SEED["erp:falcon"]).filter((x) => /(built|based) on odoo/i.test(x));
+    expect(mentions).toEqual(["Is Falcon ERP built on Odoo?"]);
+    const faq = SEED["erp:falcon"].find((x) => x.type === "faq_ref")!.content as {
+      items: { question: { en: string }; answer: { en: string } }[];
+    };
+    expect(faq.items.find((i) => i.question.en === mentions[0])!.answer.en).toMatch(/^No\./);
+    // No prices on product pages.
+    for (const page of ["product:server-management", "product:data-management", "product:applications", "erp:falcon", "erp:odoo"]) {
+      expect(text(page), page).not.toMatch(/\$|\bSAR\b|\bUSD\b|ريال|دولار|\bper user\b/i);
+    }
+    const privacy = text("privacy-policy");
+    for (const needle of ["Last updated: 3 October 2026", "7049432656", "Resend", "Google Tag Manager", "Snap", "PDPL"]) {
+      expect(privacy, needle).toContain(needle);
+    }
+    expect(SEED.contact.some((x) => x.type === "contact_info")).toBe(true);
+    expect(SEED.demo.some((x) => x.type === "demo_form")).toBe(true);
+    expect(SEED.faq.some((x) => x.type === "faq_ref")).toBe(true);
+    // Retired claims from the old site must not come back.
+    const all = Object.keys(SEED).map(text).join("\n");
+    expect(all).not.toMatch(/free trial|500\+|99\.9|SOC 2|certified|official odoo partner/i);
   });
 
   it("lights the real-estate lifecycle stages per role", () => {
