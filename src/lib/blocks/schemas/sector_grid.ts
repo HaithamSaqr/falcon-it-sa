@@ -14,7 +14,7 @@ const sectorCardSchema = z.object({
 const otherCardSchema = z.object({
   title: biRequiredSchema,
   line: biSchema,
-  ctaLabel: biSchema,
+  ctaLabel: biRequiredSchema,
   href: linkSchema,
 });
 

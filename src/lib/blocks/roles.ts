@@ -54,7 +54,7 @@ export function checkRecordComplete(
   ctx: z.RefinementCtx,
 ): void {
   for (const id of declared) {
-    if (!(id in record)) {
+    if (!Object.hasOwn(record, id)) {
       ctx.addIssue({
         code: "custom",
         message: `Missing entry for role "${id}"`,

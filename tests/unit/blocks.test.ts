@@ -10,6 +10,7 @@ import {
 } from "@/lib/blocks/fields";
 import { BLOCKS, parseBlock } from "@/lib/blocks/registry";
 import { BLOCK_TYPES } from "@/lib/blocks/types";
+import { validFixtures, rejections, clone } from "./fixtures/blocks";
 
 const bi = (en: string, ar = "") => ({ en, ar });
 
@@ -296,5 +297,56 @@ describe("registry", () => {
       expect(s.def.type).toBe("object");
       expect(s.shape).toBeTruthy();
     }
+  });
+});
+
+describe("populated fixtures", () => {
+  it.each([...BLOCK_TYPES])("%s: populated fixture parses and round-trips", (type) => {
+    const r = parseBlock(type, clone(validFixtures[type]));
+    expect(r.ok, r.ok ? "" : r.error).toBe(true);
+    if (r.ok) expect(r.block.content).toEqual(validFixtures[type]);
+  });
+  it("every block type has at least one rejection case", () => {
+    for (const type of BLOCK_TYPES) {
+      expect(rejections.some((x) => x.type === type), type).toBe(true);
+    }
+  });
+  it.each(rejections.map((x) => [x.type, x.name, x] as const))("%s rejects: %s", (_t, _n, rej) => {
+    const r = parseBlock(rej.type, rej.make(clone(validFixtures[rej.type])));
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.error).toContain(rej.path);
+  });
+});
+
+describe("required CTA labels", () => {
+  it("rejects a blank primary CTA label in hero, sector_hero, booking and sector_grid", () => {
+    const blank = { en: "", ar: "" };
+    const cases: [string, unknown][] = [
+      ["hero", { ...validFixtures.hero, primaryCta: { ...validFixtures.hero.primaryCta, label: blank } }],
+      ["sector_hero", { ...validFixtures.sector_hero, primaryCta: { ...validFixtures.sector_hero.primaryCta, label: blank } }],
+      ["booking", { ...validFixtures.booking, cta: { ...validFixtures.booking.cta, label: blank } }],
+      ["sector_grid", { ...validFixtures.sector_grid, otherCard: { ...validFixtures.sector_grid.otherCard, ctaLabel: blank } }],
+    ];
+    for (const [type, content] of cases) {
+      expect(parseBlock(type, content).ok, type).toBe(false);
+    }
+  });
+  it("still lets the optional secondary CTA be empty", () => {
+    expect(parseBlock("hero", { ...validFixtures.hero, secondaryCta: { label: bi(""), href: "" } }).ok).toBe(true);
+  });
+});
+
+describe("role ids that collide with Object.prototype names", () => {
+  const protoRoles = [{ id: "constructor", label: bi("Owner") }];
+  const heroBase = clone(validFixtures.sector_hero);
+  it("sector_hero fails when the promise for role 'constructor' is missing", () => {
+    const r = parseBlock("sector_hero", { ...heroBase, roles: protoRoles, promise: {} });
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.error).toContain("promise.constructor");
+  });
+  it("sector_hero accepts an own 'constructor' promise", () => {
+    const promise = JSON.parse('{"constructor":{"title":{"en":"Hi","ar":""},"subtitle":{"en":"","ar":""}}}');
+    const r = parseBlock("sector_hero", { ...heroBase, roles: protoRoles, promise });
+    expect(r.ok, r.ok ? "" : r.error).toBe(true);
   });
 });

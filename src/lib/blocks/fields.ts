@@ -75,8 +75,8 @@ export function fieldKind(schema: unknown): FieldKind | undefined {
   return isBiSchema(schema) ? "bi" : undefined;
 }
 
-/** Call to action. */
-export const ctaSchema = z.object({ label: biSchema, href: linkSchema });
+/** Call to action. A visible button always has a label and a link. */
+export const ctaSchema = z.object({ label: biRequiredSchema, href: linkSchema });
 export type Cta = z.infer<typeof ctaSchema>;
 
 /** Optional call to action: empty label and empty href mean "not shown". */

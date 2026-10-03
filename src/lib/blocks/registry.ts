@@ -1,6 +1,6 @@
 import type { ZodType } from "zod";
 import type { Bi } from "./bi";
-import { isBlockType, type Block, type BlockType } from "./types";
+import { isBlockType, type Block, type BlockContentMap, type BlockType } from "./types";
 import { heroSchema, heroDefaults } from "./schemas/hero";
 import { logoWallSchema, logoWallDefaults } from "./schemas/logo_wall";
 import { departmentsSchema, departmentsDefaults } from "./schemas/departments";
@@ -20,14 +20,15 @@ import { richTextSchema, richTextDefaults } from "./schemas/rich_text";
 import { contactInfoSchema, contactInfoDefaults } from "./schemas/contact_info";
 import { demoFormSchema, demoFormDefaults } from "./schemas/demo_form";
 
-export type BlockDefinition = {
-  schema: ZodType;
+/** Definition for one block type; schema output and defaults are tied to `BlockContentMap[T]`. */
+export type BlockDefinition<T extends BlockType = BlockType> = {
+  schema: ZodType<BlockContentMap[T]>;
   label: Bi;
   /** Returns a fresh, valid content object every call. */
-  defaults: () => unknown;
+  defaults: () => BlockContentMap[T];
 };
 
-export const BLOCKS: Record<BlockType, BlockDefinition> = {
+export const BLOCKS: { [K in BlockType]: BlockDefinition<K> } = {
   hero: { schema: heroSchema, label: { en: "Hero", ar: "الواجهة الرئيسية" }, defaults: heroDefaults },
   logo_wall: { schema: logoWallSchema, label: { en: "Client logos", ar: "شعارات العملاء" }, defaults: logoWallDefaults },
   departments: { schema: departmentsSchema, label: { en: "Departments", ar: "الأقسام" }, defaults: departmentsDefaults },
@@ -52,6 +53,17 @@ export type ParseBlockMeta = Partial<Pick<Block, "id" | "page" | "sortOrder" | "
 
 export type ParseBlockResult = { ok: true; block: Block } | { ok: false; error: string };
 
+function buildBlock<T extends BlockType>(type: T, content: BlockContentMap[T], meta: ParseBlockMeta): Block<T> {
+  return {
+    id: meta.id ?? "",
+    page: meta.page ?? "",
+    type,
+    sortOrder: meta.sortOrder ?? 0,
+    enabled: meta.enabled ?? true,
+    content,
+  } as Block<T>;
+}
+
 /**
  * Validate content for a block type. On success returns a Block; `id`, `page`,
  * `sortOrder` and `enabled` come from `meta` (placeholders "", "", 0, true otherwise).
@@ -65,13 +77,5 @@ export function parseBlock(type: string, content: unknown, meta: ParseBlockMeta 
     const path = issue.path.map(String).join(".");
     return { ok: false, error: `${path || "(content)"}: ${issue.message}` };
   }
-  const block = {
-    id: meta.id ?? "",
-    page: meta.page ?? "",
-    type,
-    sortOrder: meta.sortOrder ?? 0,
-    enabled: meta.enabled ?? true,
-    content: result.data,
-  } as Block;
-  return { ok: true, block };
+  return { ok: true, block: buildBlock(type, result.data, meta) };
 }
