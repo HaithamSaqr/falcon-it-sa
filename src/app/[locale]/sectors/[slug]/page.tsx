@@ -1,19 +1,22 @@
 import type { Metadata } from "next";
-import { setRequestLocale } from "next-intl/server";
-import { buildMetadata } from "@/lib/seo";
 import { notFound } from "next/navigation";
+import { getTranslations, setRequestLocale } from "next-intl/server";
+import { breadcrumbLd, buildMetadata, localizedPath } from "@/lib/seo";
 import { getSector } from "@/lib/data-store";
-import Container from "@/components/ui/container";
-import Button from "@/components/ui/button";
+import { getPageBlocks } from "@/lib/blocks/store";
+import { pickBi } from "@/lib/blocks/bi";
+import BlockRenderer from "@/components/v2/blocks";
+import JsonLd from "@/components/v2/json-ld";
 
 type Props = {
   params: Promise<{ locale: string; slug: string }>;
+  searchParams: Promise<{ role?: string | string[] }>;
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale, slug } = await params;
   const sector = await getSector(slug);
-  if (!sector) return {};
+  if (!sector || !sector.enabled) return {};
   return buildMetadata({
     page: `sector:${slug}`,
     path: `/sectors/${slug}`,
@@ -24,34 +27,39 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   });
 }
 
-export default async function SectorPage({ params }: Props) {
+export default async function SectorPage({ params, searchParams }: Props) {
   const { locale, slug } = await params;
   setRequestLocale(locale);
 
   const sector = await getSector(slug);
   if (!sector || !sector.enabled) notFound();
 
-  const isAr = locale === "ar";
+  const lang = locale === "ar" ? "ar" : "en";
+  const [blocks, nav, chrome, query] = await Promise.all([
+    getPageBlocks(`sector:${slug}`),
+    getTranslations({ locale: lang, namespace: "nav" }),
+    getTranslations({ locale: lang, namespace: "chrome" }),
+    searchParams,
+  ]);
+  // A sector with no page layout (enabled in admin, blocks never added) has nothing to show.
+  if (blocks.length === 0) notFound();
+
+  const role = [query.role].flat()[0];
 
   return (
-    <section className="bg-surface py-20 lg:py-28">
-      <Container className="max-w-3xl text-center">
-        <span className="text-5xl" aria-hidden>{sector.icon}</span>
-        <h1 className="mt-5 text-4xl font-extrabold text-text-primary">
-          {isAr ? sector.title.ar : sector.title.en}
-        </h1>
-        <p className="mx-auto mt-5 max-w-2xl text-lg text-text-secondary">
-          {isAr ? sector.description.ar : sector.description.en}
-        </p>
-        <p className="mt-8 text-text-secondary">
-          {isAr ? "تحدث مع فريقنا عن متطلبات قطاعك والحل الأنسب لعملك." : "Talk with our team about your sector and the right solution for your business."}
-        </p>
-        <div className="mt-8">
-          <Button variant="cta" size="lg" href="/demo">
-            {isAr ? "احجز موعدًا" : "Book an Appointment"}
-          </Button>
-        </div>
-      </Container>
-    </section>
+    <>
+      <JsonLd
+        data={breadcrumbLd([
+          { name: nav("home"), url: localizedPath("/", lang) },
+          { name: chrome("sectors"), url: localizedPath("/sectors", lang) },
+          { name: pickBi(sector.name, lang), url: localizedPath(`/sectors/${slug}`, lang) },
+        ])}
+      />
+      <BlockRenderer
+        blocks={blocks}
+        locale={locale}
+        context={{ sector: { id: slug, name: sector.name }, roleParam: role }}
+      />
+    </>
   );
 }
