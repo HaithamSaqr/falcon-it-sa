@@ -15,6 +15,7 @@ import type {
   SiteSettings,
 } from "@/types/admin";
 import { resolveKeptRoute } from "@/lib/kept-routes";
+import { isSafeLink } from "@/lib/blocks/links";
 
 export interface BilingualText {
   en: string;
@@ -93,6 +94,15 @@ export interface PublicSettings {
 
 /** The placeholder Egypt phone shipped in the old defaults. */
 export const PLACEHOLDER_PHONE = "+201000000000";
+
+/**
+ * A social profile URL from settings, or "" when it is blank or not a path or
+ * https URL (so a stored `javascript:` link is never rendered as an href).
+ */
+export function safeSocialHref(value: string | null | undefined): string {
+  const v = (value ?? "").trim();
+  return isSafeLink(v) ? v : "";
+}
 
 /** Saudi WhatsApp number used whenever a stored or routed number is unusable. */
 export const SAUDI_WHATSAPP_FALLBACK = "966568406006";

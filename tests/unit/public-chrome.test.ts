@@ -13,6 +13,7 @@ import {
   isHiddenPhone,
   isVisibleBranch,
   mentionsEgypt,
+  safeSocialHref,
   safeWhatsapp,
   sanitizeWhatsappRouting,
   supportingServices,
@@ -281,4 +282,16 @@ describe("kept routes (ruling R3)", () => {
     expect(urls(stored)).toEqual(["/about", "/contact", "/demo", "/contact"]);
     for (const u of urls(DEFAULT_FOOTER_LINKS)) expect(Object.keys(KEPT_ROUTES)).not.toContain(u);
   });
+});
+
+describe("safeSocialHref", () => {
+  it("keeps https URLs and trims them", () => {
+    expect(safeSocialHref("https://linkedin.com/company/falcon")).toBe("https://linkedin.com/company/falcon");
+    expect(safeSocialHref("  https://x.com/falcon  ")).toBe("https://x.com/falcon");
+  });
+
+  it.each(["", "   ", "javascript:alert(1)", "data:text/html,x", "http://insecure.example", "//evil.example", "https://a b.example", undefined, null])(
+    "drops %j",
+    (v) => expect(safeSocialHref(v as string)).toBe(""),
+  );
 });

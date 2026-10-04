@@ -215,6 +215,25 @@ test.describe("language toggle", () => {
     await expect(page).toHaveURL(/\/sectors\/real-estate$/, { timeout: 20_000 });
     await expect(page.locator("html")).toHaveAttribute("lang", "en", { timeout: 20_000 });
   });
+
+  test("keeps the query string when switching language", async ({ page }) => {
+    await page.goto("/demo?sector=retail&role=owner");
+    const toAr = page.locator('header a[lang="ar"]:visible').first();
+    await expect(toAr).toHaveAttribute("href", "/ar/demo?sector=retail&role=owner");
+    await toAr.click();
+    await expect(page).toHaveURL(/\/ar\/demo\?sector=retail&role=owner$/, { timeout: 20_000 });
+
+    const toEn = page.locator('header a[lang="en"]:visible').first();
+    await expect(toEn).toHaveAttribute("href", /^(\/en)?\/demo\?sector=retail&role=owner$/);
+    await toEn.click();
+    await expect(page).toHaveURL(/\/demo\?sector=retail&role=owner$/, { timeout: 20_000 });
+    await expect(page.locator("html")).toHaveAttribute("lang", "en", { timeout: 20_000 });
+  });
+
+  test("keeps the hash when switching language", async ({ page }) => {
+    await page.goto("/about#team");
+    await expect(page.locator('header a[lang="ar"]:visible').first()).toHaveAttribute("href", "/ar/about#team");
+  });
 });
 
 test.describe("sectors menu (desktop)", () => {

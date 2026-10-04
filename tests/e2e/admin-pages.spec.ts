@@ -164,3 +164,20 @@ test("leads list and brochure tabs still load (admin screens touched by the lint
   await loaded;
   await expect(page.locator('input[value="Data Analysis & Migration"]')).toBeVisible();
 });
+
+test("Content screen no longer offers FAQ or testimonial tabs and points to the page editors", async ({ page }) => {
+  test.setTimeout(120_000);
+  await page.goto("/admin/login");
+  await page.getByLabel("Username").fill(USER);
+  await page.getByLabel("Password").fill(PASSWORD);
+  await page.getByRole("button", { name: "Sign in" }).click();
+  await page.waitForURL("**/admin");
+
+  await page.goto("/admin/content");
+  const notice = page.getByTestId("content-moved-notice");
+  await expect(notice).toBeVisible();
+  await expect(page.getByRole("button", { name: "FAQs" })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Testimonials" })).toHaveCount(0);
+  await expect(notice.getByRole("link", { name: "Pages > FAQ" })).toHaveAttribute("href", "/admin/pages/faq");
+  await expect(notice.getByRole("link", { name: "Pages > Home" })).toHaveAttribute("href", "/admin/pages/home");
+});

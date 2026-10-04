@@ -4,7 +4,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { pickBi } from "@/lib/blocks/bi";
 import { isExternalHref, isLocaleRoute } from "@/lib/href";
-import { displayPhone, supportingServices, telHref, type PublicSettings } from "@/lib/public-chrome";
+import { displayPhone, safeSocialHref, supportingServices, telHref, type PublicSettings } from "@/lib/public-chrome";
 import Container from "@/components/v2/ui/container";
 import Icon from "@/components/v2/ui/icon";
 import FooterGate from "@/components/layout/footer-gate";
@@ -141,7 +141,8 @@ export default async function Footer({ settings }: { settings: PublicSettings })
       </nav>
     ) : null;
 
-  const socials = SOCIAL.filter((s) => (settings.social[s.key] ?? "").trim() !== "");
+  // Only paths and https URLs render as links, as on the contact page.
+  const socials = SOCIAL.map((s) => ({ ...s, href: safeSocialHref(settings.social[s.key]) })).filter((s) => s.href !== "");
   const email = settings.company.email?.trim();
 
   const full = (
@@ -172,7 +173,7 @@ export default async function Footer({ settings }: { settings: PublicSettings })
               {socials.map((s) => (
                 <li key={s.key}>
                   <a
-                    href={settings.social[s.key]}
+                    href={s.href}
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label={t("social", { network: s.network })}
