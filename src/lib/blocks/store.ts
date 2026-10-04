@@ -113,7 +113,9 @@ export async function getPageBlocksAdmin(page: string, pool?: Pool): Promise<Blo
  * Replace a page's blocks. Validates every block first (nothing is written if
  * one fails), then deletes the page's rows and inserts the new list in one
  * transaction. Order of `blocks` becomes sort_order; `page` on each block is
- * ignored. Marks the page as admin-owned so boot seeding never refills it.
+ * ignored; a block id is kept only when it already belongs to this page
+ * (new, duplicated or copied blocks get a fresh id). Marks the page as
+ * admin-owned so boot seeding never refills it.
  */
 export async function savePageBlocks(page: string, blocks: Block[], pool?: Pool): Promise<void> {
   checkPageKey(page);
@@ -131,12 +133,20 @@ export async function savePageBlocks(page: string, blocks: Block[], pool?: Pool)
         : `.${parsed.error}`;
       throw new BlockValidationError(`blocks.${i}.content${error}`);
     }
-    return { id: b.id, type, enabled: b.enabled !== false, content: parsed.block.content };
+    const id = typeof b.id === "string" ? b.id.toLowerCase() : undefined;
+    return { id, type, enabled: b.enabled !== false, content: parsed.block.content };
   });
 
   const db = pool ?? (await getPool());
   await withTransaction(db, async (client) => {
     await lockPage(client, page);
+    // Keep only ids that already belong to this page: a block copied from
+    // another page (same id) gets a new id instead of a primary key clash.
+    const own = await client.query<{ id: string }>(`SELECT id::text AS id FROM page_blocks WHERE page = $1`, [page]);
+    const ownIds = new Set(own.rows.map((r) => r.id.toLowerCase()));
+    for (const r of rows) {
+      if (r.id !== undefined && !ownIds.has(r.id)) r.id = undefined;
+    }
     await client.query(`DELETE FROM page_blocks WHERE page = $1`, [page]);
     await insertBlocks(client, page, rows);
     await markPageSeeded(client, page);

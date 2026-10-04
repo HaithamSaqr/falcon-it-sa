@@ -173,7 +173,7 @@ export default function ContentPage() {
                     ...content,
                     testimonials: [
                       ...content.testimonials,
-                      { id: crypto.randomUUID(), name: "", role: "", company: "", quote: { en: "", ar: "" } },
+                      { id: crypto.randomUUID(), name: "", role: "", company: "", quote: { en: "", ar: "" }, enabled: true },
                     ],
                   });
                 }}
@@ -185,7 +185,26 @@ export default function ContentPage() {
             {content.testimonials.map((t, i) => (
               <div key={t.id} className="space-y-3 rounded-lg border border-slate-200 p-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-medium text-slate-400">Testimonial #{i + 1}</span>
+                  <span className="flex items-center gap-2 text-xs font-medium text-slate-400">
+                    Testimonial #{i + 1}
+                    {t.enabled === false ? (
+                      <span className="rounded-full bg-slate-200 px-2 py-0.5 text-[11px] font-semibold text-slate-600">Hidden</span>
+                    ) : (
+                      <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-semibold text-emerald-700">Shown</span>
+                    )}
+                  </span>
+                  <label className="ms-auto me-4 flex items-center gap-1.5 text-xs text-slate-600">
+                    <input
+                      type="checkbox"
+                      checked={t.enabled !== false}
+                      onChange={(e) => {
+                        const updated = [...content.testimonials];
+                        updated[i] = { ...updated[i], enabled: e.target.checked };
+                        setContent({ ...content, testimonials: updated });
+                      }}
+                    />
+                    Show on the site
+                  </label>
                   <button
                     onClick={() => {
                       setContent({ ...content, testimonials: content.testimonials.filter((_, j) => j !== i) });

@@ -9,6 +9,7 @@ import {
 } from "@/lib/data-store";
 import { jsonSuccess, jsonError } from "@/lib/api-helpers";
 import { hashPassword } from "@/lib/password";
+import { validateV2Settings } from "@/lib/admin/settings-validation";
 import type { SiteSettings } from "@/types/admin";
 
 const MASK = "••••••••";
@@ -48,6 +49,16 @@ export async function PUT(request: NextRequest) {
 
   const body = (await request.json().catch(() => null)) as SiteSettings | null;
   if (!body) return jsonError("Invalid body", 400);
+
+  // v2 fields: a safe demo URL, a CTA label in at least one language, CR and VAT digits.
+  const invalid = validateV2Settings(body);
+  if (invalid) return jsonError(invalid, 400);
+  if (body.primaryCta) {
+    body.primaryCta = {
+      label: { en: String(body.primaryCta.label?.en ?? "").trim(), ar: String(body.primaryCta.label?.ar ?? "").trim() },
+      demoUrl: body.primaryCta.demoUrl,
+    };
+  }
 
   const existing = await getSettings();
 

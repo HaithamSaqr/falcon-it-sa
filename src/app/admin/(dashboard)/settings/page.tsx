@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { SiteSettings, SeoSettings, FooterLink } from "@/types/admin";
+import { validateV2Settings } from "@/lib/admin/settings-validation";
 
 interface DbConn {
   host: string;
@@ -32,6 +33,7 @@ export default function SettingsPage() {
   const [saved, setSaved] = useState(false);
   const [confirmPassword, setConfirmPassword] = useState("");
   const [pwError, setPwError] = useState("");
+  const [saveError, setSaveError] = useState("");
 
   // Database connection (stored in db-config.json, editable here)
   const [conn, setConn] = useState<DbConn | null>(null);
@@ -250,14 +252,24 @@ export default function SettingsPage() {
       }
     }
 
+    // v2 fields: safe demo link, CTA label in at least one language, CR and VAT digits.
+    const invalid = validateV2Settings(settings);
+    setSaveError(invalid ?? "");
+    if (invalid) return;
+
     setSaving(true);
     setSaved(false);
-    await fetch("/api/admin/settings", {
+    const res = await fetch("/api/admin/settings", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(settings),
-    });
+    }).catch(() => null);
+    const result = await res?.json().catch(() => null);
     setSaving(false);
+    if (!result?.success) {
+      setSaveError(result?.error ?? "Could not reach the server. Nothing was saved.");
+      return;
+    }
     setSaved(true);
     setConfirmPassword("");
     // Clear the typed password from local state after saving.
@@ -488,6 +500,82 @@ export default function SettingsPage() {
             <label className={labelClasses}>Phone (Egypt)</label>
             <input value={settings.company.phone.egypt} onChange={(e) => set("company.phone.egypt", e.target.value)} className={inputClasses} />
           </div>
+        </div>
+      </div>
+
+      {/* v2 website: blog, primary CTA, company registration */}
+      <div className="rounded-xl border border-slate-200 bg-white p-6">
+        <h3 className="mb-1 text-sm font-semibold text-slate-700">Website</h3>
+        <p className="mb-4 text-xs text-slate-500">The main &quot;Book a demo&quot; button, the blog, and the company numbers in the footer.</p>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <label className="flex items-center gap-2 text-sm text-slate-700 sm:col-span-2">
+            <input
+              type="checkbox"
+              checked={settings.blogEnabled === true}
+              onChange={(e) => set("blogEnabled", e.target.checked)}
+              className="h-4 w-4 accent-cyan-600"
+            />
+            Show the blog (navigation, footer and sitemap)
+          </label>
+          <div>
+            <label className={labelClasses} htmlFor="cta-label-en">Main button label (EN)</label>
+            <input
+              id="cta-label-en"
+              value={settings.primaryCta?.label.en ?? ""}
+              onChange={(e) => set("primaryCta", { label: { en: e.target.value, ar: settings.primaryCta?.label.ar ?? "" }, demoUrl: settings.primaryCta?.demoUrl ?? "/demo" })}
+              className={inputClasses}
+            />
+          </div>
+          <div>
+            <label className={labelClasses} htmlFor="cta-label-ar">Main button label (AR)</label>
+            <input
+              id="cta-label-ar"
+              value={settings.primaryCta?.label.ar ?? ""}
+              onChange={(e) => set("primaryCta", { label: { en: settings.primaryCta?.label.en ?? "", ar: e.target.value }, demoUrl: settings.primaryCta?.demoUrl ?? "/demo" })}
+              className={inputClasses}
+              dir="rtl"
+              lang="ar"
+            />
+          </div>
+          <div className="sm:col-span-2">
+            <label className={labelClasses} htmlFor="demo-url">Main button link</label>
+            <input
+              id="demo-url"
+              value={settings.primaryCta?.demoUrl ?? ""}
+              onChange={(e) => set("primaryCta", { label: settings.primaryCta?.label ?? { en: "", ar: "" }, demoUrl: e.target.value.trim() })}
+              className={`${inputClasses} font-mono`}
+              dir="ltr"
+              placeholder="/demo"
+            />
+            <p className="mt-1 text-xs text-slate-500">A page on this site such as /demo (opens in the visitor&apos;s language), or a full https:// link.</p>
+          </div>
+          <div>
+            <label className={labelClasses} htmlFor="cr-number">Unified national number (CR)</label>
+            <input
+              id="cr-number"
+              value={settings.company.crNumber ?? ""}
+              onChange={(e) => set("company.crNumber", e.target.value)}
+              className={`${inputClasses} font-mono`}
+              dir="ltr"
+              inputMode="numeric"
+              placeholder="10 digits"
+            />
+          </div>
+          <div>
+            <label className={labelClasses} htmlFor="vat-number">VAT number</label>
+            <input
+              id="vat-number"
+              value={settings.company.vatNumber ?? ""}
+              onChange={(e) => set("company.vatNumber", e.target.value)}
+              className={`${inputClasses} font-mono`}
+              dir="ltr"
+              inputMode="numeric"
+              placeholder="15 digits"
+            />
+          </div>
+          {/^(primaryCta|company\.(crNumber|vatNumber)|blogEnabled)/.test(saveError) && (
+            <p className="text-sm font-medium text-red-600 sm:col-span-2">{saveError.replace(/^[\w.]+: /, "")}</p>
+          )}
         </div>
       </div>
 
@@ -952,6 +1040,11 @@ export default function SettingsPage() {
 
       {/* Save */}
       <div className="flex items-center justify-end gap-3">
+        {saveError && (
+          <span role="alert" className="text-sm text-red-600">
+            Not saved: {saveError.replace(/^[\w.]+: /, "")}
+          </span>
+        )}
         {saved && <span className="text-sm text-emerald-600">Settings saved!</span>}
         <button
           onClick={handleSave}

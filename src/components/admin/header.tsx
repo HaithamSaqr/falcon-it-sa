@@ -8,6 +8,9 @@ const PAGE_TITLES: Record<string, string> = {
   "/admin/content": "Content Management",
   "/admin/integrations": "Integrations",
   "/admin/settings": "Settings",
+  "/admin/pages": "Pages",
+  "/admin/sectors": "Sectors",
+  "/admin/products": "Products",
 };
 
 export default function AdminHeader({ onMenuClick }: { onMenuClick?: () => void }) {
@@ -16,7 +19,11 @@ export default function AdminHeader({ onMenuClick }: { onMenuClick?: () => void 
 
   const title =
     PAGE_TITLES[pathname] ||
-    (pathname.startsWith("/admin/leads/") ? "Lead Details" : "Admin");
+    (pathname.startsWith("/admin/leads/")
+      ? "Lead Details"
+      : pathname.startsWith("/admin/pages/")
+        ? "Edit page"
+        : "Admin");
 
   async function handleLogout() {
     await fetch("/api/admin/auth", { method: "DELETE" });

@@ -8,8 +8,8 @@ try {
   // .env.test missing: fall back to whatever is already in the environment.
 }
 
-/** Specs that change site-wide settings; they run in their own project, last. */
-const BLOG_ENABLED = /blog-enabled\.spec\.ts$/;
+/** Specs that change site-wide settings or shared page content; they run in their own project, last. */
+const SITE_WIDE = /(blog-enabled|admin-pages)\.spec\.ts$/;
 
 const baseURL = process.env.E2E_BASE_URL ?? "http://localhost:3100";
 const port = new URL(baseURL).port || "3100";
@@ -29,12 +29,12 @@ export default defineConfig({
   projects: [
     {
       name: "desktop",
-      testIgnore: BLOG_ENABLED,
+      testIgnore: SITE_WIDE,
       use: { ...devices["Desktop Chrome"], viewport: { width: 1440, height: 900 } },
     },
     {
       name: "mobile",
-      testIgnore: BLOG_ENABLED,
+      testIgnore: SITE_WIDE,
       use: {
         ...devices["Desktop Chrome"],
         viewport: { width: 390, height: 844 },
@@ -43,9 +43,10 @@ export default defineConfig({
       },
     },
     {
-      // Flips site_settings.blog_enabled, so it runs alone after the others.
+      // Flips site_settings.blog_enabled and edits the home blocks, so it runs
+      // after the others.
       name: "blog-enabled",
-      testMatch: BLOG_ENABLED,
+      testMatch: SITE_WIDE,
       dependencies: ["desktop", "mobile"],
       use: { ...devices["Desktop Chrome"], viewport: { width: 1440, height: 900 } },
     },

@@ -6,9 +6,11 @@ interface Props {
   value: string;
   onChange: (url: string) => void;
   label?: string;
+  /** Show the small thumbnail (default). Off when the caller renders its own preview. */
+  showPreview?: boolean;
 }
 
-export default function ImageUpload({ value, onChange, label }: Props) {
+export default function ImageUpload({ value, onChange, label, showPreview = true }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
@@ -34,7 +36,7 @@ export default function ImageUpload({ value, onChange, label }: Props) {
     <div>
       {label && <label className="mb-1 block text-xs font-medium uppercase text-slate-400">{label}</label>}
       <div className="flex items-center gap-3">
-        {value ? (
+        {!showPreview ? null : value ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={value} alt="" className="h-12 w-12 rounded border border-slate-200 object-contain bg-white" />
         ) : (

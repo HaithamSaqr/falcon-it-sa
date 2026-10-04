@@ -1,7 +1,11 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import type { Sector, SectorSystem } from "@/types/admin";
+import BiField from "@/components/admin/block-form/field-bi";
+import ImageField from "@/components/admin/block-form/field-image";
+import { adminPageHref } from "@/lib/admin/page-keys";
 
 const SYSTEMS: { key: SectorSystem; label: string }[] = [
   { key: "desktop", label: "Falcon Desktop" },
@@ -82,14 +86,15 @@ export default function AdminSectorsPage() {
   async function save() {
     if (!sectors) return;
     setSaving(true);
-    await fetch("/api/admin/sectors", {
+    const res = await fetch("/api/admin/sectors", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(sectors),
-    });
+    }).catch(() => null);
+    const d = await res?.json().catch(() => null);
     setSaving(false);
-    setToast("Sectors saved!");
-    setTimeout(() => setToast(""), 3000);
+    setToast(d?.success ? "Sectors saved!" : `Not saved: ${d?.error ?? "could not reach the server"}`);
+    setTimeout(() => setToast(""), d?.success ? 3000 : 8000);
   }
 
   if (!sectors) return <div className="flex h-64 items-center justify-center text-slate-400">Loading...</div>;
@@ -99,12 +104,12 @@ export default function AdminSectorsPage() {
 
   return (
     <div className="space-y-5">
-      {toast && <div className="fixed right-6 top-20 z-50 rounded-lg bg-emerald-500 px-4 py-2 text-sm font-medium text-white shadow-lg">{toast}</div>}
+      {toast && <div role="status" className={`fixed right-6 top-20 z-50 rounded-lg px-4 py-2 text-sm font-medium text-white shadow-lg ${toast.startsWith("Not saved") ? "bg-red-600" : "bg-emerald-500"}`}>{toast}</div>}
 
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-lg font-semibold text-slate-900">Sectors</h2>
-          <p className="text-sm text-slate-500">Manage industry sectors shown on the home page and landing pages.</p>
+          <p className="text-sm text-slate-500">Sector names, photos and on/off. Use &quot;Edit landing page&quot; to change a sector page&apos;s sections.</p>
         </div>
         <div className="flex gap-2">
           <button onClick={add} className="rounded-lg bg-slate-100 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-200">+ Add Sector</button>
@@ -122,6 +127,8 @@ export default function AdminSectorsPage() {
 
       {sectors
         .map((s, i) => ({ s, i }))
+        // Enabled sectors first (stable), so the v2 data fix's disabled rows sit at the end.
+        .sort((a, b) => Number(b.s.enabled) - Number(a.s.enabled) || a.i - b.i)
         .filter(({ s }) =>
           !query.trim() ||
           `${s.id} ${s.name.en} ${s.name.ar} ${s.title.en} ${s.title.ar}`.toLowerCase().includes(query.trim().toLowerCase())
@@ -133,9 +140,18 @@ export default function AdminSectorsPage() {
               <span className="text-2xl">{s.icon || "🏢"}</span>
               <span className="text-sm font-semibold text-slate-700">{s.name.en || s.id}</span>
               {s.featured && <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-700">Featured</span>}
-              {!s.enabled && <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-500">Hidden</span>}
+              {s.enabled ? (
+                <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-700">Enabled</span>
+              ) : (
+                <span className="rounded-full bg-slate-200 px-2 py-0.5 text-xs font-semibold text-slate-600">Disabled</span>
+              )}
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-3">
+              {s.id && (
+                <Link href={adminPageHref(`sector:${s.id}`)} className="rounded-md bg-cyan-50 px-2.5 py-1 text-xs font-medium text-cyan-700 hover:bg-cyan-100">
+                  Edit landing page
+                </Link>
+              )}
               <label className="flex items-center gap-1.5 text-xs text-slate-600"><input type="checkbox" checked={s.featured} onChange={(e) => patch(i, (x) => ({ ...x, featured: e.target.checked }))} /> Featured</label>
               <label className="flex items-center gap-1.5 text-xs text-slate-600"><input type="checkbox" checked={s.enabled} onChange={(e) => patch(i, (x) => ({ ...x, enabled: e.target.checked }))} /> Enabled</label>
               <button onClick={() => setSectors((prev) => prev!.filter((_, j) => j !== i))} className="rounded-md px-2 py-1 text-xs font-medium text-red-500 hover:bg-red-50">Remove</button>
@@ -160,6 +176,24 @@ export default function AdminSectorsPage() {
             <div><label className={label}>Title (AR)</label><input className={input} value={s.title.ar} onChange={(e) => patch(i, (x) => ({ ...x, title: { ...x.title, ar: e.target.value } }))} dir="rtl" /></div>
             <div className="sm:col-span-2"><label className={label}>Description (EN)</label><textarea className={input} rows={2} value={s.description.en} onChange={(e) => patch(i, (x) => ({ ...x, description: { ...x.description, en: e.target.value } }))} /></div>
             <div className="sm:col-span-2"><label className={label}>Description (AR)</label><textarea className={input} rows={2} value={s.description.ar} onChange={(e) => patch(i, (x) => ({ ...x, description: { ...x.description, ar: e.target.value } }))} dir="rtl" /></div>
+            <div className="sm:col-span-2 lg:col-span-4 grid gap-4 rounded-lg border border-cyan-100 bg-cyan-50/30 p-3 lg:grid-cols-2">
+              <ImageField
+                path={`sector-${i}-photo`}
+                label="Photo (sector cards and landing page hero)"
+                name={`${s.name.en || s.id} photo`}
+                value={s.photo ?? ""}
+                onChange={(url) => patch(i, (x) => ({ ...x, photo: url }))}
+              />
+              <BiField
+                path={`sector-${i}-promise`}
+                label="Short promise (one line on sector cards)"
+                name={`${s.name.en || s.id} short promise`}
+                value={s.shortPromise}
+                required={false}
+                multiline
+                onChange={(v) => patch(i, (x) => ({ ...x, shortPromise: v }))}
+              />
+            </div>
             <div className="sm:col-span-2 lg:col-span-4"><label className={label}>Default Video URL (YouTube / Vimeo — shown embedded on the landing page)</label><input className={input} value={s.videoUrl} onChange={(e) => patch(i, (x) => ({ ...x, videoUrl: e.target.value }))} dir="ltr" placeholder="https://www.youtube.com/watch?v=..." /></div>
 
             {/* Video routing per sector — by domain / by country */}
