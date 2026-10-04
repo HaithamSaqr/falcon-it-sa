@@ -438,8 +438,8 @@ export const DEFAULT_PRODUCTS: Product[] = [
     eyebrow: { en: "Infrastructure", ar: "البنية التحتية" },
     title: { en: "Servers that never sleep.", ar: "خوادم لا تتوقف أبداً." },
     description: {
-      en: "End-to-end management of your servers — provisioning, monitoring, security hardening, backups and 24/7 support. Keep your infrastructure fast, secure and always online.",
-      ar: "إدارة متكاملة لخوادمك — التجهيز والمراقبة وتعزيز الأمان والنسخ الاحتياطي والدعم على مدار الساعة. أبقِ بنيتك التحتية سريعة وآمنة ومتاحة دائماً.",
+      en: "End-to-end management of your servers: provisioning, monitoring, security hardening, backups and 24/7 support. Keep your infrastructure fast, secure and always online.",
+      ar: "إدارة متكاملة لخوادمك: التجهيز والمراقبة وتعزيز الأمان والنسخ الاحتياطي والدعم على مدار الساعة. أبقِ بنيتك التحتية سريعة وآمنة ومتاحة دائماً.",
     },
     heroImage: "",
     cardImage: "",
@@ -474,8 +474,8 @@ export const DEFAULT_PRODUCTS: Product[] = [
     eyebrow: { en: "Custom Software", ar: "برمجيات مخصصة" },
     title: { en: "Apps built around your business.", ar: "تطبيقات مصمّمة حول أعمالك." },
     description: {
-      en: "Custom web and mobile applications tailored to your workflows — from internal tools to customer-facing products, designed, built and maintained by our team.",
-      ar: "تطبيقات ويب وجوال مخصصة مصمّمة لسير عملك — من الأدوات الداخلية إلى المنتجات الموجهة للعملاء، نصمّمها ونبنيها وندعمها بفريقنا.",
+      en: "Custom web and mobile applications tailored to your workflows, from internal tools to customer-facing products, designed, built and maintained by our team.",
+      ar: "تطبيقات ويب وجوال مخصصة مصمّمة لسير عملك، من الأدوات الداخلية إلى المنتجات الموجهة للعملاء، نصمّمها ونبنيها وندعمها بفريقنا.",
     },
     heroImage: "",
     cardImage: "",

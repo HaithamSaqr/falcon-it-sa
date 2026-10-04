@@ -25,3 +25,9 @@ test("unknown URL: 404 page uses the v2 fonts and tokens", async ({ page }) => {
   expect(style.bg).toBe("rgb(245, 247, 250)");
   await expect(page.locator('a[href="/"]').first()).toBeVisible();
 });
+
+test("the test environment loads no third-party trackers", async ({ request }) => {
+  // scripts/prepare-test-env.mjs switches the Snap Pixel and Google tags off in the test database.
+  const html = await (await request.get("/")).text();
+  expect(html).not.toMatch(/sc-static\.net|snapchat\.com|googletagmanager\.com/);
+});

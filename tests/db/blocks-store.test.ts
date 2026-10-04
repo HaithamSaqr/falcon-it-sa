@@ -15,7 +15,7 @@ import { BROCHURE_COPY_FIXES, ensureReady, seedPageBlocks } from "@/lib/db/migra
 import * as dbStore from "@/lib/db/store";
 import { SEED, SEED_PAGES } from "@/lib/blocks/seed";
 import { V2_SECTORS, withV2Sectors } from "@/lib/blocks/seed/sectors";
-import { DEFAULT_BROCHURES, DEFAULT_SECTORS } from "@/lib/db/defaults";
+import { DEFAULT_BROCHURES, DEFAULT_PRODUCTS, DEFAULT_SECTORS } from "@/lib/db/defaults";
 import { parseBlock } from "@/lib/blocks/registry";
 import type { Block } from "@/lib/blocks/types";
 import {
@@ -632,6 +632,14 @@ describe("default brochure copy", () => {
     for (const b of DEFAULT_BROCHURES) {
       for (const text of [b.title.en, b.title.ar, b.content.en, b.content.ar]) {
         expect(text, b.slug).not.toMatch(/[–—]/);
+      }
+    }
+  });
+
+  it("default products have no em or en dash either", () => {
+    for (const p of DEFAULT_PRODUCTS) {
+      for (const text of [p.name.en, p.name.ar, p.title.en, p.title.ar, p.description.en, p.description.ar, p.eyebrow.en, p.eyebrow.ar]) {
+        expect(text, p.slug).not.toMatch(/[–—]/);
       }
     }
   });

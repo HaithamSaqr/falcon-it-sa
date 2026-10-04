@@ -4,7 +4,8 @@
  *
  *   node scripts/qa/grep-html.mjs http://localhost:3200
  *
- * Prints one line per URL and every hit with context; exits 1 on any hit.
+ * Prints one line per URL and every hit with context; exits 1 on any hit or
+ * on any URL (either locale) that does not answer 200 without a redirect.
  */
 import { localeUrls, publicRoutes } from "./public-routes.mjs";
 
@@ -26,12 +27,17 @@ const CHECKS = [
 
 const routes = await publicRoutes(base);
 let total = 0;
+let badStatus = 0;
 const rows = [];
 for (const route of routes) {
   for (const [locale, url] of Object.entries(localeUrls(route))) {
-    const res = await fetch(new URL(url, base));
+    const res = await fetch(new URL(url, base), { redirect: "manual" });
     const html = await res.text();
     const hits = [];
+    if (res.status !== 200) {
+      hits.push(`status ${res.status}${res.headers.get("location") ? ` -> ${res.headers.get("location")}` : ""}`);
+      badStatus++;
+    }
     for (const [name, re] of CHECKS) {
       for (const m of html.matchAll(re)) {
         const at = m.index ?? 0;
@@ -44,5 +50,5 @@ for (const route of routes) {
   }
 }
 console.log(rows.join("\n"));
-console.log(`\n${routes.length} routes x 2 locales = ${routes.length * 2} pages, ${total} hits`);
+console.log(`\n${routes.length} routes x 2 locales = ${routes.length * 2} pages, ${total} hits (${badStatus} non-200)`);
 process.exit(total === 0 ? 0 : 1);

@@ -490,7 +490,7 @@ export async function authenticatePortalUser(
     // (portal users can't read res.users)
     try {
       const adminOdoo = await createOdooClient();
-      const userInfo: { name: string; partnerId: number } = await new Promise((resolve, reject) => {
+      const userInfo: { name: string; partnerId: number } = await new Promise((resolve) => {
         adminOdoo.execute_kw(
           "res.users",
           "search_read",

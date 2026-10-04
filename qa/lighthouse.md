@@ -26,7 +26,7 @@ Changes: v2 images recompressed in place (2.5 MB to 1.4 MB, same paths), client 
 | `/` | 78 / 77 / 77 | 100 | 100 | 100 | 6.1 to 6.3 s | 1.4 s | 20 ms | 0 |
 | `/ar/sectors/real-estate` | 79 / 79 / 78 | 100 | 100 | 100 | 5.6 to 5.9 s | 1.5 s | 30 ms | 0 |
 
-Same build, devtools throttling (applied throttling, closer to a real slow 4G phone):
+Same build, devtools throttling (applied throttling; still a lab measurement):
 
 | Page | Performance | LCP | FCP | TBT | Speed Index |
 |---|---|---|---|---|---|
@@ -37,6 +37,9 @@ HTML reports of the first "after" runs: `qa/screens/lighthouse/` (gitignored, lo
 
 ## Notes
 
+- Third-party trackers are now off in the local test database (`scripts/prepare-test-env.mjs` sets `snapchat_enabled` and `google_enabled` to false; production defaults and the tracking code are unchanged), so local dev, e2e and QA runs no longer call Snapchat or Google. The "before" run above was taken before that change and did load the Snap Pixel.
+- **Production: Best Practices will be 79 while the Snap Pixel is enabled.** The pixel (`sc-static.net`, `tr.snapchat.com`, and the `pixel.tapad.com` sync it triggers) sets third-party cookies, which fails `third-party-cookies` and logs cookie issues in DevTools (`inspector-issues`). The site's own code scores 100.
+- The devtools-throttling figures are a lab measurement too (applied throttling on this machine), not field data from real visitors.
 - SEO 100 and Accessibility 100 on both pages. Best Practices is 100 for the site's own code. **With the Snap Pixel on, Best Practices drops to 79** (third-party cookies). Tracking is out of scope for this rebuild (global constraint), so this is an owner decision: keep the pixel as is, or load it only after cookie consent.
 - Simulated LCP (about 6 s) is attributed to the "Book a demo" text in the mobile bottom bar. The hero heading and photo start their entrance animation at opacity 0, and Chrome does not count opacity-0 paints as LCP, so the bar is the largest counted text. Observed in the trace, LCP equals FCP (176 ms unthrottled); the simulated figure then waits for the JavaScript chunks. Options for later: start the `rise` entrance at a small non-zero opacity, or trim client JavaScript (Lighthouse reports about 76 KiB unused JS).
 - Remaining image savings need responsive images: `next.config.ts` has `images.unoptimized: true` since the first commit, so every photo ships at 1400 px wide even on phones (Lighthouse: about 1.3 MB of "properly size images" savings before recompression). Turning the Next image optimizer on needs `sharp` in the Docker image and a writable `.next/cache`; it is a deploy change, so it was not made here.

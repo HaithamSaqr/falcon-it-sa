@@ -61,3 +61,27 @@ if (fs.existsSync(file)) {
 fs.mkdirSync(dir, { recursive: true });
 fs.writeFileSync(file, JSON.stringify({ installed: true, db }, null, 2), "utf-8");
 console.log(`[prepare-test-env] data/db-config.json -> ${db.user}@${db.host}:${db.port}/${db.database}`);
+
+// Third-party trackers off in the test database, so local dev, e2e and QA
+// (Lighthouse, screenshots) runs never send page views to the real Snap Pixel
+// or Google tags. Production defaults and the tracking code are unchanged.
+// A brand-new test database has no integrations row yet: the app seeds it on
+// first boot, and the next run of this script switches the trackers off.
+const { default: pg } = await import("pg");
+const pool = new pg.Pool({ ...db, max: 1, connectionTimeoutMillis: 5000 });
+try {
+  const exists = await pool.query(`SELECT to_regclass('public.integrations') IS NOT NULL AS ok`);
+  if (exists.rows[0]?.ok) {
+    const res = await pool.query(
+      `UPDATE integrations SET snapchat_enabled = false, google_enabled = false
+       WHERE id = 1 AND (snapchat_enabled OR google_enabled)`,
+    );
+    console.log(`[prepare-test-env] trackers off in the test database (${res.rowCount} row changed)`);
+  } else {
+    console.log("[prepare-test-env] no integrations table yet; trackers are switched off on the next run");
+  }
+} catch (err) {
+  console.warn(`[prepare-test-env] could not switch trackers off: ${err.message}`);
+} finally {
+  await pool.end();
+}

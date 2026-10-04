@@ -20,13 +20,17 @@ export default function AdminBrochuresPage() {
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState("");
 
+  // The brochure is cleared when another product is picked (see the tabs below).
   useEffect(() => {
-    setBrochure(null);
+    let live = true;
     fetch(`/api/admin/brochures/${slug}`)
       .then((r) => r.json())
       .then((d) => {
-        if (d.success) setBrochure(d.data);
+        if (live && d.success) setBrochure(d.data);
       });
+    return () => {
+      live = false;
+    };
   }, [slug]);
 
   async function save() {
@@ -62,7 +66,11 @@ export default function AdminBrochuresPage() {
         {PRODUCTS.map((p) => (
           <button
             key={p.slug}
-            onClick={() => setSlug(p.slug)}
+            onClick={() => {
+              if (p.slug === slug) return;
+              setBrochure(null);
+              setSlug(p.slug);
+            }}
             className={`rounded-lg border px-4 py-2 text-sm font-medium ${slug === p.slug ? "border-cyan-500 bg-cyan-50 text-cyan-700" : "border-slate-200 text-slate-600 hover:bg-slate-50"}`}
           >
             {p.label}

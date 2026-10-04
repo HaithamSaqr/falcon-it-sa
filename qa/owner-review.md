@@ -12,7 +12,7 @@
 - مكتب مصر مخفي في كل مكان، ورقم الواتساب سعودي دائمًا.
 - الرابط الإنجليزي يبقى إنجليزيًا دائمًا، حتى لمن اختار العربية سابقًا.
 - الصفحات تعمل حتى لو توقفت قاعدة البيانات (تظهر النسخة الافتراضية).
-- النتائج على الجوال (Lighthouse): محركات البحث 100، سهولة الوصول 100، أفضل الممارسات 100 بدون بكسل سناب (79 مع البكسل)، الأداء 77 إلى 79 في القياس المحاكى و89 إلى 92 في القياس الفعلي. التفاصيل في `qa/lighthouse.md`.
+- النتائج على الجوال (Lighthouse): محركات البحث 100، سهولة الوصول 100، أفضل الممارسات 100 بدون بكسل سناب (79 مع البكسل)، الأداء 77 إلى 79 في القياس المحاكى، و89 إلى 92 بإعداد تقييد مختلف (قياس مختبري أيضًا، وليس قياسًا من زوار حقيقيين). التفاصيل في `qa/lighthouse.md`.
 
 ## 2. نحتاج تأكيدك على هذه النقاط
 
@@ -20,13 +20,26 @@
 2. **وحدات فالكون ERP** قرأناها من صورة شاشة التطبيقات (المشاريع، العقارات، نقاط البيع، شاشة المطبخ، الفندق، المعدات، الصيانة، التأجير). هل الصورة فعلًا من فالكون ERP، وهل هذه الوحدات متوفرة؟
 3. **شريط الحجز** في صفحات القطاعات ينقل الزائر إلى صفحة العرض التجريبي بدل نموذج داخل الصفحة. هل يناسبك ذلك؟
 4. **سياسة الخصوصية**: مدة الاحتفاظ بالبيانات (لم تُحدد بعد)، وملخص حقوق نظام حماية البيانات الشخصية، وقائمة الجهات التي تعالج البيانات (Resend، مزود الاستضافة، أدوات Google وSnap، وخادم الذكاء الاصطناعي إن بقي). هل هناك جهات أخرى، مثل مزود واتساب؟
-5. **قدرات مذكورة في أسئلة القطاعات**: مثل تكلفة الطعام الفعلية مقابل النظرية في المطاعم، وصيانة المركبات الوقائية وتذكير التجديد وتسوية سُلف السائقين في النقل، والفوترة حسب المراحل أو الساعات في الخدمات المهنية. نرجو التأكد أنها صحيحة لما تقدمونه.
+5. **قدرات مذكورة في أسئلة القطاعات**: مثل تكلفة الطعام الفعلية مقابل النظرية في المطاعم، وفوترة كل رحلة وصيانة المركبات الوقائية وتذكير التجديد وتسوية سُلف السائقين في النقل، و"فالكون ERP يعيد الطلب عند الحد الأدنى للمخزون" في التصنيع، والفوترة حسب المراحل أو الساعات في الخدمات المهنية. نرجو التأكد أنها صحيحة لما تقدمونه.
 6. **مزايا أودو القياسية** المذكورة في الأسئلة (التصنيع حسب الطلب وقواعد إعادة الطلب، قوائم الأسعار لكل عميل، الفوترة حسب المراحل والساعات، تكلفة كل مركبة): تأكد أنها متاحة في نسخة أودو التي تركّبونها.
 7. **المدونة** مغلقة الآن. فيها نسبة "70%" غير موثقة، ويجب تعديلها قبل تشغيل المدونة.
 8. **قائمة الدول في نموذج العرض التجريبي**: حذفنا مصر (الزائر من مصر يختار "أخرى")، التزامًا بقرار إخفاء مصر. هل توافق؟
 9. **بكسل سناب**: يضع ملفات تعريف من طرف ثالث ويخفض تقييم "أفضل الممارسات" إلى 79. هل نبقيه كما هو، أم نشغّله بعد موافقة الزائر على ملفات التعريف؟
 
-## 3. حدود معروفة
+## 3. ما سيحدث لبيانات الموقع الحالي عند النشر
+
+عند أول تشغيل على الخادم تُطبَّق تعديلات محددة على البيانات الموجودة، مرة واحدة فقط، **ولا يُحذف أي شيء**:
+- القطاعات: تُضاف القطاعات السبعة الجديدة بأسمائها وصورها، وتُخفى القطاعات القديمة (تبقى في قاعدة البيانات).
+- رابط "سياسة الخصوصية" في التذييل يتحول إلى `/privacy-policy` (صفحة سياسة التطبيق تبقى على `/privacy`).
+- نصوص كتيّبَي الخوادم والبيانات: تُستبدل عبارات محددة فيها الشرطة الطويلة بنص جديد، وأي نص كتبتموه حولها يبقى كما هو.
+- كتيّب "التطبيقات" والشهادات التجريبية تُخفى.
+- الرقم الوطني الموحد والرقم الضريبي يُملآن فقط إذا كانا فارغين.
+
+## 4. ملاحظة لفريق المبيعات
+
+حقل "القطاع" في طلب العرض التجريبي يعني **الصفحة التي حجز منها الزائر**، وقد يختلف عن "النشاط" الذي اختاره في النموذج. مثال: زائر حجز من صفحة التجزئة واختار نشاط التجارة.
+
+## 5. حدود معروفة
 
 - الصور تُرسل بحجم واحد (1400 بكسل) حتى على الجوال. ضغطناها (من 2.5 إلى 1.4 ميجابايت)، والتحسين الكامل يحتاج تغييرًا في إعداد الخادم عند النشر.
 - صفحة "العملاء" مبنية من محتوى افتراضي في الكود، ولا تُعدّل بعد من لوحة التحكم.
@@ -40,6 +53,12 @@
 
 Local review build only; nothing is deployed. Contact sheet of every page: `qa/screens/review.html`.
 
-Please confirm: (1) seeded phase durations (1 day / 1 to 2 weeks / 4 to 8 weeks / 1 to 2 weeks / ongoing); (2) Falcon ERP modules read from the app-grid screenshot; (3) the sector booking band links to the demo page instead of an inline form; (4) privacy retention period, PDPL rights summary and the processor list; (5) capability statements in the sector FAQs; (6) standard Odoo features named in the FAQs; (7) the blog's unsourced "70%" must be fixed before the blog is enabled; (8) Egypt removed from the demo form's country list; (9) keep the Snap Pixel as is (Best Practices 79) or load it after consent.
+Please confirm: (1) seeded phase durations (1 day / 1 to 2 weeks / 4 to 8 weeks / 1 to 2 weeks / ongoing); (2) Falcon ERP modules read from the app-grid screenshot; (3) the sector booking band links to the demo page instead of an inline form; (4) privacy retention period, PDPL rights summary and the processor list; (5) capability statements in the sector FAQs, including logistics "Bill every trip" and manufacturing "Falcon ERP reorders at minimum levels"; (6) standard Odoo features named in the FAQs; (7) the blog's unsourced "70%" must be fixed before the blog is enabled; (8) Egypt removed from the demo form's country list; (9) keep the Snap Pixel as is (Best Practices 79) or load it after consent.
+
+At deploy, one-off guarded data fixes update existing rows and never delete anything: the seven v2 sectors (names, photos, enabled flags; old sectors hidden), the footer privacy link to /privacy-policy, exact-phrase replacements in the server and data brochure copy, the applications brochure and demo testimonials disabled, CR and VAT filled only when blank.
+
+For sales: the lead `sector` field is the page the visitor booked from and can differ from the industry they chose.
+
+Lighthouse: the 89 to 92 Performance figures are also a lab measurement (devtools throttling), not field data.
 
 Known limitations: photos are not resized per device (image optimizer off since the first commit; enabling it is a deploy change); /clients content is code defaults; the old Home Page admin screen is hidden; kept footer routes redirect; calendar picker styling not verified.

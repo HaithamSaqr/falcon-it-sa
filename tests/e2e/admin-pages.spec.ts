@@ -142,3 +142,25 @@ test("the editor warns before leaving with unsaved changes and keeps SEO edits a
   const seo = (await (await page.request.get("/api/admin/page-seo?page=home")).json()).data;
   expect(seo.title.en).not.toBe("Draft SEO title");
 });
+
+test("leads list and brochure tabs still load (admin screens touched by the lint fixes)", async ({ page }) => {
+  test.setTimeout(120_000);
+  await page.goto("/admin/login");
+  await page.getByLabel("Username").fill(USER);
+  await page.getByLabel("Password").fill(PASSWORD);
+  await page.getByRole("button", { name: "Sign in" }).click();
+  await page.waitForURL("**/admin");
+
+  // Leads: the list request goes out with the filters and the loading row goes away.
+  const listed = page.waitForResponse((r) => r.url().includes("/api/admin/leads?") && r.status() === 200);
+  await page.goto("/admin/leads");
+  await listed;
+  await expect(page.getByText(/^Loading/)).toHaveCount(0);
+
+  // Brochures: switching products loads that product's brochure.
+  await page.goto("/admin/brochures");
+  const loaded = page.waitForResponse((r) => r.url().endsWith("/api/admin/brochures/data-management"));
+  await page.getByRole("button", { name: "Data Management" }).click();
+  await loaded;
+  await expect(page.locator('input[value="Data Analysis & Migration"]')).toBeVisible();
+});
