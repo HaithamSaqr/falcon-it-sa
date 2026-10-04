@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { Pool } from "pg";
+import { testDb } from "./test-db";
 
 /**
  * Task 11: the remaining public pages on v2 (about, contact, demo, faq,
@@ -52,17 +52,6 @@ async function hasV2Chrome(page: Page, prefix: string) {
   expect(await page.locator(`header a[href="${prefix}/erp/falcon"]`).count()).toBeGreaterThan(0);
 }
 
-function testDb(): Pool {
-  return new Pool({
-    host: process.env.PGHOST,
-    port: Number(process.env.PGPORT),
-    database: process.env.PGDATABASE,
-    user: process.env.PGUSER,
-    password: process.env.PGPASSWORD,
-    max: 1,
-  });
-}
-
 for (const L of LOCALES) {
   test.describe(`v2 pages (${L.name})`, () => {
     for (const path of V2_PAGES) {
@@ -100,7 +89,11 @@ for (const L of LOCALES) {
         await page.goto(`${L.prefix}${path}`);
         const form = page.locator("main form");
         await expect(form).toHaveCount(1);
-        await expect(form.locator(`a[href="${L.prefix}/privacy-policy"]`)).toHaveCount(1);
+        const link = form.locator(`a[href="${L.prefix}/privacy-policy"]`);
+        await expect(link).toHaveCount(1);
+        // A new tab, so the visitor keeps what they typed.
+        await expect(link).toHaveAttribute("target", "_blank");
+        await expect(link).toHaveAttribute("rel", "noopener noreferrer");
       }
     });
 
@@ -158,7 +151,7 @@ for (const L of LOCALES) {
       expect(xml).not.toContain("/blog");
     });
 
-    // Ruling R3: kept routes. They forward to their v2 page in the same language.
+    // Ruling R3: kept routes. A permanent redirect, in one hop, to their v2 page in the same language.
     const KEPT: [string, string][] = [
       ["/careers", "/about"],
       ["/help", "/contact"],
@@ -166,7 +159,10 @@ for (const L of LOCALES) {
       ["/webinars", "/demo"],
     ];
     for (const [from, to] of KEPT) {
-      test(`${L.prefix}${from} lands with 200 on ${L.prefix}${to} in v2 chrome`, async ({ page }) => {
+      test(`${L.prefix}${from} redirects permanently to ${L.prefix}${to}`, async ({ page, request }) => {
+        const hop = await request.get(`${L.prefix}${from}`, { maxRedirects: 0 });
+        expect(hop.status()).toBe(308);
+        expect(new URL(hop.headers()["location"], "http://x").pathname).toBe(`${L.prefix}${to}`);
         const res = await page.goto(`${L.prefix}${from}`);
         expect(res?.status()).toBe(200);
         expect(new URL(page.url()).pathname).toBe(`${L.prefix}${to}`);
@@ -174,6 +170,34 @@ for (const L of LOCALES) {
         await hasV2Chrome(page, L.prefix);
       });
     }
+
+    test(`${L.prefix}: footer links go straight to the page, never through a kept route`, async ({ page }) => {
+      await page.goto(`${L.prefix}/about`);
+      const hrefs = await page.locator("footer a[href]").evaluateAll((els) => els.map((e) => e.getAttribute("href") ?? ""));
+      expect(hrefs.length).toBeGreaterThan(0);
+      for (const [from] of KEPT) {
+        expect(hrefs.filter((h) => h === from || h === `${L.prefix}${from}` || h === `/ar${from}`), from).toEqual([]);
+      }
+    });
+
+    test(`${L.prefix}/demo and ${L.prefix}/contact show validation errors in the page language`, async ({ page }) => {
+      for (const path of ["/demo", "/contact"]) {
+        await page.goto(`${L.prefix}${path}`);
+        const id = path === "/demo" ? "fullName" : "name";
+        const submit = page.locator("main form button[type=submit]");
+        await submit.evaluate((el) => el.scrollIntoView({ block: "center" }));
+        await submit.click();
+        const error = page.locator(`#${id}-error`);
+        await expect(error).toBeVisible();
+        await expect(error).toHaveText(L.prefix ? "الاسم مطلوب" : "Name is required");
+        await expect(page.locator(`#${id}`)).toHaveAttribute("aria-invalid", "true");
+        if (path === "/demo") {
+          await expect(page.locator("#consent-error")).toHaveText(
+            L.prefix ? "يجب الموافقة على سياسة الخصوصية" : "You must agree to the privacy policy",
+          );
+        }
+      }
+    });
   });
 }
 
@@ -184,6 +208,9 @@ test.describe("demo booking attribution", () => {
     const sector = page.locator("select#industry");
     await expect(sector).toHaveValue("indRetail");
     await expect(sector.locator("option:checked")).toHaveText("Retail and e-commerce");
+    // The pre-v2 industries stay selectable next to the v2 sectors.
+    const values = await sector.locator("option").evaluateAll((els) => els.map((e) => (e as HTMLOptionElement).value));
+    for (const v of ["indConstruction", "indHealthcare", "indEducation", "indOther"]) expect(values).toContain(v);
 
     const email = `e2e-${info.project.name}-${Date.now()}@example.com`;
     await page.fill("#fullName", "E2E Attribution");

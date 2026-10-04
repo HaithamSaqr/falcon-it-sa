@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { Pool } from "pg";
+import { testDb } from "./test-db";
 
 /**
  * Task 11: the blog with `site_settings.blog_enabled` switched on. This flips
@@ -7,17 +7,6 @@ import { Pool } from "pg";
  * desktop and mobile projects (which assert the blog is hidden), and always
  * switches the flag back off.
  */
-
-function testDb(): Pool {
-  return new Pool({
-    host: process.env.PGHOST,
-    port: Number(process.env.PGPORT),
-    database: process.env.PGDATABASE,
-    user: process.env.PGUSER,
-    password: process.env.PGPASSWORD,
-    max: 1,
-  });
-}
 
 async function setBlog(enabled: boolean) {
   const db = testDb();

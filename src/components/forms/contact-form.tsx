@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslations } from "next-intl";
@@ -8,8 +8,8 @@ import Button from "@/components/v2/ui/button";
 import { useSettings } from "@/components/providers/settings-provider";
 import { api } from "@/lib/api-client";
 import { fireAdsConversion, adsSendTo } from "@/lib/gtag";
-import { contactFormSchema, type ContactFormData } from "@/lib/validations";
-import { Field, FormError, SentNotice, privacyLink } from "./parts";
+import { makeContactFormSchema, type ContactFormData } from "@/lib/validations";
+import { Field, FormError, SentNotice, privacyLink, useFormMessages } from "./parts";
 import { FIELD, NOTE, TEXTAREA } from "./styles";
 
 /** The contact form. Posts the same payload to /api/leads/contact as before. */
@@ -19,12 +19,16 @@ export default function ContactForm() {
   const [submitted, setSubmitted] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
 
+  // Same rules as the API, with error messages in the page language.
+  const formMessages = useFormMessages();
+  const schema = useMemo(() => makeContactFormSchema(formMessages), [formMessages]);
+
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<ContactFormData>({
-    resolver: zodResolver(contactFormSchema),
+    resolver: zodResolver(schema),
   });
 
   async function onSubmit(data: ContactFormData) {

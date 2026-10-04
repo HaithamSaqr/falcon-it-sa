@@ -1,5 +1,6 @@
 import type { NextConfig } from "next";
 import createNextIntlPlugin from "next-intl/plugin";
+import { KEPT_ROUTES } from "./src/lib/kept-routes";
 
 const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 
@@ -55,6 +56,12 @@ const nextConfig: NextConfig = {
       ...Object.entries(PRODUCT_MOVED).map(([from, to]) => ({
         source: `${prefix}/products/${from}`,
         destination: `${prefix}/erp/${to}`,
+        permanent: true,
+      })),
+      // Ruling R3: /careers, /help, /partners, /webinars (see src/lib/kept-routes.ts).
+      ...Object.entries(KEPT_ROUTES).map(([from, to]) => ({
+        source: `${prefix}${from}`,
+        destination: `${prefix}${to}`,
         permanent: true,
       })),
     ]);

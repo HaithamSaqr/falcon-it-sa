@@ -14,6 +14,7 @@ import type {
   Sector,
   SiteSettings,
 } from "@/types/admin";
+import { resolveKeptRoute } from "@/lib/kept-routes";
 
 export interface BilingualText {
   en: string;
@@ -247,7 +248,8 @@ export function buildPublicSettings({
     social: { ...settings.social, tiktok: settings.social?.tiktok ?? "" },
     footerLinks: footerLinks
       .filter((l) => (blogEnabled || !isBlogUrl(l.url)) && (l.url ?? "").trim() !== "")
-      .map((l) => ({ id: l.id, section: l.section, label: l.label, url: l.url })),
+      // Links to a kept route (R3) point straight at its destination.
+      .map((l) => ({ id: l.id, section: l.section, label: l.label, url: resolveKeptRoute(l.url) })),
   };
 }
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useLocale, useTranslations } from "next-intl";
@@ -11,8 +11,8 @@ import { api } from "@/lib/api-client";
 import { pickBi } from "@/lib/blocks/bi";
 import { fireAdsConversion, adsSendTo } from "@/lib/gtag";
 import { DEMO_SECTOR_OPTIONS, industryForSector, type LeadAttribution } from "@/lib/lead-attribution";
-import { demoFormSchema, type DemoFormData } from "@/lib/validations";
-import { Field, FormError, SelectShell, SentNotice, privacyLink } from "./parts";
+import { makeDemoFormSchema, type DemoFormData } from "@/lib/validations";
+import { Field, FormError, SelectShell, SentNotice, privacyLink, useFormMessages } from "./parts";
 import { CHECK, CHIP, FIELD, NOTE, SELECT, TEXTAREA } from "./styles";
 
 const JOB_TITLE_KEYS = ["jobCeo", "jobCfo", "jobCto", "jobCoo", "jobAccountant", "jobItManager", "jobOther"] as const;
@@ -52,12 +52,16 @@ export default function DemoForm({ attribution, submitLabel }: Props) {
   const [serverError, setServerError] = useState<string | null>(null);
   const [preferredDateTime, setPreferredDateTime] = useState<string | null>(null);
 
+  // Same rules as the API, with error messages in the page language.
+  const formMessages = useFormMessages();
+  const schema = useMemo(() => makeDemoFormSchema(formMessages), [formMessages]);
+
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<DemoFormData>({
-    resolver: zodResolver(demoFormSchema),
+    resolver: zodResolver(schema),
     defaultValues: { newsletter: false, industry: industryForSector(attribution.sector) },
   });
 

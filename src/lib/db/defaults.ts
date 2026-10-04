@@ -558,10 +558,10 @@ export const DEFAULT_SEO: SeoSettings = {
 export const DEFAULT_FOOTER_LINKS: FooterLink[] = [
   { id: "about", section: "about", label: { en: "About us", ar: "من نحن" }, url: "/about" },
   { id: "blog", section: "about", label: { en: "Blog", ar: "المدونة" }, url: "/blog" },
-  { id: "careers", section: "about", label: { en: "Careers", ar: "الوظائف" }, url: "/careers" },
+  { id: "careers", section: "about", label: { en: "Careers", ar: "الوظائف" }, url: "/about" },
   { id: "faq", section: "support", label: { en: "FAQ", ar: "الأسئلة الشائعة" }, url: "/faq" },
-  { id: "help", section: "support", label: { en: "Help center", ar: "مركز المساعدة" }, url: "/help" },
-  { id: "webinars", section: "support", label: { en: "Webinars", ar: "الندوات" }, url: "/webinars" },
+  { id: "help", section: "support", label: { en: "Help center", ar: "مركز المساعدة" }, url: "/contact" },
+  { id: "webinars", section: "support", label: { en: "Webinars", ar: "الندوات" }, url: "/demo" },
   { id: "privacy", section: "legal", label: { en: "Privacy policy", ar: "سياسة الخصوصية" }, url: "/privacy-policy" },
   { id: "terms", section: "legal", label: { en: "Terms of service", ar: "الشروط والأحكام" }, url: "/terms" },
 ];

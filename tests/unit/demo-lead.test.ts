@@ -58,6 +58,15 @@ import {
   parseLeadAttribution,
 } from "@/lib/lead-attribution";
 import { V2_SECTORS } from "@/lib/blocks/seed/sectors";
+import {
+  FORM_MESSAGES_EN,
+  contactFormSchema,
+  demoFormSchema,
+  makeContactFormSchema,
+  makeDemoFormSchema,
+} from "@/lib/validations";
+import enMessages from "../../messages/en.json";
+import arMessages from "../../messages/ar.json";
 
 describe("parseLeadAttribution", () => {
   it("keeps a known sector slug and a short role slug", () => {
@@ -96,8 +105,15 @@ describe("parseLeadAttribution", () => {
 });
 
 describe("demo form sector options", () => {
-  it("offers the seven v2 sectors (in order) plus Other", () => {
-    expect(DEMO_SECTOR_OPTIONS.map((o) => o.sector)).toEqual([...V2_SECTORS.map((s) => s.slug), null]);
+  it("offers the seven v2 sectors (in order), the other pre-v2 industries, then Other", () => {
+    expect(DEMO_SECTOR_OPTIONS.map((o) => o.sector)).toEqual([...V2_SECTORS.map((s) => s.slug), null, null, null, null]);
+    expect(DEMO_SECTOR_OPTIONS.slice(V2_SECTORS.length).map((o) => o.value)).toEqual([
+      "indConstruction",
+      "indHealthcare",
+      "indEducation",
+      "indOther",
+    ]);
+    expect(DEMO_SECTOR_OPTIONS.at(-1)?.label).toEqual({ en: "Other", ar: "أخرى" });
     // Values are unique form values; labels come from the sector names.
     const values = DEMO_SECTOR_OPTIONS.map((o) => o.value);
     expect(new Set(values).size).toBe(values.length);
@@ -118,10 +134,64 @@ describe("demo form sector options", () => {
     for (const bad of ["", "RetailBasic", "healthcare", undefined, null]) expect(industryForSector(bad)).toBe("");
   });
 
-  it("keeps the existing form values so Odoo and old leads read the same", () => {
-    for (const v of ["indRetail", "indManufacturing", "indRealEstate", "indHospitality", "indLogistics", "indTrading", "indOther"]) {
+  it("keeps every pre-v2 form value so Odoo, the admin and old leads read the same", () => {
+    const PRE_V2 = [
+      "indRetail",
+      "indManufacturing",
+      "indConstruction",
+      "indRealEstate",
+      "indHospitality",
+      "indHealthcare",
+      "indEducation",
+      "indLogistics",
+      "indTrading",
+      "indOther",
+    ];
+    for (const v of PRE_V2) {
       expect(DEMO_SECTOR_OPTIONS.some((o) => o.value === v), v).toBe(true);
     }
+  });
+});
+
+describe("form validation messages", () => {
+  const issues = (r: { success: boolean; error?: { issues: { path: PropertyKey[]; message: string }[] } }) =>
+    Object.fromEntries((r.error?.issues ?? []).map((i) => [String(i.path[0]), i.message]));
+
+  it("keeps the API schemas' English messages (server contract unchanged)", () => {
+    const demo = issues(
+      demoFormSchema.safeParse({ fullName: "", email: "a@gmail.com", phone: "", company: "", jobTitle: "", country: "", companySize: "", industry: "", consent: false }),
+    );
+    expect(demo).toEqual({
+      fullName: "Name is required",
+      email: "Please use a business email",
+      phone: "Phone number is required",
+      company: "Company name is required",
+      jobTitle: "Job title is required",
+      country: "Country is required",
+      companySize: "Company size is required",
+      industry: "Industry is required",
+      consent: "You must agree to the privacy policy",
+    });
+    expect(issues(contactFormSchema.safeParse({ name: "", email: "x", subject: "", message: "short" }))).toEqual({
+      name: "Name is required",
+      email: "Invalid email address",
+      subject: "Subject is required",
+      message: "Message must be at least 10 characters",
+    });
+  });
+
+  it("ships the same keys in English (equal to the API messages) and Arabic", () => {
+    expect(enMessages.validation).toEqual(FORM_MESSAGES_EN);
+    expect(Object.keys(arMessages.validation).sort()).toEqual(Object.keys(FORM_MESSAGES_EN).sort());
+    for (const v of Object.values(arMessages.validation)) expect(v).toMatch(/[؀-ۿ]/);
+  });
+
+  it("builds the same rules with Arabic wording for the /ar forms", () => {
+    const m = arMessages.validation as typeof FORM_MESSAGES_EN;
+    const demo = issues(makeDemoFormSchema(m).safeParse({ fullName: "", email: "x@company.sa", phone: "12345678", company: "Co", jobTitle: "jobCeo", country: "countrySaudi", companySize: "1-10", industry: "indRetail", consent: true }));
+    expect(demo).toEqual({ fullName: "الاسم مطلوب" });
+    const contact = issues(makeContactFormSchema(m).safeParse({ name: "Ali", email: "bad", subject: "Hi", message: "long enough message" }));
+    expect(contact).toEqual({ email: "البريد الإلكتروني غير صحيح" });
   });
 });
 

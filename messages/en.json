@@ -768,5 +768,19 @@
     "social": "Follow us",
     "faqTitle": "Questions",
     "yourRole": "Your role"
+  },
+  "validation": {
+    "nameRequired": "Name is required",
+    "emailInvalid": "Invalid email address",
+    "businessEmail": "Please use a business email",
+    "phoneRequired": "Phone number is required",
+    "companyRequired": "Company name is required",
+    "jobTitleRequired": "Job title is required",
+    "countryRequired": "Country is required",
+    "companySizeRequired": "Company size is required",
+    "industryRequired": "Industry is required",
+    "consentRequired": "You must agree to the privacy policy",
+    "subjectRequired": "Subject is required",
+    "messageMin": "Message must be at least 10 characters"
   }
 }

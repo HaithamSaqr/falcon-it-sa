@@ -33,9 +33,21 @@ export type DemoSectorOption = {
   label: Bi;
 };
 
-/** The sector field: the seven v2 sectors in their site order, then Other. */
+/**
+ * Industries from the pre-v2 form that have no v2 sector of their own. They
+ * stay selectable (with their old values) so every visitor can describe their
+ * business; `sector` attribution is separate and only ever a v2 slug.
+ */
+const EXTRA_INDUSTRIES: DemoSectorOption[] = [
+  { value: "indConstruction", sector: null, label: { en: "Construction", ar: "المقاولات" } },
+  { value: "indHealthcare", sector: null, label: { en: "Healthcare", ar: "الرعاية الصحية" } },
+  { value: "indEducation", sector: null, label: { en: "Education", ar: "التعليم" } },
+];
+
+/** The sector field: the seven v2 sectors in their site order, the other pre-v2 industries, then Other. */
 export const DEMO_SECTOR_OPTIONS: DemoSectorOption[] = [
   ...V2_SECTORS.map((s) => ({ value: SECTOR_INDUSTRY[s.slug], sector: s.slug, label: s.name })),
+  ...EXTRA_INDUSTRIES,
   { value: "indOther", sector: null, label: { en: "Other", ar: "أخرى" } },
 ];
 

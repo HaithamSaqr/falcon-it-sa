@@ -768,5 +768,19 @@
     "social": "تابعنا",
     "faqTitle": "أسئلة",
     "yourRole": "دورك"
+  },
+  "validation": {
+    "nameRequired": "الاسم مطلوب",
+    "emailInvalid": "البريد الإلكتروني غير صحيح",
+    "businessEmail": "يرجى استخدام بريد إلكتروني للعمل",
+    "phoneRequired": "رقم الهاتف مطلوب",
+    "companyRequired": "اسم الشركة مطلوب",
+    "jobTitleRequired": "المسمى الوظيفي مطلوب",
+    "countryRequired": "الدولة مطلوبة",
+    "companySizeRequired": "حجم الشركة مطلوب",
+    "industryRequired": "القطاع مطلوب",
+    "consentRequired": "يجب الموافقة على سياسة الخصوصية",
+    "subjectRequired": "الموضوع مطلوب",
+    "messageMin": "يجب أن تتكون الرسالة من 10 أحرف على الأقل"
   }
 }

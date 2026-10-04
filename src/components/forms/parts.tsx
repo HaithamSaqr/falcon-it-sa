@@ -1,9 +1,21 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useMemo, type ReactNode } from "react";
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
+import { FORM_MESSAGES_EN, type FormMessages } from "@/lib/validations";
 import { cn } from "@/lib/utils";
 import { ERROR, INLINE_LINK, LABEL } from "./styles";
+
+/** Validation messages in the page language (messages `validation.*`), for the client-side schemas. */
+export function useFormMessages(): FormMessages {
+  const t = useTranslations("validation");
+  return useMemo(
+    () =>
+      Object.fromEntries(Object.keys(FORM_MESSAGES_EN).map((k) => [k, t(k as keyof FormMessages)])) as FormMessages,
+    [t],
+  );
+}
 
 /** Label, control and error message of one field. */
 export function Field({
@@ -60,10 +72,13 @@ export function SelectShell({ children }: { children: ReactNode }) {
   );
 }
 
-/** The website privacy policy link used inside consent copy (`<link>` in messages). */
+/**
+ * The website privacy policy link used inside consent copy (`<link>` in
+ * messages). Opens in a new tab so a half-filled form is never lost.
+ */
 export function privacyLink(chunks: ReactNode) {
   return (
-    <Link href="/privacy-policy" className={INLINE_LINK}>
+    <Link href="/privacy-policy" target="_blank" rel="noopener noreferrer" className={INLINE_LINK}>
       {chunks}
     </Link>
   );

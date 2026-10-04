@@ -82,38 +82,6 @@ export const PAGE_META = {
       ar: "مقالات عن أنظمة ERP والفوترة الإلكترونية وإدارة الأعمال في السعودية.",
     },
   },
-  careers: {
-    path: "/careers",
-    title: { en: "Careers", ar: "الوظائف" },
-    description: {
-      en: "Work with the Falcon Smart Solutions team.",
-      ar: "انضم إلى فريق فالكون للحلول الذكية.",
-    },
-  },
-  help: {
-    path: "/help",
-    title: { en: "Help", ar: "المساعدة" },
-    description: {
-      en: "Get help from the Falcon Smart Solutions team.",
-      ar: "احصل على المساعدة من فريق فالكون للحلول الذكية.",
-    },
-  },
-  partners: {
-    path: "/partners",
-    title: { en: "Partners", ar: "الشركاء" },
-    description: {
-      en: "Partner with Falcon Smart Solutions.",
-      ar: "كن شريكًا لفالكون للحلول الذكية.",
-    },
-  },
-  webinars: {
-    path: "/webinars",
-    title: { en: "Webinars", ar: "الندوات" },
-    description: {
-      en: "Sessions on ERP for companies in Saudi Arabia.",
-      ar: "جلسات عن أنظمة ERP للشركات في السعودية.",
-    },
-  },
 } satisfies Record<string, PageMeta>;
 
 export type PageKey = keyof typeof PAGE_META;

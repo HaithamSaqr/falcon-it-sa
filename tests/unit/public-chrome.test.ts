@@ -18,6 +18,7 @@ import {
   supportingServices,
 } from "@/lib/public-chrome";
 import { BLOCKS } from "@/lib/blocks/registry";
+import { KEPT_ROUTES, resolveKeptRoute } from "@/lib/kept-routes";
 import { BLOCK_TYPES } from "@/lib/blocks/types";
 import {
   DEFAULT_FOOTER_LINKS,
@@ -27,7 +28,7 @@ import {
   DEFAULT_SETTINGS,
 } from "@/lib/db/defaults";
 import { withV2Sectors } from "@/lib/blocks/seed/sectors";
-import type { SiteSettings } from "@/types/admin";
+import type { FooterLink, SiteSettings } from "@/types/admin";
 
 const KSA = {
   id: "ksa",
@@ -216,5 +217,42 @@ describe("phone display", () => {
     expect(telHref("00966568406006")).toBe("tel:+966568406006");
     expect(telHref("+966 56 840 6006")).toBe("tel:+966568406006");
     expect(displayPhone("011 222 3333")).toBe("011 222 3333");
+  });
+});
+
+describe("kept routes (ruling R3)", () => {
+  it("resolves /careers, /help, /partners and /webinars to their page, keeping locale, query and hash", () => {
+    expect(resolveKeptRoute("/careers")).toBe("/about");
+    expect(resolveKeptRoute("/help")).toBe("/contact");
+    expect(resolveKeptRoute("/partners")).toBe("/contact");
+    expect(resolveKeptRoute("/webinars")).toBe("/demo");
+    expect(resolveKeptRoute("/ar/careers")).toBe("/ar/about");
+    expect(resolveKeptRoute("/en/help/")).toBe("/en/contact");
+    expect(resolveKeptRoute("/webinars?utm_source=x#top")).toBe("/demo?utm_source=x#top");
+  });
+
+  it("leaves every other URL alone", () => {
+    for (const u of ["/about", "/careers-old", "/x/careers", "https://example.com/careers", "/constructor", "/__proto__", ""]) {
+      expect(resolveKeptRoute(u)).toBe(u);
+    }
+  });
+
+  it("points footer links at the final destinations, also for old rows still stored as /careers", () => {
+    const urls = (links: FooterLink[]) =>
+      buildPublicSettings({
+        settings: DEFAULT_SETTINGS,
+        footerLinks: links,
+        products: [],
+        sectors: [],
+        integrations: DEFAULT_INTEGRATIONS,
+      }).footerLinks.map((l) => l.url);
+    const stored: FooterLink[] = ["/careers", "/help", "/webinars", "/partners"].map((url, i) => ({
+      id: `old${i}`,
+      section: "about",
+      label: { en: "x", ar: "x" },
+      url,
+    }));
+    expect(urls(stored)).toEqual(["/about", "/contact", "/demo", "/contact"]);
+    for (const u of urls(DEFAULT_FOOTER_LINKS)) expect(Object.keys(KEPT_ROUTES)).not.toContain(u);
   });
 });
