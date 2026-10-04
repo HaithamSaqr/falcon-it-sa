@@ -12,19 +12,51 @@
 - مكتب مصر مخفي في كل مكان، ورقم الواتساب سعودي دائمًا.
 - الرابط الإنجليزي يبقى إنجليزيًا دائمًا، حتى لمن اختار العربية سابقًا.
 - الصفحات تعمل حتى لو توقفت قاعدة البيانات (تظهر النسخة الافتراضية).
-- النتائج على الجوال (Lighthouse): محركات البحث 100، سهولة الوصول 100، أفضل الممارسات 100 بدون بكسل سناب (79 مع البكسل)، الأداء 77 إلى 79 في القياس المحاكى، و89 إلى 92 بإعداد تقييد مختلف (قياس مختبري أيضًا، وليس قياسًا من زوار حقيقيين). التفاصيل في `qa/lighthouse.md`.
+- النتائج على الجوال (Lighthouse): محركات البحث 100، سهولة الوصول 100، أفضل الممارسات 100، الأداء 79 إلى 81 في القياس المحاكى. بعد تشغيل تحسين الصور صار وزن الصور في الصفحة الرئيسية 331 كيلوبايت بدل 929، وفي صفحة العقارات العربية 84 بدل 180. التفاصيل في `qa/lighthouse.md`.
 
-## 2. نحتاج تأكيدك على هذه النقاط
+## 2. قرارات المالك (4 أكتوبر 2026) وما بقي مفتوحًا
 
-1. **مدد المراحل** في الصفحة الرئيسية: التقييم يوم واحد، المخطط من أسبوع إلى أسبوعين، البناء من 4 إلى 8 أسابيع، التدريب من أسبوع إلى أسبوعين، الدعم مستمر. هذه أرقام مبدئية.
-2. **وحدات فالكون ERP** قرأناها من صورة شاشة التطبيقات (المشاريع، العقارات، نقاط البيع، شاشة المطبخ، الفندق، المعدات، الصيانة، التأجير). هل الصورة فعلًا من فالكون ERP، وهل هذه الوحدات متوفرة؟
-3. **شريط الحجز** في صفحات القطاعات ينقل الزائر إلى صفحة العرض التجريبي بدل نموذج داخل الصفحة. هل يناسبك ذلك؟
-4. **سياسة الخصوصية**: مدة الاحتفاظ بالبيانات (لم تُحدد بعد)، وملخص حقوق نظام حماية البيانات الشخصية، وقائمة الجهات التي تعالج البيانات (Resend، مزود الاستضافة، أدوات Google وSnap، وخادم الذكاء الاصطناعي إن بقي). هل هناك جهات أخرى، مثل مزود واتساب؟
-5. **قدرات مذكورة في أسئلة القطاعات**: مثل تكلفة الطعام الفعلية مقابل النظرية في المطاعم، وفوترة كل رحلة وصيانة المركبات الوقائية وتذكير التجديد وتسوية سُلف السائقين في النقل، و"فالكون ERP يعيد الطلب عند الحد الأدنى للمخزون" في التصنيع، والفوترة حسب المراحل أو الساعات في الخدمات المهنية. نرجو التأكد أنها صحيحة لما تقدمونه.
-6. **مزايا أودو القياسية** المذكورة في الأسئلة (التصنيع حسب الطلب وقواعد إعادة الطلب، قوائم الأسعار لكل عميل، الفوترة حسب المراحل والساعات، تكلفة كل مركبة): تأكد أنها متاحة في نسخة أودو التي تركّبونها.
-7. **المدونة** مغلقة الآن. فيها نسبة "70%" غير موثقة، ويجب تعديلها قبل تشغيل المدونة.
-8. **قائمة الدول في نموذج العرض التجريبي**: حذفنا مصر (الزائر من مصر يختار "أخرى")، التزامًا بقرار إخفاء مصر. هل توافق؟
-9. **بكسل سناب**: يضع ملفات تعريف من طرف ثالث ويخفض تقييم "أفضل الممارسات" إلى 79. هل نبقيه كما هو، أم نشغّله بعد موافقة الزائر على ملفات التعريف؟
+### تم القرار والتنفيذ
+
+1. **وحدات فالكون ERP**: المرجع الوحيد هو دليل الشركة (2026-09-30). أُعيدت كتابة كل وحدة وقدرة منسوبة لفالكون ERP لتطابق ما يوثقه الدليل، وحُذف ما لا يثبته: شاشة المطبخ وموزع طلبات المطعم، وCRM ومسار المبيعات، ومكافأة نهاية الخدمة، ومراقبة الجودة، وإعادة الطلب عند الحد الأدنى، وتتبع الدفعات، وقوائم المواد وأوامر العمل، ودليل الملاك والوسطاء، وسندات القبض، وتعدد العملات وتسوية البنوك. صورة شبكة التطبيقات قُصّت إلى صفين (الصف الثالث كان يعرض شاشة المطبخ والاشتراكات والموقع الإلكتروني). عبارات فالكون كلاود بقيت كما وردت سابقًا دون توسيع.
+2. **أسئلة القطاعات**: كل إجابة تعد بقدرة محددة صارت بصيغة "نضبط ذلك في المخطط حسب طريقة عملك"، إلا ما يوثقه الدليل لفالكون ERP أو ما هو ميزة قياسية في أودو مذكورة بالاسم. حُذفت عبارة "فالكون ERP يعيد الطلب عند الحد الأدنى".
+3. **سياسة الخصوصية**: نحتفظ ببيانات الطلبات والتواصل سنة واحدة من آخر تواصل، ثم نحذفها أو نخفي هويتها، ما لم يلزمنا عقد أو نظام بمدة أطول. تاريخ آخر تحديث: 4 أكتوبر 2026.
+4. **بكسل سناب**: لا يُحمَّل إلا بعد موافقة الزائر. شريط صغير بالعربية والإنجليزية فيه "موافق" و"رفض" بنفس الحجم، والاختيار يُحفظ 12 شهرًا، ورابط "إعدادات ملفات تعريف الارتباط" في التذييل يعيد فتحه. الشريط يظهر فقط ما دام سناب مفعّلًا في لوحة التحكم. أدوات Google بقيت كما هي.
+5. **الصور على الجوال**: تحسين الصور يعمل الآن، والجوال يستلم صورة WebP بعرض 640 إلى 828 بكسل بدل 1400. جُرّب داخل صورة Docker محليًا.
+6. **صفحة 404** بالعربية على `/ar` وبالإنجليزية على غيرها، داخل تصميم الموقع، مع روابط للرئيسية والقطاعات وحجز العرض.
+7. **حذف مكتبات غير مستخدمة**: framer-motion وtailwindcss-animate وautoprefixer.
+
+### وحدات فالكون ERP كما تظهر الآن على الموقع (من دليل الشركة)
+
+| الوحدة | ما نذكره | القسم في الدليل |
+|---|---|---|
+| المحاسبة والمالية | دفتر الأستاذ، الصناديق والبنوك، الضرائب، الموازنات، خطابات الضمان، القروض | دليل الوحدات 3؛ المحاسبة 1 و6 و7 و8 |
+| الأصول الثابتة | سجل الأصول، الإهلاك مرحّلًا، الاستبعاد | الموارد البشرية والأصول والمشروعات 5 و6 |
+| الفوترة الإلكترونية | فواتير قياسية ومبسطة برمز QR، للاعتماد أو الإبلاغ لدى الهيئة | التكاملات: زاتكا السعودية؛ الامتدادات 15 |
+| المخزون | الأصناف والوحدات والباركود، الإضافة والصرف، التحويل بين المستودعات، الجرد؛ الأرقام التسلسلية وتواريخ الصلاحية | المخزون والتصنيع 1 و3 و4 و6 و7 |
+| المشتريات | طلبات الشراء واعتمادها، أوامر الشراء بجداول دفعاتها، فواتير الموردين | المبيعات والمشتريات 7 و8 و9 |
+| المبيعات | عروض الأسعار، طلبات البيع، الفواتير والمرتجعات، قوائم الأسعار، عمولات المندوبين | المبيعات والمشتريات 1 إلى 6 |
+| نقاط البيع | البيع نقدًا وبالشبكة وبالآجل، فتح وردية الكاشير وإقفالها على الصندوق | نقاط البيع 1 و3 و5 |
+| الموارد البشرية والرواتب | ملفات الموظفين، الحضور والورديات، الإجازات، الرواتب | الموارد البشرية 1 و2 و3 |
+| التصنيع | خطط الإنتاج، أوامر التصنيع، احتياجات الخامات | المخزون والتصنيع 8 |
+| المشاريع والمقاولات | العطاءات، المكتب الفني، موازنات المشاريع، مستخلصات مقاولي الباطن، المهام والمستندات | الموارد البشرية والمشروعات 7 و8 و9؛ الامتدادات 11 |
+| العقارات | العقارات والوحدات، عقود الإيجار والبيع، تحصيل الأقساط | الامتدادات 1 و2 |
+| الفنادق | الغرف، الحجوزات، دخول النزلاء وخروجهم، الإشراف الداخلي | الامتدادات 3 |
+| المعدات والصيانة | تأجير المعدات، خطط الصيانة وطلباتها، عقود صيانة العملاء | الامتدادات 7 و8 |
+| النقل | أوامر النقل، البوالص، فواتير النقل | الامتدادات 6 |
+| التقارير ولوحات المتابعة | مصمم التقارير، لوحات حسب صلاحية المستخدم | الامتدادات 14؛ دليل الوحدات 5 |
+
+### بلا تغيير (لم يصلنا قرار جديد بشأنها)
+
+- **مدد المراحل** (يوم، أسبوع إلى أسبوعين، 4 إلى 8 أسابيع، أسبوع إلى أسبوعين، مستمر) كما هي.
+- **شريط الحجز** في صفحات القطاعات ينقل إلى صفحة العرض التجريبي.
+- **مزايا أودو القياسية** المذكورة بالاسم في الأسئلة كما هي.
+- **المدونة** مغلقة، ونسبة "70%" غير الموثقة يجب تعديلها قبل تشغيلها.
+
+### بند مفتوح
+
+- **قائمة الدول في نموذج العرض التجريبي**: مصر محذوفة (الزائر من مصر يختار "أخرى")، وأبقيناها كذلك التزامًا بقرار إخفاء مصر. نرجو تأكيدك فقط إن أردت غير ذلك.
+- **ملاحظة للمراجعة**: صفحة المطاعم والضيافة ما زالت تذكر "شاشة المطبخ" في مراحل الدورة العامة (وهي متاحة في أودو)، لكنها لم تعد تُنسب لفالكون ERP. إن أردت حذفها من النص العام أيضًا، أخبرنا.
 
 ## 3. ما سيحدث لبيانات الموقع الحالي عند النشر
 
@@ -41,7 +73,7 @@
 
 ## 5. حدود معروفة
 
-- الصور تُرسل بحجم واحد (1400 بكسل) حتى على الجوال. ضغطناها (من 2.5 إلى 1.4 ميجابايت)، والتحسين الكامل يحتاج تغييرًا في إعداد الخادم عند النشر.
+- تحسين الصور يعمل الآن (بحجم يناسب الجوال)، ويحتاج الخادم مساحة كتابة لذاكرة الصور المؤقتة داخل الحاوية، وهي مجهزة في Dockerfile.
 - صفحة "العملاء" مبنية من محتوى افتراضي في الكود، ولا تُعدّل بعد من لوحة التحكم.
 - صفحة "الرئيسية" القديمة في لوحة التحكم أُخفيت، لأن الصفحة الرئيسية الجديدة تُعدّل من "الصفحات".
 - روابط التذييل "الوظائف" و"مركز المساعدة" و"الندوات" تحوّل إلى "من نحن" و"تواصل معنا" و"العرض التجريبي".
@@ -53,12 +85,12 @@
 
 Local review build only; nothing is deployed. Contact sheet of every page: `qa/screens/review.html`.
 
-Please confirm: (1) seeded phase durations (1 day / 1 to 2 weeks / 4 to 8 weeks / 1 to 2 weeks / ongoing); (2) Falcon ERP modules read from the app-grid screenshot; (3) the sector booking band links to the demo page instead of an inline form; (4) privacy retention period, PDPL rights summary and the processor list; (5) capability statements in the sector FAQs, including logistics "Bill every trip" and manufacturing "Falcon ERP reorders at minimum levels"; (6) standard Odoo features named in the FAQs; (7) the blog's unsourced "70%" must be fixed before the blog is enabled; (8) Egypt removed from the demo form's country list; (9) keep the Snap Pixel as is (Best Practices 79) or load it after consent.
+Owner decisions of 4 October 2026, done: (1) Falcon ERP modules and capabilities now come only from the company handbook (table above, with the handbook section for each), kitchen screen, CRM, end of service, quality control, reordering, batch tracking, bills of materials, owners and brokers directory, receipt vouchers, multi-currency and bank reconciliation removed, app-grid screenshot cropped to its first two rows; (2) sector FAQ capability answers use the blueprint wording unless the handbook documents it or it is a named Odoo standard feature; (3) privacy: lead and contact data kept one year from the last contact, last updated 4 October 2026; (4) Snap Pixel only after cookie consent (banner, 12-month choice, footer Cookie settings; Google tags unchanged); (5) image optimizer on, verified in a local Docker image; (6) localized 404; (7) framer-motion, tailwindcss-animate and autoprefixer removed. Unchanged, no new decision: phase durations, sector booking band to /demo, named Odoo standard features, blog "70%" to fix before enabling. Open: Egypt stays out of the demo country list (kept, consistent with hiding Egypt). For review: the generic hospitality cycle still mentions a kitchen screen (available in Odoo), no longer attributed to Falcon ERP.
 
 At deploy, one-off guarded data fixes update existing rows and never delete anything: the seven v2 sectors (names, photos, enabled flags; old sectors hidden), the footer privacy link to /privacy-policy, exact-phrase replacements in the server and data brochure copy, the applications brochure and demo testimonials disabled, CR and VAT filled only when blank.
 
 For sales: the lead `sector` field is the page the visitor booked from and can differ from the industry they chose.
 
-Lighthouse: the 89 to 92 Performance figures are also a lab measurement (devtools throttling), not field data.
+Lighthouse (Task 13b, simulated, mobile): Performance 79 to 81, Accessibility, Best Practices and SEO 100; image weight on / down from 929 KiB to 331 KiB. Lab figures, not field data.
 
-Known limitations: photos are not resized per device (image optimizer off since the first commit; enabling it is a deploy change); /clients content is code defaults; the old Home Page admin screen is hidden; kept footer routes redirect; calendar picker styling not verified.
+Known limitations: /clients content is code defaults; the old Home Page admin screen is hidden; kept footer routes redirect; calendar picker styling not verified.
