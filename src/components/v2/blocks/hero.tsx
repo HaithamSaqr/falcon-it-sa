@@ -20,7 +20,7 @@ const isLogo = (src: string) => /\/logo-[^/]+$/.test(src);
 const LOGO_TINT = (src: string) => (/logo-odoo/.test(src) ? "bg-odoo-tint" : "bg-[#EAF3FB]");
 
 /** Product screenshot on the floating card while no sector is picked (design element, not content). */
-const MODULES_SHOT = "/images/v2/shot-apps-top.jpg";
+const MODULES_SHOT = "/images/v2/shot-sales-dashboard.jpg";
 
 /**
  * Page hero: H1, subtitle, optional "See it for" sector pills, CTAs, and a
@@ -47,7 +47,7 @@ export default function HeroBlock({ content: c, ctx, place }: BlockProps<"hero">
   // With sector pills the card previews the modules; otherwise it captions the photo.
   const fallback: HeroTileData | null = caption
     ? pills.length > 0
-      ? { image: MODULES_SHOT, alt: ctx.labels.modulesAlt, caption, sub: ctx.labels.seeModules, href: ctx.anchors.includes("erp") ? "#erp" : "", position: "50% 20%" }
+      ? { image: MODULES_SHOT, alt: ctx.labels.modulesAlt, caption, sub: ctx.labels.seeModules, href: ctx.anchors.includes("erp") ? "#erp" : "", position: "50% 35%" }
       : { image: "", alt: "", caption, sub: "", href: "" }
     : null;
   const hasPhoto = c.card.image !== "";

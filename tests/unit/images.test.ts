@@ -10,7 +10,7 @@ import { canOptimize } from "@/lib/image-src";
 describe("canOptimize", () => {
   it("optimizes local images and uploads", () => {
     expect(canOptimize("/images/v2/photo-realestate.jpg")).toBe(true);
-    expect(canOptimize("/images/v2/shot-apps-top.jpg")).toBe(true);
+    expect(canOptimize("/images/v2/shot-sales-dashboard.jpg")).toBe(true);
     expect(canOptimize("/api/uploads/1712345678-logo.png")).toBe(true);
     expect(canOptimize("/api/uploads/photo.webp")).toBe(true);
   });

@@ -9,7 +9,7 @@ import { rootProps, type BlockProps } from "./context";
 import { Highlighted, PrimaryCta, SecondaryCta, tn, tx } from "./parts";
 
 /** Product screenshot on the floating card (design element, not content). */
-const APPS_SHOT = "/images/v2/shot-apps-top.jpg";
+const APPS_SHOT = "/images/v2/shot-sales-dashboard.jpg";
 
 /**
  * Sector hero: breadcrumb, "Your role" pills, the role's promise as the H1,
@@ -98,10 +98,10 @@ export default function SectorHeroBlock({ content: c, ctx, place }: BlockProps<"
                 <Image
                   src={APPS_SHOT}
                   alt={ctx.labels.appsAlt}
-                  width={1100}
-                  height={263}
+                  width={1456}
+                  height={1000}
                   sizes="(min-width: 1280px) 326px, 286px"
-                  className="block h-auto w-full"
+                  className="block h-[96px] w-full object-cover object-[50%_32%] xl:h-[108px]"
                 />
               </div>
             </div>
