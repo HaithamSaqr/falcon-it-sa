@@ -39,6 +39,8 @@ function pathLabel(path: string): string {
 
 const idPrefix = (key: string) => `b-${key}`;
 
+const LEAVE_PROMPT = "You have unsaved changes on this page. Leave without saving?";
+
 export default function PageEditor({ page }: { page: string }) {
   const seoOnly = isSeoOnlyPage(page);
   const [tab, setTab] = useState<"blocks" | "seo">(seoOnly ? "seo" : "blocks");
@@ -51,6 +53,7 @@ export default function PageEditor({ page }: { page: string }) {
   const [status, setStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [message, setMessage] = useState("");
   const [addType, setAddType] = useState<BlockType>("rich_text");
+  const [seoDirty, setSeoDirty] = useState(false);
   const alertRef = useRef<HTMLDivElement>(null);
 
   const path = publicPath(page);
@@ -78,15 +81,35 @@ export default function PageEditor({ page }: { page: string }) {
   }, [page, seoOnly]);
 
   const dirty = rows !== null && snapshot(rows) !== savedSnap;
+  const anyDirty = dirty || seoDirty;
 
+  // Unsaved block or SEO edits: warn on reload/close, and ask before an in-app
+  // link (sidebar, "All pages") navigates away. Capture phase on document, so
+  // the check runs before Next's <Link> handler.
   useEffect(() => {
-    if (!dirty) return;
+    if (!anyDirty) return;
     const warn = (e: BeforeUnloadEvent) => {
       e.preventDefault();
     };
+    const onClick = (e: MouseEvent) => {
+      if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      const a = (e.target as Element | null)?.closest?.("a[href]") as HTMLAnchorElement | null;
+      if (!a || (a.target && a.target !== "_self") || a.hasAttribute("download")) return;
+      const url = new URL(a.href, window.location.href);
+      if (url.origin !== window.location.origin) return;
+      if (url.pathname === window.location.pathname && url.search === window.location.search) return;
+      if (!window.confirm(LEAVE_PROMPT)) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    };
     window.addEventListener("beforeunload", warn);
-    return () => window.removeEventListener("beforeunload", warn);
-  }, [dirty]);
+    document.addEventListener("click", onClick, true);
+    return () => {
+      window.removeEventListener("beforeunload", warn);
+      document.removeEventListener("click", onClick, true);
+    };
+  }, [anyDirty]);
 
   const issues = useMemo(() => {
     const map = new Map<string, ContentIssue[]>();
@@ -256,6 +279,9 @@ export default function PageEditor({ page }: { page: string }) {
             className={`flex-1 rounded-md px-4 py-2 text-sm font-medium transition-colors ${tab === t ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-700"}`}
           >
             {t === "blocks" ? "Page content" : "Search and sharing (SEO)"}
+            {(t === "blocks" ? dirty : seoDirty) && (
+              <span className="ms-2 rounded-full bg-amber-100 px-1.5 py-0.5 text-[11px] font-medium text-amber-800">Unsaved</span>
+            )}
           </button>
         ))}
       </div>
@@ -266,10 +292,13 @@ export default function PageEditor({ page }: { page: string }) {
         </p>
       )}
 
-      {tab === "seo" && <PageSeoEditor page={page} />}
+      {/* Both tabs stay mounted so switching never drops unsaved edits. */}
+      <div hidden={tab !== "seo"}>
+        <PageSeoEditor page={page} onDirtyChange={setSeoDirty} />
+      </div>
 
-      {tab === "blocks" && (
-        <>
+      {!seoOnly && (
+        <div hidden={tab !== "blocks"} className="space-y-5">
           {loadError && <p className="rounded-lg bg-red-50 p-4 text-sm text-red-700">{loadError}</p>}
           {!rows && !loadError && <p className="p-6 text-center text-sm text-slate-500">Loading blocks...</p>}
 
@@ -455,7 +484,7 @@ export default function PageEditor({ page }: { page: string }) {
               </div>
             </>
           )}
-        </>
+        </div>
       )}
     </div>
   );

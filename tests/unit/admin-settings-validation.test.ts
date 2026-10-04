@@ -3,7 +3,7 @@
  * shared by the settings admin screen and PUT /api/admin/settings.
  */
 import { describe, expect, it } from "vitest";
-import { validateV2Settings } from "@/lib/admin/settings-validation";
+import { normalizeV2Settings, validateV2Settings } from "@/lib/admin/settings-validation";
 
 const ok = {
   blogEnabled: false,
@@ -49,5 +49,36 @@ describe("validateV2Settings", () => {
 
   it("rejects a non-boolean blog flag", () => {
     expect(validateV2Settings({ ...ok, blogEnabled: "yes" })).toMatch(/^blogEnabled: /);
+  });
+
+  it("caps the button label at 60 characters in each language", () => {
+    const label = (en: string, ar: string) => ({ ...ok, primaryCta: { ...ok.primaryCta, label: { en, ar } } });
+    expect(validateV2Settings(label("x".repeat(60), "ع".repeat(60)))).toBeNull();
+    expect(validateV2Settings(label("x".repeat(61), ""))).toMatch(/^primaryCta\.label: .*60/);
+    expect(validateV2Settings(label("", "ع".repeat(61)))).toMatch(/^primaryCta\.label: .*60/);
+    // Surrounding spaces do not count.
+    expect(validateV2Settings(label(` ${"x".repeat(60)} `, ""))).toBeNull();
+  });
+});
+
+describe("normalizeV2Settings", () => {
+  it("trims the CR and VAT numbers and the button labels", () => {
+    const out = normalizeV2Settings({
+      ...ok,
+      company: { name: "x", crNumber: " 7049432656 ", vatNumber: "\t311410985900003\n" },
+      primaryCta: { label: { en: " Book a demo ", ar: " احجز " }, demoUrl: " /demo " },
+    });
+    expect(out.company).toEqual({ name: "x", crNumber: "7049432656", vatNumber: "311410985900003" });
+    expect(out.primaryCta).toEqual({ label: { en: "Book a demo", ar: "احجز" }, demoUrl: "/demo" });
+    expect(validateV2Settings(out)).toBeNull();
+  });
+
+  it("leaves missing fields missing and does not touch the input", () => {
+    const input = { company: { email: "a@b.c" } };
+    expect(normalizeV2Settings(input)).toEqual({ company: { email: "a@b.c" } });
+    expect(normalizeV2Settings({})).toEqual({});
+    const withCr = { company: { crNumber: " 1 " } };
+    normalizeV2Settings(withCr);
+    expect(withCr.company.crNumber).toBe(" 1 ");
   });
 });

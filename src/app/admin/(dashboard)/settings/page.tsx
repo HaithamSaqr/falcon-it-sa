@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { SiteSettings, SeoSettings, FooterLink } from "@/types/admin";
-import { validateV2Settings } from "@/lib/admin/settings-validation";
+import { CTA_LABEL_MAX, normalizeV2Settings, validateV2Settings } from "@/lib/admin/settings-validation";
 
 interface DbConn {
   host: string;
@@ -252,17 +252,19 @@ export default function SettingsPage() {
       }
     }
 
-    // v2 fields: safe demo link, CTA label in at least one language, CR and VAT digits.
-    const invalid = validateV2Settings(settings);
+    // v2 fields (trimmed first): safe demo link, CTA label in at least one language, CR and VAT digits.
+    const toSave = normalizeV2Settings(settings);
+    const invalid = validateV2Settings(toSave);
     setSaveError(invalid ?? "");
     if (invalid) return;
+    setSettings(toSave);
 
     setSaving(true);
     setSaved(false);
     const res = await fetch("/api/admin/settings", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(settings),
+      body: JSON.stringify(toSave),
     }).catch(() => null);
     const result = await res?.json().catch(() => null);
     setSaving(false);
@@ -521,6 +523,7 @@ export default function SettingsPage() {
             <label className={labelClasses} htmlFor="cta-label-en">Main button label (EN)</label>
             <input
               id="cta-label-en"
+              maxLength={CTA_LABEL_MAX}
               value={settings.primaryCta?.label.en ?? ""}
               onChange={(e) => set("primaryCta", { label: { en: e.target.value, ar: settings.primaryCta?.label.ar ?? "" }, demoUrl: settings.primaryCta?.demoUrl ?? "/demo" })}
               className={inputClasses}
@@ -530,6 +533,7 @@ export default function SettingsPage() {
             <label className={labelClasses} htmlFor="cta-label-ar">Main button label (AR)</label>
             <input
               id="cta-label-ar"
+              maxLength={CTA_LABEL_MAX}
               value={settings.primaryCta?.label.ar ?? ""}
               onChange={(e) => set("primaryCta", { label: { en: settings.primaryCta?.label.en ?? "", ar: e.target.value }, demoUrl: settings.primaryCta?.demoUrl ?? "/demo" })}
               className={inputClasses}

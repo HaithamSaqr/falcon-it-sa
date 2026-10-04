@@ -22,8 +22,16 @@ function Counter({ value, ideal }: { value: Bi; ideal: number }) {
 }
 
 /** Search title, description and share image of one page (`page_seo`). Empty means the site default. */
-export default function PageSeoEditor({ page }: { page: string }) {
+export default function PageSeoEditor({
+  page,
+  onDirtyChange,
+}: {
+  page: string;
+  /** Called when the form gets or loses unsaved changes. */
+  onDirtyChange?: (dirty: boolean) => void;
+}) {
   const [seo, setSeo] = useState<PageSeo | null>(null);
+  const [savedSnap, setSavedSnap] = useState("");
   const [loadError, setLoadError] = useState("");
   const [issues, setIssues] = useState<ContentIssue[]>([]);
   const [state, setState] = useState<"idle" | "saving" | "saved" | "error">("idle");
@@ -35,7 +43,10 @@ export default function PageSeoEditor({ page }: { page: string }) {
       .then((r) => r.json())
       .then((d) => {
         if (!live) return;
-        if (d.success) setSeo(d.data);
+        if (d.success) {
+          setSeo(d.data);
+          setSavedSnap(JSON.stringify(d.data));
+        }
         else setLoadError(d.error || "Could not load the page SEO.");
       })
       .catch(() => live && setLoadError("Could not load the page SEO."));
@@ -44,8 +55,14 @@ export default function PageSeoEditor({ page }: { page: string }) {
     };
   }, [page]);
 
+  const dirty = seo !== null && JSON.stringify(seo) !== savedSnap;
+  useEffect(() => {
+    onDirtyChange?.(dirty);
+  }, [dirty, onDirtyChange]);
+
   async function save() {
     if (!seo) return;
+    const sent = JSON.stringify(seo);
     setState("saving");
     setIssues([]);
     try {
@@ -56,6 +73,7 @@ export default function PageSeoEditor({ page }: { page: string }) {
       });
       const d = await res.json();
       if (d.success) {
+        setSavedSnap(sent);
         setState("saved");
         setMessage("SEO saved.");
       } else {
@@ -112,6 +130,9 @@ export default function PageSeoEditor({ page }: { page: string }) {
           onChange={(ogImage) => patch({ ogImage })}
         />
         <div className="flex items-center justify-end gap-3 border-t border-slate-100 pt-4">
+          {dirty && state !== "saving" && (
+            <span className="me-auto rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800">Unsaved changes</span>
+          )}
           {state === "saved" && (
             <span role="status" className="text-sm text-emerald-700">
               {message}

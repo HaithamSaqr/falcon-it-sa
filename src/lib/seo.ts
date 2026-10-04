@@ -10,7 +10,6 @@ import { getPageSeo, getSeo } from "@/lib/data-store";
 import { DEFAULT_SEO } from "@/lib/db/defaults";
 import { pickBi, type Bi } from "@/lib/blocks/bi";
 import type { PublicSettings } from "@/lib/public-chrome";
-import { COMPANY } from "@/lib/constants";
 
 export type SeoLocale = "en" | "ar";
 
@@ -144,6 +143,21 @@ function e164(phone: string): string {
   return digits ? `+${digits}` : "";
 }
 
+/** Built-in Organization fallbacks (Saudi office only) for when settings are unavailable. */
+const ORG_DEFAULTS = {
+  name: { en: "Falcon Smart Solutions", ar: "فالكون للحلول الذكية" },
+  email: "info@falcon-v.com",
+  phone: "00966568406006",
+  address: "Riyadh, Saudi Arabia",
+  social: {
+    linkedin: "https://linkedin.com/company/falcon-smart-solutions",
+    twitter: "https://twitter.com/falconsmart",
+    facebook: "https://facebook.com/falconsmartsolutions",
+    instagram: "https://instagram.com/falconsmart",
+    youtube: "https://www.youtube.com/@Falcon_Valley",
+  },
+} as const;
+
 /**
  * Organization from the public settings (Saudi address and phone only; the
  * public settings already hide the Egypt office). Without settings it uses the
@@ -151,13 +165,13 @@ function e164(phone: string): string {
  */
 export function organizationLd(settings?: PublicSettings): JsonLdData {
   const company = settings?.company;
-  const name = txt(company?.name?.en) || COMPANY.name.en;
-  const alternateName = txt(company?.name?.ar) || COMPANY.name.ar;
+  const name = txt(company?.name?.en) || ORG_DEFAULTS.name.en;
+  const alternateName = txt(company?.name?.ar) || ORG_DEFAULTS.name.ar;
   const branch = company?.branches?.[0];
-  const phone = e164(company?.phone?.ksa ?? COMPANY.phone.ksa);
-  const email = txt(company?.email) || COMPANY.email;
+  const phone = e164(company?.phone?.ksa ?? ORG_DEFAULTS.phone);
+  const email = txt(company?.email) || ORG_DEFAULTS.email;
 
-  const social = settings?.social ?? COMPANY.social;
+  const social = settings?.social ?? ORG_DEFAULTS.social;
   const sameAs = Object.values(social)
     .map((u) => txt(u))
     .filter((u) => /^https:\/\//i.test(u));
@@ -172,7 +186,7 @@ export function organizationLd(settings?: PublicSettings): JsonLdData {
     email,
     address: {
       "@type": "PostalAddress",
-      streetAddress: txt(branch?.address?.en) || COMPANY.branches[0].address.en,
+      streetAddress: txt(branch?.address?.en) || ORG_DEFAULTS.address,
       addressCountry: "SA",
     },
   };

@@ -29,7 +29,7 @@ vi.mock("@/lib/db/config", async (importOriginal) => ({
 }));
 
 import { ensureReady } from "@/lib/db/migrate";
-import { getPageBlocks } from "@/lib/blocks/store";
+import { getPageBlocks, getPageSeo } from "@/lib/blocks/store";
 import { pickBi } from "@/lib/blocks/bi";
 import type { Block } from "@/lib/blocks/types";
 import * as pagesRoute from "@/app/api/admin/pages/route";
@@ -247,6 +247,47 @@ describe.skipIf(!canUseDb)("admin pages API", () => {
     expect((await bad.json()).error).toMatch(/^ogImage: /);
     const missing = await seoRoute.GET(req("/api/admin/page-seo"));
     expect(missing.status).toBe(400);
+  });
+
+  it("page SEO GET reports a database failure as 500 (not a blank row); the public read stays null", async () => {
+    const real = h.pool;
+    const failing = { query: async () => Promise.reject(new Error("connection refused")) } as unknown as Pool;
+    h.pool = failing;
+    const err = vi.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      const res = await seoRoute.GET(req("/api/admin/page-seo?page=home"));
+      expect(res.status).toBe(500);
+      expect((await res.json()).error).toMatch(/could not load/i);
+      await expect(getPageSeo("home", failing)).resolves.toBeNull();
+    } finally {
+      h.pool = real;
+      err.mockRestore();
+    }
+  });
+
+  it("settings PUT trims the CR and VAT numbers and the CTA labels before storing", async () => {
+    const current = (await (await settingsRoute.GET()).json()).data;
+    const res = await settingsRoute.PUT(
+      req("/api/admin/settings", "PUT", {
+        ...current,
+        company: { ...current.company, crNumber: " 7049432656 ", vatNumber: "\t311410985900003 " },
+        primaryCta: { label: { en: " Book a demo ", ar: " احجز عرضًا تجريبيًا " }, demoUrl: "/demo" },
+      }),
+    );
+    expect(res.status).toBe(200);
+    const saved = (await (await settingsRoute.GET()).json()).data;
+    expect(saved.company.crNumber).toBe("7049432656");
+    expect(saved.company.vatNumber).toBe("311410985900003");
+    expect(saved.primaryCta.label).toEqual({ en: "Book a demo", ar: "احجز عرضًا تجريبيًا" });
+
+    const long = await settingsRoute.PUT(
+      req("/api/admin/settings", "PUT", {
+        ...current,
+        primaryCta: { label: { en: "x".repeat(61), ar: "" }, demoUrl: "/demo" },
+      }),
+    );
+    expect(long.status).toBe(400);
+    expect((await long.json()).error).toMatch(/^primaryCta\.label: .*60/);
   });
 
   it("settings PUT rejects an unsafe demo URL or empty CTA labels and keeps the stored values", async () => {

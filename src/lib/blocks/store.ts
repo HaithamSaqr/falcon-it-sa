@@ -4,7 +4,7 @@
  * Public reads (`getPageBlocks`, `getPageSeo`) never throw: when the app is not
  * installed or the database fails they fall back to the v2 seed (or null).
  * Admin functions (`getPageBlocksAdmin`, `savePageBlocks`, `listPages`,
- * `savePageSeo`) throw so the API can report the failure.
+ * `getPageSeoAdmin`, `savePageSeo`) throw so the API can report the failure.
  *
  * Every function takes an optional pool; without one it uses the app pool
  * (`getPool()`, which also runs the boot migrations). Tests inject their own.
@@ -173,23 +173,28 @@ interface SeoRow {
   og_image: string;
 }
 
+/** Per-page SEO row, or null when there is none. Throws when the database fails (admin). */
+export async function getPageSeoAdmin(page: string, pool?: Pool): Promise<PageSeo | null> {
+  const db = pool ?? (await getPool());
+  const res = await db.query<SeoRow>(
+    `SELECT page, title_en, title_ar, description_en, description_ar, og_image FROM page_seo WHERE page = $1`,
+    [page],
+  );
+  const r = res.rows[0];
+  if (!r) return null;
+  return {
+    page: r.page,
+    title: { en: r.title_en, ar: r.title_ar },
+    description: { en: r.description_en, ar: r.description_ar },
+    ogImage: r.og_image,
+  };
+}
+
 /** Per-page SEO row, or null when there is none (or the DB is unavailable). Never throws. */
 export async function getPageSeo(page: string, pool?: Pool): Promise<PageSeo | null> {
   if (!pool && !isInstalledSync()) return null;
   try {
-    const db = pool ?? (await getPool());
-    const res = await db.query<SeoRow>(
-      `SELECT page, title_en, title_ar, description_en, description_ar, og_image FROM page_seo WHERE page = $1`,
-      [page],
-    );
-    const r = res.rows[0];
-    if (!r) return null;
-    return {
-      page: r.page,
-      title: { en: r.title_en, ar: r.title_ar },
-      description: { en: r.description_en, ar: r.description_ar },
-      ogImage: r.og_image,
-    };
+    return await getPageSeoAdmin(page, pool);
   } catch (err) {
     console.error(`[blocks] getPageSeo("${page}") failed:`, err);
     return null;

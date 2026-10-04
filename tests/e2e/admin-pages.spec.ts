@@ -90,3 +90,55 @@ test("admin edits the home hero title; invalid content is refused and the public
     expect(res.status()).toBe(200);
   }
 });
+
+test("the editor warns before leaving with unsaved changes and keeps SEO edits across tabs", async ({ page }) => {
+  test.setTimeout(180_000);
+
+  await page.goto("/admin/login");
+  await page.getByLabel("Username").fill(USER);
+  await page.getByLabel("Password").fill(PASSWORD);
+  await page.getByRole("button", { name: "Sign in" }).click();
+  await page.waitForURL("**/admin");
+
+  // The legacy "Home Page" screen no longer reaches the v2 home: hidden from the sidebar, route kept.
+  const sidebar = page.locator("aside nav");
+  await expect(sidebar.getByRole("link", { name: "Pages" })).toBeVisible();
+  await expect(sidebar.getByRole("link", { name: "Home Page" })).toHaveCount(0);
+  expect((await page.request.get("/admin/home")).status()).toBe(200);
+
+  const original = (await (await page.request.get("/api/admin/pages/home")).json()).data;
+  await page.goto("/admin/pages/home");
+  const hero = page.locator('[data-editor-block="hero"]').first();
+  await hero.getByRole("button", { name: /^Edit block/ }).click();
+  await hero.getByLabel("Title (English)", { exact: true }).fill(`Unsaved draft ${Date.now()}`);
+  await expect(page.getByText("Unsaved changes").first()).toBeVisible();
+
+  // In-app link with unsaved block edits: the admin is asked, and "Cancel" stays.
+  const messages: string[] = [];
+  page.once("dialog", (d) => {
+    messages.push(d.message());
+    void d.dismiss();
+  });
+  await sidebar.getByRole("link", { name: "Leads" }).click();
+  await expect.poll(() => messages.length).toBe(1);
+  expect(messages[0]).toMatch(/unsaved changes/i);
+  await expect(page).toHaveURL(/\/admin\/pages\/home$/);
+
+  // SEO tab: an edit survives switching tabs and is flagged as unsaved.
+  await page.getByRole("tab", { name: /Search and sharing/ }).click();
+  const seoTitle = page.getByLabel("SEO title (English)", { exact: true });
+  await seoTitle.fill("Draft SEO title");
+  await page.getByRole("tab", { name: /Page content/ }).click();
+  await expect(page.getByRole("tab", { name: /Search and sharing/ })).toContainText("Unsaved");
+  await page.getByRole("tab", { name: /Search and sharing/ }).click();
+  await expect(seoTitle).toHaveValue("Draft SEO title");
+
+  // Accepting the prompt leaves without saving.
+  page.once("dialog", (d) => void d.accept());
+  await sidebar.getByRole("link", { name: "Pages" }).click();
+  await page.waitForURL(/\/admin\/pages$/);
+  const after = (await (await page.request.get("/api/admin/pages/home")).json()).data;
+  expect(after).toEqual(original);
+  const seo = (await (await page.request.get("/api/admin/page-seo?page=home")).json()).data;
+  expect(seo.title.en).not.toBe("Draft SEO title");
+});

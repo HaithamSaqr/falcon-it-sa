@@ -317,6 +317,13 @@ describe("JSON-LD helpers", () => {
     expect(organizationLd().name).toBe("Falcon Smart Solutions");
   });
 
+  it("organizationLd fallbacks are the Saudi office only (no Egypt, no placeholder phone)", () => {
+    const ld = organizationLd();
+    expect(ld.telephone).toBe("+966568406006");
+    const json = JSON.stringify(ld);
+    expect(json).not.toMatch(/egypt|cairo|مصر|\+20/i);
+  });
+
   it("faqLd builds a FAQPage", () => {
     const ld = faqLd([{ question: "Q1?", answer: "A1" }]);
     expect(ld["@type"]).toBe("FAQPage");

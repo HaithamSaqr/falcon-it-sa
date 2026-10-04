@@ -9,7 +9,7 @@ import {
 } from "@/lib/data-store";
 import { jsonSuccess, jsonError } from "@/lib/api-helpers";
 import { hashPassword } from "@/lib/password";
-import { validateV2Settings } from "@/lib/admin/settings-validation";
+import { normalizeV2Settings, validateV2Settings } from "@/lib/admin/settings-validation";
 import type { SiteSettings } from "@/types/admin";
 
 const MASK = "••••••••";
@@ -47,15 +47,17 @@ export async function PUT(request: NextRequest) {
   const { authenticated, username } = await requireAuth();
   if (!authenticated) return jsonError("Unauthorized", 401);
 
-  const body = (await request.json().catch(() => null)) as SiteSettings | null;
-  if (!body) return jsonError("Invalid body", 400);
+  const raw = (await request.json().catch(() => null)) as SiteSettings | null;
+  if (!raw || typeof raw !== "object") return jsonError("Invalid body", 400);
 
-  // v2 fields: a safe demo URL, a CTA label in at least one language, CR and VAT digits.
+  // v2 fields, trimmed first: a safe demo URL, a CTA label (1 to 60 characters)
+  // in at least one language, CR and VAT digits.
+  const body = normalizeV2Settings(raw);
   const invalid = validateV2Settings(body);
   if (invalid) return jsonError(invalid, 400);
   if (body.primaryCta) {
     body.primaryCta = {
-      label: { en: String(body.primaryCta.label?.en ?? "").trim(), ar: String(body.primaryCta.label?.ar ?? "").trim() },
+      label: { en: String(body.primaryCta.label?.en ?? ""), ar: String(body.primaryCta.label?.ar ?? "") },
       demoUrl: body.primaryCta.demoUrl,
     };
   }

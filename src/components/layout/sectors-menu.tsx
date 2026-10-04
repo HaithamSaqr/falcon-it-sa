@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, type FocusEvent, type KeyboardEvent, type ReactNode } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore, type FocusEvent, type KeyboardEvent, type ReactNode } from "react";
 import NavLink from "@/components/layout/nav-link";
 
 interface SectorsMenuProps {
@@ -14,6 +14,7 @@ interface SectorsMenuProps {
 }
 
 const PANEL_ID = "nav-sectors-menu";
+const noopSubscribe = () => () => {};
 
 /**
  * Desktop sectors dropdown. Opens on hover and when keyboard focus enters it,
@@ -24,11 +25,10 @@ const PANEL_ID = "nav-sectors-menu";
  */
 export default function SectorsMenu({ href, label, children, linkClassName, activeClassName }: SectorsMenuProps) {
   const [open, setOpen] = useState(false);
-  const [ready, setReady] = useState(false);
+  // False in the server HTML and during hydration, true once React runs here.
+  const ready = useSyncExternalStore(noopSubscribe, () => true, () => false);
   const rootRef = useRef<HTMLLIElement>(null);
   const focusFirst = useRef(false);
-
-  useEffect(() => setReady(true), []);
 
   useEffect(() => {
     if (open && focusFirst.current) {
