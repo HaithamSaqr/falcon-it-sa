@@ -17,140 +17,6 @@
     "dataManagement": "Data Management",
     "applications": "Applications"
   },
-  "hero": {
-    "label": "Best ERP Solution",
-    "headline": "Enterprise ERP Built for the Middle East.",
-    "subtitle": "ZATCA-compliant. Arabic-native. On-premise or Cloud. Go live in 4–8 weeks — not 6 months.",
-    "ctaPrimary": "Book an Appointment",
-    "ctaSecondary": "See Falcon in Action",
-    "trustNoCreditCard": "Talk with an ERP specialist",
-    "trustMoneyBack": "A plan tailored to your business",
-    "screenshotPlaceholder": "Falcon ERP Dashboard"
-  },
-  "compliance": {
-    "heading": "Certified & Compliant",
-    "zatca": {
-      "title": "ZATCA Phase 2 Compliant",
-      "description": "Fully certified for e-invoicing requirements"
-    },
-    "saudiMade": {
-      "title": "Saudi Made",
-      "description": "Proudly built for the MENA region"
-    },
-    "odooPartner": {
-      "title": "Official Odoo Partner",
-      "description": "Certified Odoo implementation partner"
-    },
-    "verified": "Verified"
-  },
-  "painPoints": {
-    "heading": "Most MENA businesses overpay for ERP — and don't even get compliance",
-    "subheading": "Here's what's costing you money, time, and compliance risk.",
-    "overpriced": {
-      "title": "Overpriced Global ERPs",
-      "description": "SAP and Oracle charge 2–5x more with 6–12 month implementation timelines."
-    },
-    "compliance": {
-      "title": "Compliance Gaps",
-      "description": "Most ERPs bolt on ZATCA as an afterthought. One wrong invoice = penalties."
-    },
-    "dataSovereignty": {
-      "title": "Lost Data Sovereignty",
-      "description": "Cloud-only ERPs send your data outside the Kingdom. That's a PDPL risk."
-    }
-  },
-  "features": {
-    "heading": "Everything you need. Nothing you don't.",
-    "feature1": {
-      "title": "Expert setup and compliance built in",
-      "description": "Falcon ERP comes with native ZATCA Phase 2 e-invoicing, Arabic RTL interface, and pre-built sector templates. No plugins. No add-ons. No risk.",
-      "imagePlaceholder": "Falcon Dashboard — Arabic invoice generation"
-    },
-    "feature2": {
-      "title": "Test everything before you go live",
-      "description": "Deploy on-premise for full data sovereignty, or use Falcon Cloud for mobile access. We will help you choose the right fit for your team.",
-      "imagePlaceholder": "Falcon Cloud — Mobile & Desktop"
-    },
-    "feature3": {
-      "title": "Integrates with everything you already use",
-      "description": "POS terminals, e-commerce platforms, biometric devices, WhatsApp Business — Falcon connects your entire operation into one unified system.",
-      "imagePlaceholder": "Falcon Integration Ecosystem"
-    }
-  },
-  "products": {
-    "heading": "Falcon solutions extend across your entire business",
-    "subheading": "Choose the deployment that fits your business.",
-    "desktopErp": {
-      "name": "Falcon Desktop ERP",
-      "description": "Full on-premise control with complete data sovereignty"
-    },
-    "cloudErp": {
-      "name": "Falcon Cloud ERP",
-      "description": "Work from anywhere, sync everywhere"
-    },
-    "odooServices": {
-      "name": "Odoo Services",
-      "description": "MENA-compliant Odoo implementations"
-    },
-    "learnMore": "Learn More",
-    "bookAppointment": "Book an Appointment"
-  },
-  "ctaBanner": {
-    "headline": "E-Invoicing built for MENA compliance.",
-    "subtitle": "Join 500+ businesses already using Falcon ERP.",
-    "ctaPrimary": "Book an Appointment",
-    "ctaSecondary": "See Falcon in Action",
-    "trustNoCreditCard": "Speak with an ERP specialist",
-    "trustMoneyBack": "Explore your requirements together"
-  },
-  "tco": {
-    "heading": "Why Pay 5x More for the Same Power?",
-    "subtitle": "5-Year Total Cost of Ownership for 20 users",
-    "falcon": "Falcon ERP",
-    "sap": "SAP B1",
-    "oracle": "Oracle NetSuite",
-    "dynamics": "MS Dynamics",
-    "tcoLabel": "5-Yr TCO (20 users)",
-    "zatcaLabel": "ZATCA Native",
-    "arabicLabel": "Arabic RTL",
-    "onPremiseLabel": "On-Premise",
-    "implementationLabel": "Implementation",
-    "falconTco": "$51,920",
-    "sapTco": "$258,000",
-    "oracleTco": "$248,800",
-    "dynamicsTco": "$157,000",
-    "falconZatca": "Built-in",
-    "sapZatca": "Add-on",
-    "oracleZatca": "Partial",
-    "dynamicsZatca": "Add-on",
-    "falconArabic": "Full",
-    "sapArabic": "Full",
-    "oracleArabic": "Limited",
-    "dynamicsArabic": "Good",
-    "falconOnPrem": "Default",
-    "sapOnPrem": "Yes",
-    "oracleOnPrem": "Cloud only",
-    "dynamicsOnPrem": "Hybrid",
-    "falconImpl": "4–8 weeks",
-    "sapImpl": "6–12 months",
-    "oracleImpl": "3–6 months",
-    "dynamicsImpl": "2–4 months",
-    "ctaPricing": "See Full Pricing",
-    "ctaConsult": "Book a Consultation"
-  },
-  "industries": {
-    "heading": "One platform. Every industry.",
-    "retail": "Retail & E-Commerce",
-    "manufacturing": "Manufacturing",
-    "construction": "Construction & Contracting",
-    "realEstate": "Real Estate",
-    "hospitality": "Hospitality & F&B",
-    "healthcare": "Healthcare",
-    "education": "Education",
-    "logistics": "Logistics & Fleet",
-    "trading": "Trading & Wholesale",
-    "learnMore": "Learn More"
-  },
   "sectors": {
     "heading": "Sectors we serve",
     "subheading": "Explore the right ERP workflow for your sector, then book a conversation with our team.",
@@ -251,78 +117,6 @@
       "whatsappHeader": "Quote request — {sector} sector"
     }
   },
-  "stats": {
-    "heading": "Falcon delivers excellence",
-    "clients": "SMEs served",
-    "users": "monthly users",
-    "transactions": "transactions processed"
-  },
-  "testimonials": {
-    "heading": "What our clients say",
-    "t1Quote": "Falcon ERP completely transformed our operations. We migrated from SAP in just 6 weeks. Arabic support and ZATCA compliance were ready from day one.",
-    "t1Name": "Ahmed Al-Rashid",
-    "t1Role": "CFO",
-    "t1Company": "Saudi Emar Developments",
-    "t2Quote": "We were using Excel to manage 8 branches. Falcon Cloud unified everything — inventory, accounting, and HR in one system. Stock reconciliation that took 3 days is now instant.",
-    "t2Name": "Mohammed Hassan",
-    "t2Role": "IT Director",
-    "t2Company": "Haddad Group",
-    "t3Quote": "We tried two Odoo partners before Falcon. The difference was night and day — they understood Saudi market requirements from the start. Localization is flawless and our data stays on our servers in Riyadh.",
-    "t3Name": "Khaled Al-Omari",
-    "t3Role": "CEO",
-    "t3Company": "Almada Construction",
-    "t4Quote": "Falcon's POS system completely changed how we operate. Linking 5 restaurant branches in one system with real-time reports. We reduced waste by 30% in the first 3 months.",
-    "t4Name": "Sara Al-Mutairi",
-    "t4Role": "Operations Manager",
-    "t4Company": "Nile Food Industries",
-    "t5Quote": "The transition to Falcon was easier than we expected. Support team available 24/7 in Arabic. ZATCA Phase 2 compliance happened automatically — we didn't have to lift a finger.",
-    "t5Name": "Abdulrahman Al-Subaie",
-    "t5Role": "General Manager",
-    "t5Company": "Delta Pharma Egypt"
-  },
-  "faq": {
-    "heading": "Have some questions?",
-    "q1": "How do I book an appointment?",
-    "a1": "Share your details through our appointment form. Our team will contact you to confirm a suitable time and discuss your ERP requirements.",
-    "q2": "How long does implementation take?",
-    "a2": "Falcon ERP typically goes live in 4–8 weeks, including data migration, training, and customization. Compare that to 6–12 months with SAP or Oracle.",
-    "q3": "Is Falcon ZATCA Phase 2 compliant?",
-    "a3": "Yes. Falcon ERP has native ZATCA Phase 2 e-invoicing built into the core system — not bolted on as an add-on. We're fully certified.",
-    "q4": "Can I migrate from SAP/Oracle/Odoo?",
-    "a4": "Absolutely. We have a dedicated migration team that handles data extraction, transformation, and validation. Most migrations complete within 2–4 weeks.",
-    "q5": "Do you support on-premise deployment?",
-    "a5": "Yes, on-premise is our default deployment model. Your data stays on your servers, in your country. We also offer cloud and hybrid options.",
-    "q6": "What industries does Falcon serve?",
-    "a6": "Falcon has pre-built templates for 9 industries: Retail, Manufacturing, Construction, Real Estate, Hospitality, Healthcare, Education, Logistics, and Trading.",
-    "q7": "What kind of support do you offer?",
-    "a7": "We offer 5 SLA tiers from Basic (5 hrs/month, 48hr response) to VIP (unlimited hours, 1hr response). All plans include WhatsApp support.",
-    "stillHaveQuestions": "Still have questions?",
-    "contactUs": "Contact Us"
-  },
-  "newsletter": {
-    "heading": "Subscribe to Our Newsletter",
-    "subtitle": "Get ZATCA updates, ERP insights, and digital transformation news for MENA.",
-    "placeholder": "Enter your email",
-    "subscribe": "Subscribe",
-    "success": "Thank you for subscribing!"
-  },
-  "footer": {
-    "description": "MENA-native ERP with built-in Arabic support, ZATCA compliance, and on-premise data sovereignty.",
-    "aboutFalcon": "About Falcon",
-    "aboutUs": "About Us",
-    "blog": "Blog",
-    "careers": "Careers",
-    "partners": "Partners",
-    "supportHub": "Support Hub",
-    "faq": "FAQ",
-    "helpCenter": "Help Center",
-    "chatSupport": "Chat Support",
-    "webinars": "Webinars",
-    "products": "Products",
-    "privacy": "Privacy Policy",
-    "terms": "Terms & Conditions",
-    "copyright": "© {year} Falcon Smart Solutions. All rights reserved."
-  },
   "common": {
     "learnMore": "Learn More",
     "getStarted": "Get Started",
@@ -339,32 +133,26 @@
     "whatsappSector": "Hi! I'm interested in Falcon solutions for the {name} sector. Can you help?"
   },
   "demo": {
-    "heading": "Book an Appointment",
-    "subtitle": "Tell us about your business and our team will arrange a conversation about the right ERP solution.",
-    "fullName": "Full Name",
-    "email": "Business Email",
-    "phone": "Phone Number",
-    "company": "Company Name",
-    "jobTitle": "Job Title",
+    "fullName": "Full name",
+    "email": "Business email",
+    "phone": "Phone number",
+    "company": "Company name",
+    "jobTitle": "Job title",
+    "jobTitlePlaceholder": "Choose your role",
     "country": "Country",
-    "companySize": "Company Size",
-    "industry": "Industry",
-    "currentERP": "Current ERP System",
-    "message": "Message / Requirements",
-    "consent": "I agree to Falcon's Privacy Policy",
-    "newsletterOpt": "Subscribe to ERP insights newsletter",
-    "submit": "Request an Appointment",
-    "success": "Thank you! We'll contact you to confirm an appointment.",
-    "sidebarTitle": "What we'll discuss",
-    "sidebarSubtitle": "A 30-minute session tailored to your business needs.",
-    "benefit1Title": "Live product walkthrough",
-    "benefit1Desc": "See Falcon ERP in action with your industry's workflow.",
-    "benefit2Title": "Your business requirements",
-    "benefit2Desc": "Discuss your current workflows and the capabilities your team needs.",
-    "benefit3Title": "Implementation roadmap",
-    "benefit3Desc": "Receive a tailored go-live plan with timeline and milestones.",
-    "trustLine1": "Trusted by 500+ MENA businesses",
-    "trustLine2": "Our team will confirm a convenient appointment time.",
+    "countryPlaceholder": "Choose a country",
+    "companySize": "Company size (employees)",
+    "industry": "Sector",
+    "industryPlaceholder": "Choose your sector",
+    "currentERP": "Current ERP system (optional)",
+    "message": "Anything we should prepare? (optional)",
+    "consent": "I agree to the <link>privacy policy</link>",
+    "newsletterOpt": "Send me the ERP insights newsletter",
+    "submit": "Book a demo",
+    "sending": "Sending",
+    "successTitle": "Request received",
+    "success": "Thank you. We will contact you to confirm a time.",
+    "error": "Something went wrong. Please try again.",
     "jobCeo": "CEO / Owner",
     "jobCfo": "CFO / Finance Director",
     "jobCto": "CTO / IT Director",
@@ -374,41 +162,31 @@
     "jobOther": "Other",
     "countrySaudi": "Saudi Arabia",
     "countryUae": "UAE",
-    "countryEgypt": "Egypt",
     "countryQatar": "Qatar",
     "countryBahrain": "Bahrain",
     "countryKuwait": "Kuwait",
     "countryOman": "Oman",
     "countryJordan": "Jordan",
-    "countryOther": "Other",
-    "indRetail": "Retail & E-Commerce",
-    "indManufacturing": "Manufacturing",
-    "indConstruction": "Construction",
-    "indRealEstate": "Real Estate",
-    "indHospitality": "Hospitality & F&B",
-    "indHealthcare": "Healthcare",
-    "indEducation": "Education",
-    "indLogistics": "Logistics",
-    "indTrading": "Trading & Wholesale",
-    "indOther": "Other"
+    "countryOther": "Other"
   },
   "contact": {
-    "heading": "Get in Touch",
-    "subtitle": "Our team is ready to help you find the right ERP solution.",
-    "name": "Your Name",
-    "email": "Email Address",
-    "phone": "Phone Number",
+    "formHeading": "Send us a message",
+    "name": "Your name",
+    "email": "Email address",
+    "phone": "Phone number (optional)",
     "subject": "Subject",
-    "message": "Your Message",
-    "submit": "Send Message",
-    "success": "Message sent! We'll respond within 24 hours.",
-    "officeKSA": "Saudi Arabia Office",
-    "officeEgypt": "Egypt Office"
+    "message": "Your message",
+    "consent": "By sending this message you agree to our <link>privacy policy</link>.",
+    "submit": "Send message",
+    "sending": "Sending",
+    "successTitle": "Message sent",
+    "success": "Thank you. Our team will reply as soon as possible.",
+    "error": "Something went wrong. Please try again."
   },
   "desktopPage": {
     "badge": "On-Premise ERP",
     "heroTitle": "Your Data. Your Servers. Your Rules.",
-    "heroSubtitle": "Enterprise-grade ERP with full data sovereignty. ZATCA-compliant, Arabic-native, and deployed on your infrastructure — not someone else's cloud.",
+    "heroSubtitle": "Enterprise-grade ERP with full data sovereignty. ZATCA-compliant, Arabic-native, and deployed on your infrastructure, not someone else's cloud.",
     "heroTrust1": "No data leaves your servers",
     "heroTrust2": "ZATCA Phase 2 certified",
     "heroTrust3": "Go live in 4-8 weeks",
@@ -648,85 +426,13 @@
     "ctaTitle": "Let's plan your Odoo project",
     "ctaSubtitle": "Book an appointment with our certified Odoo experts."
   },
-  "about": {
-    "heading": "About Falcon Smart Solutions",
-    "subtitle": "Building the future of ERP for the Middle East",
-    "mission": "Our Mission",
-    "missionText": "To empower MENA businesses with enterprise-grade ERP technology that's affordable, Arabic-native, and fully compliant with local regulations.",
-    "vision": "Our Vision",
-    "visionText": "To be the leading ERP platform across the MENA region, enabling businesses of all sizes to compete globally while honoring local requirements.",
-    "stats": {
-      "clients": {
-        "value": "500+",
-        "label": "Clients Served"
-      },
-      "experience": {
-        "value": "15+",
-        "label": "Years Experience"
-      },
-      "users": {
-        "value": "5,000+",
-        "label": "Active Users"
-      },
-      "industries": {
-        "value": "9",
-        "label": "Industries Covered"
-      }
-    },
-    "whyFalcon": {
-      "eyebrow": "Why Falcon",
-      "title": "Built different. Built for you.",
-      "subtitle": "We're not another global ERP trying to fit into the MENA market. We were born here."
-    },
-    "values": {
-      "menaNative": {
-        "title": "MENA Native",
-        "description": "Built from the ground up for the Middle East — Arabic-first, RTL-native, and culturally aligned."
-      },
-      "affordable": {
-        "title": "Affordable",
-        "description": "Enterprise-grade ERP tailored to your workflows, with no vendor lock-in."
-      },
-      "compliant": {
-        "title": "Compliant",
-        "description": "ZATCA Phase 2, PDPL, and local tax regulations built into the core — not bolted on as add-ons."
-      },
-      "dataSovereign": {
-        "title": "Data Sovereign",
-        "description": "Your data stays in-kingdom on your own servers. Full on-premise deployment as the default."
-      }
-    },
-    "ctaHeading": "Ready to transform your business?",
-    "ctaSubtitle": "Join 500+ MENA businesses already running on Falcon ERP."
-  },
-  "legal": {
-    "privacyTitle": "Privacy Policy",
-    "privacyIntro": "At Falcon Smart Solutions, we are committed to protecting your privacy. This policy explains how we collect, use, and safeguard your personal information when you use our website and services.",
-    "dataCollection": "Information We Collect",
-    "dataCollectionText": "We collect information you provide directly, such as your name, email address, phone number, company name, and job title when you fill out forms on our website. We also automatically collect technical data such as IP address, browser type, and pages visited.",
-    "dataUsage": "How We Use Your Information",
-    "dataUsageText": "We use your information to respond to your inquiries, provide product demonstrations, send relevant communications about our ERP solutions, and improve our website and services. We do not sell your personal information to third parties.",
-    "dataSecurity": "Data Security",
-    "dataSecurityText": "We implement appropriate technical and organizational measures to protect your personal data. For on-premise ERP solutions, your business data remains entirely within your infrastructure. Cloud-hosted data is secured with enterprise-grade encryption.",
-    "contact": "Contact Us",
-    "contactText": "If you have questions about this policy or wish to exercise your data rights, please contact us at info@falcon-v.com.",
-    "termsTitle": "Terms & Conditions",
-    "termsIntro": "These Terms & Conditions govern your use of the Falcon Smart Solutions website and services. By accessing our website, you agree to these terms.",
-    "useOfService": "Use of Service",
-    "useOfServiceText": "Our website is provided for informational purposes and to facilitate business inquiries about our ERP solutions. You agree to use the website lawfully and not to interfere with its operation or security.",
-    "intellectualProperty": "Intellectual Property",
-    "intellectualPropertyText": "All content on this website, including text, graphics, logos, and software, is the property of Falcon Smart Solutions and is protected by intellectual property laws. You may not reproduce, distribute, or create derivative works without our written consent.",
-    "limitation": "Limitation of Liability",
-    "limitationText": "Falcon Smart Solutions provides this website on an 'as is' basis. We make no warranties regarding the accuracy or completeness of the information provided. We shall not be liable for any indirect, incidental, or consequential damages arising from your use of the website."
-  },
   "blog": {
-    "label": "Blog",
-    "heading": "Latest Articles & News",
-    "subtitle": "Tips and insights on ERP systems and business management in the Middle East",
+    "heading": "Articles and insights",
+    "subtitle": "Notes on ERP, Fatoora e-invoicing and running a business in Saudi Arabia.",
     "readMore": "Read more",
-    "ctaHeading": "Ready to transform your business?",
-    "ctaSubtitle": "Join 500+ MENA businesses already running on Falcon ERP",
-    "ctaButton": "Book an Appointment",
+    "ctaHeading": "See your own workflow running in the ERP.",
+    "ctaSubtitle": "A senior implementer shows you the ERP on your processes, then sends a written recommendation. Free, no commitment.",
+    "ctaButton": "Book a demo",
     "categories": {
       "compliance": "Compliance",
       "insights": "Insights",
@@ -760,5 +466,74 @@
         "excerpt": "A specialized guide for construction companies on using ERP to track projects, costs, and resources efficiently."
       }
     }
+  },
+  "chrome": {
+    "mainNav": "Main",
+    "brandShort": "Falcon",
+    "sectors": "Sectors",
+    "allSectors": "All sectors",
+    "falconErp": "Falcon ERP",
+    "odoo": "Odoo",
+    "about": "About",
+    "contact": "Contact",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
+    "menuTitle": "Menu",
+    "footerNav": "Footer",
+    "tagline": "ERP for growing companies in Saudi Arabia: Odoo and Falcon ERP, implemented by our own team.",
+    "colSectors": "Sectors",
+    "colSystems": "Systems",
+    "colCompany": "Company",
+    "odooServices": "Odoo services",
+    "copyright": "© {year} {name}.",
+    "crNumber": "Unified national number {number}",
+    "vatNumber": "VAT {number}",
+    "legal": "Legal",
+    "whatsapp": "WhatsApp",
+    "whatsappChat": "Chat with us on WhatsApp",
+    "social": "Falcon on {network}",
+    "consentTitle": "Cookies",
+    "consentText": "We would like to use the Snap Pixel to measure our Snapchat ads. It sets cookies, and it loads only if you accept.",
+    "consentPrivacy": "Privacy policy",
+    "consentAccept": "Accept",
+    "consentDecline": "Decline",
+    "cookieSettings": "Cookie settings"
+  },
+  "blocks": {
+    "seeModules": "See the modules",
+    "seeSetup": "See how we set it up",
+    "modulesAlt": "Falcon ERP sales dashboard: revenue, orders and customers",
+    "appsAlt": "Falcon ERP sales dashboard: revenue, orders and customers",
+    "breadcrumb": "Breadcrumb",
+    "quoteRole": "{role} at {company}",
+    "phone": "Phone",
+    "whatsapp": "WhatsApp",
+    "email": "Email",
+    "address": "Address",
+    "branches": "Our offices",
+    "social": "Follow us",
+    "faqTitle": "Questions",
+    "yourRole": "Your role"
+  },
+  "validation": {
+    "nameRequired": "Name is required",
+    "emailInvalid": "Invalid email address",
+    "businessEmail": "Please use a business email",
+    "phoneRequired": "Phone number is required",
+    "companyRequired": "Company name is required",
+    "jobTitleRequired": "Job title is required",
+    "countryRequired": "Country is required",
+    "companySizeRequired": "Company size is required",
+    "industryRequired": "Industry is required",
+    "consentRequired": "You must agree to the privacy policy",
+    "subjectRequired": "Subject is required",
+    "messageMin": "Message must be at least 10 characters"
+  },
+  "notFound": {
+    "metaTitle": "Page not found",
+    "title": "This page could not be found.",
+    "body": "The link may be out of date, or the page has moved.",
+    "home": "Go to the home page",
+    "sectors": "See the sectors"
   }
 }

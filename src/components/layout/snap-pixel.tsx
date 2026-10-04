@@ -5,10 +5,11 @@ import Script from "next/script";
 import { usePathname } from "next/navigation";
 
 /**
- * Snapchat Snap Pixel — loaded sitewide.
+ * Snapchat Snap Pixel, sitewide but only after cookie consent.
  *
- * The pixel id comes from Admin → Integrations → Snapchat (passed in by the
- * server layout). The loader + one-time `init` run exactly once via next/script
+ * Rendered by CookieConsent (cookie-consent.tsx) once the visitor has accepted,
+ * so nothing from Snap loads before that. The pixel id comes from Admin →
+ * Integrations → Snapchat (passed in by the server layout). The loader + one-time `init` run exactly once via next/script
  * (afterInteractive). The Snap stub queues calls until scevent.min.js loads,
  * so the initial PAGE_VIEW fired in the script is never lost.
  *

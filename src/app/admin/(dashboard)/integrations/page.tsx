@@ -315,7 +315,7 @@ export default function IntegrationsPage() {
               <div>
                 <h3 className="text-lg font-semibold text-slate-900">Snapchat Snap Pixel</h3>
                 <p className="text-sm text-slate-500">
-                  Loads the Snap Pixel on every public page and fires PAGE_VIEW on first load and each route change.
+                  Loads the Snap Pixel on every public page once the visitor accepts the cookie banner, and fires PAGE_VIEW on first load and each route change. While it is on, the site shows the cookie banner and a Cookie settings link in the footer.
                 </p>
               </div>
               <label className="flex cursor-pointer items-center gap-3">

@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import Link from "next/link";
 import StatusBadge from "@/components/admin/status-badge";
-import type { Lead, LeadStatus, LeadType, LeadsResponse } from "@/types/admin";
+import type { Lead, LeadStatus, LeadsResponse } from "@/types/admin";
 
 const TYPE_OPTIONS: { value: string; label: string }[] = [
   { value: "", label: "All Types" },
@@ -29,7 +29,9 @@ export default function LeadsPage() {
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [loading, setLoading] = useState(true);
+  // The query whose results are on screen; loading while it differs from the current one.
+  const [loadedQuery, setLoadedQuery] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
 
   // Filters
@@ -37,29 +39,46 @@ export default function LeadsPage() {
   const [status, setStatus] = useState("");
   const [search, setSearch] = useState("");
 
-  const fetchLeads = useCallback(async () => {
-    setLoading(true);
+  const query = useMemo(() => {
     const params = new URLSearchParams();
     if (type) params.set("type", type);
     if (status) params.set("status", status);
     if (search) params.set("search", search);
     params.set("page", String(page));
     params.set("limit", "20");
-
-    const res = await fetch(`/api/admin/leads?${params}`);
-    const data = await res.json();
-    if (data.success) {
-      const r = data.data as LeadsResponse;
-      setLeads(r.leads);
-      setTotal(r.total);
-      setTotalPages(r.totalPages);
-    }
-    setLoading(false);
+    return params.toString();
   }, [type, status, search, page]);
+  const loading = loadedQuery !== query || refreshing;
+
+  const fetchLeads = useCallback(async (q: string) => {
+    const res = await fetch(`/api/admin/leads?${q}`);
+    return (await res.json()) as { success: boolean; data?: LeadsResponse };
+  }, []);
+
+  const show = useCallback((q: string, data: { success: boolean; data?: LeadsResponse }) => {
+    if (data.success && data.data) {
+      setLeads(data.data.leads);
+      setTotal(data.data.total);
+      setTotalPages(data.data.totalPages);
+    }
+    setLoadedQuery(q);
+  }, []);
 
   useEffect(() => {
-    fetchLeads();
-  }, [fetchLeads]);
+    let live = true;
+    fetchLeads(query).then((data) => {
+      if (live) show(query, data);
+    });
+    return () => {
+      live = false;
+    };
+  }, [fetchLeads, show, query]);
+
+  async function refresh() {
+    setRefreshing(true);
+    show(query, await fetchLeads(query));
+    setRefreshing(false);
+  }
 
   async function handleBulkStatus(newStatus: LeadStatus) {
     if (selected.size === 0) return;
@@ -69,7 +88,7 @@ export default function LeadsPage() {
       body: JSON.stringify({ ids: Array.from(selected), status: newStatus }),
     });
     setSelected(new Set());
-    fetchLeads();
+    await refresh();
   }
 
   function toggleSelect(id: string) {

@@ -1,55 +1,82 @@
 "use client";
 
+import { Suspense, useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { useLocale } from "next-intl";
-import { usePathname, useRouter } from "@/i18n/navigation";
+import { Link, usePathname } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 
 interface LanguageToggleProps {
   className?: string;
+  onClick?: () => void;
 }
 
-export default function LanguageToggle({ className }: LanguageToggleProps) {
-  const locale = useLocale();
-  const router = useRouter();
-  const pathname = usePathname();
+/**
+ * Plain link to the same page in the other language (works without
+ * JavaScript): `/sectors/real-estate` and `/ar/sectors/real-estate`.
+ * The label is written in the target language and tagged with its `lang`.
+ * Once hydrated it also carries the query string and hash, so
+ * `/demo?sector=retail&role=owner` becomes `/ar/demo?sector=retail&role=owner`.
+ */
+export default function LanguageToggle(props: LanguageToggleProps) {
+  // useSearchParams needs a Suspense boundary; the fallback is the plain path link.
+  return (
+    <Suspense fallback={<ToggleLink {...props} />}>
+      <WithQuery {...props} />
+    </Suspense>
+  );
+}
 
-  const isArabic = locale === "ar";
-  const label = isArabic ? "English" : "\u0627\u0644\u0639\u0631\u0628\u064A\u0629";
-
-  function handleToggle() {
-    router.replace(pathname, { locale: isArabic ? "en" : "ar" });
+function WithQuery(props: LanguageToggleProps) {
+  const params = useSearchParams();
+  const hash = useHash();
+  // Repeated keys become arrays so they all survive the switch.
+  const query: Record<string, string | string[]> = {};
+  for (const key of new Set(params.keys())) {
+    const all = params.getAll(key);
+    query[key] = all.length === 1 ? all[0] : all;
   }
+  return <ToggleLink {...props} query={query} hash={hash} />;
+}
+
+/** The current URL hash ("" on the server and before hydration); follows hashchange. */
+function useHash(): string {
+  const [hash, setHash] = useState("");
+  const pathname = usePathname();
+  useEffect(() => {
+    const read = () => setHash(window.location.hash);
+    read();
+    window.addEventListener("hashchange", read);
+    return () => window.removeEventListener("hashchange", read);
+  }, [pathname]);
+  return hash;
+}
+
+function ToggleLink({
+  className,
+  onClick,
+  query,
+  hash,
+}: LanguageToggleProps & { query?: Record<string, string | string[]>; hash?: string }) {
+  const locale = useLocale();
+  const pathname = usePathname();
+  const target = locale === "ar" ? "en" : "ar";
 
   return (
-    <button
-      type="button"
-      onClick={handleToggle}
-      aria-label={isArabic ? "Switch to English" : "\u0627\u0644\u062A\u0628\u062F\u064A\u0644 \u0625\u0644\u0649 \u0627\u0644\u0639\u0631\u0628\u064A\u0629"}
+    <Link
+      href={{ pathname, query: query && Object.keys(query).length > 0 ? query : undefined, hash: hash || undefined }}
+      locale={target}
+      lang={target}
+      hrefLang={target}
+      onClick={onClick}
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5",
-        "text-sm font-medium text-text-secondary",
-        "transition-colors duration-200",
-        "hover:bg-primary-50 hover:text-primary-500",
-        "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-500",
-        "cursor-pointer select-none",
+        "inline-flex items-center text-[15px] leading-none text-ink no-underline transition-colors duration-200 hover:text-brand",
+        "rounded-full outline-brand focus-visible:outline-3 focus-visible:outline-offset-3",
+        target === "ar" ? "font-arabic" : "font-sans font-semibold",
         className,
       )}
     >
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 20 20"
-        fill="currentColor"
-        className="size-4"
-        aria-hidden="true"
-      >
-        <path
-          fillRule="evenodd"
-          d="M7.171 4.146l1.947 4.5a.75.75 0 01-1.376.596L7.05 7.75H4.95l-.692 1.492a.75.75 0 11-1.376-.596l1.947-4.5a.75.75 0 011.342 0zM6 5.588L5.28 7.25h1.44L6 5.588zM14.846 5.602a.75.75 0 01.528.918l-.003.012a5.773 5.773 0 01-.396 1.078 6.28 6.28 0 01-.738 1.11c.3.252.627.476.977.67a.75.75 0 11-.73 1.31 7.771 7.771 0 01-1.2-.846 7.768 7.768 0 01-1.2.845.75.75 0 01-.73-1.31c.35-.193.676-.417.977-.669a6.283 6.283 0 01-.738-1.11 5.774 5.774 0 01-.396-1.078l-.003-.012a.75.75 0 011.446-.39l.003.009a4.268 4.268 0 00.289.747c.207.39.469.743.782 1.053a4.776 4.776 0 00.782-1.053 4.27 4.27 0 00.29-.747l.002-.01a.75.75 0 01.918-.527z"
-          clipRule="evenodd"
-        />
-        <path d="M10 2a8 8 0 100 16 8 8 0 000-16zM1.5 10a8.5 8.5 0 1117 0 8.5 8.5 0 01-17 0z" />
-      </svg>
-      {label}
-    </button>
+      {target === "ar" ? "العربية" : "English"}
+    </Link>
   );
 }

@@ -84,7 +84,13 @@ CREATE TABLE IF NOT EXISTS site_settings (
   login_url              text NOT NULL DEFAULT 'https://falcon-valley.com',
   jwt_secret             text NOT NULL DEFAULT '',
   rate_limit_max         int  NOT NULL DEFAULT 10,
-  rate_limit_window_ms   int  NOT NULL DEFAULT 60000
+  rate_limit_window_ms   int  NOT NULL DEFAULT 60000,
+  blog_enabled           boolean NOT NULL DEFAULT false,
+  cta_label_en           text NOT NULL DEFAULT 'Book a demo',
+  cta_label_ar           text NOT NULL DEFAULT 'احجز عرضًا تجريبيًا',
+  demo_url               text NOT NULL DEFAULT '/demo',
+  cr_number              text NOT NULL DEFAULT '',
+  vat_number             text NOT NULL DEFAULT ''
 );
 
 -- SEO settings (single row, id = 1)
@@ -124,7 +130,10 @@ CREATE TABLE IF NOT EXISTS sectors (
   video_url      text NOT NULL DEFAULT '',
   featured       boolean NOT NULL DEFAULT false,
   enabled        boolean NOT NULL DEFAULT true,
-  sort_order     int NOT NULL DEFAULT 0
+  sort_order     int NOT NULL DEFAULT 0,
+  photo          text NOT NULL DEFAULT '',
+  short_promise_en text NOT NULL DEFAULT '',
+  short_promise_ar text NOT NULL DEFAULT ''
 );
 
 -- Landing-page video routing per sector — Layer 1: by domain/subdomain.
@@ -289,7 +298,8 @@ CREATE TABLE IF NOT EXISTS testimonials (
   quote_en   text NOT NULL DEFAULT '',
   quote_ar   text NOT NULL DEFAULT '',
   image      text NOT NULL DEFAULT '',
-  sort_order int  NOT NULL DEFAULT 0
+  sort_order int  NOT NULL DEFAULT 0,
+  enabled    boolean NOT NULL DEFAULT true
 );
 
 -- FAQs (one row each)
@@ -366,6 +376,36 @@ CREATE TABLE IF NOT EXISTS integrations (
   helpdesk_allow_rating     boolean NOT NULL DEFAULT true,
   helpdesk_allow_new_tickets boolean NOT NULL DEFAULT true
 );
+
+-- v2 page content: one row per block, typed per block type (src/lib/blocks).
+-- id is generated in Node (crypto.randomUUID) so no extension or PG13+ is needed.
+CREATE TABLE IF NOT EXISTS page_blocks (
+  id         uuid PRIMARY KEY,
+  page       text NOT NULL,
+  type       text NOT NULL,
+  sort_order int  NOT NULL DEFAULT 0,
+  enabled    boolean NOT NULL DEFAULT true,
+  content    jsonb NOT NULL DEFAULT '{}'::jsonb,
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS page_blocks_page_sort_idx ON page_blocks (page, sort_order);
+
+-- Per-page SEO overrides; seo_settings (id = 1) stays the global fallback.
+CREATE TABLE IF NOT EXISTS page_seo (
+  page           text PRIMARY KEY,
+  title_en       text NOT NULL DEFAULT '',
+  title_ar       text NOT NULL DEFAULT '',
+  description_en text NOT NULL DEFAULT '',
+  description_ar text NOT NULL DEFAULT '',
+  og_image       text NOT NULL DEFAULT '',
+  updated_at     timestamptz NOT NULL DEFAULT now()
+);
+
+-- Guards for one-off data fixes and first-time page seeding (see migrate.ts).
+CREATE TABLE IF NOT EXISTS data_fixes (
+  key        text PRIMARY KEY,
+  applied_at timestamptz NOT NULL DEFAULT now()
+);
 `;
 
 // Idempotent column additions for databases created by an earlier version.
@@ -418,6 +458,16 @@ ALTER TABLE pricing_base ADD COLUMN IF NOT EXISTS lifetime_license boolean NOT N
 ALTER TABLE sector_pricing ADD COLUMN IF NOT EXISTS lifetime_license boolean;
 ALTER TABLE products ADD COLUMN IF NOT EXISTS embed_html_en text NOT NULL DEFAULT '';
 ALTER TABLE products ADD COLUMN IF NOT EXISTS embed_html_ar text NOT NULL DEFAULT '';
+ALTER TABLE sectors ADD COLUMN IF NOT EXISTS photo text NOT NULL DEFAULT '';
+ALTER TABLE sectors ADD COLUMN IF NOT EXISTS short_promise_en text NOT NULL DEFAULT '';
+ALTER TABLE sectors ADD COLUMN IF NOT EXISTS short_promise_ar text NOT NULL DEFAULT '';
+ALTER TABLE testimonials ADD COLUMN IF NOT EXISTS enabled boolean NOT NULL DEFAULT true;
+ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS blog_enabled boolean NOT NULL DEFAULT false;
+ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS cta_label_en text NOT NULL DEFAULT 'Book a demo';
+ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS cta_label_ar text NOT NULL DEFAULT 'احجز عرضًا تجريبيًا';
+ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS demo_url text NOT NULL DEFAULT '/demo';
+ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS cr_number text NOT NULL DEFAULT '';
+ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS vat_number text NOT NULL DEFAULT '';
 `;
 
 export async function ensureSchema(pool: Pool): Promise<void> {

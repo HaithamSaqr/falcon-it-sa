@@ -1,33 +1,61 @@
 import { z } from "zod/v4";
 
-export const demoFormSchema = z.object({
-  fullName: z.string().min(2, "Name is required"),
-  email: z
-    .string()
-    .email("Invalid email address")
-    .refine(
-      (email) => !/(gmail|yahoo|hotmail|outlook)\./i.test(email),
-      "Please use a business email"
-    ),
-  phone: z.string().min(8, "Phone number is required"),
-  company: z.string().min(2, "Company name is required"),
-  jobTitle: z.string().min(1, "Job title is required"),
-  country: z.string().min(1, "Country is required"),
-  companySize: z.string().min(1, "Company size is required"),
-  industry: z.string().min(1, "Industry is required"),
-  currentERP: z.string().optional(),
-  message: z.string().optional(),
-  consent: z.literal(true, { message: "You must agree to the privacy policy" }),
-  newsletter: z.boolean().optional(),
-});
+/**
+ * Error messages of the demo and contact forms. The server schemas below use
+ * the English defaults (the API contract); the forms build the same schemas
+ * with the page language's messages (`validation` in messages/*.json), so the
+ * rules live in one place and only the wording changes.
+ */
+export const FORM_MESSAGES_EN = {
+  nameRequired: "Name is required",
+  emailInvalid: "Invalid email address",
+  businessEmail: "Please use a business email",
+  phoneRequired: "Phone number is required",
+  companyRequired: "Company name is required",
+  jobTitleRequired: "Job title is required",
+  countryRequired: "Country is required",
+  companySizeRequired: "Company size is required",
+  industryRequired: "Industry is required",
+  consentRequired: "You must agree to the privacy policy",
+  subjectRequired: "Subject is required",
+  messageMin: "Message must be at least 10 characters",
+};
 
-export const contactFormSchema = z.object({
-  name: z.string().min(2, "Name is required"),
-  email: z.string().email("Invalid email address"),
-  phone: z.string().optional(),
-  subject: z.string().min(2, "Subject is required"),
-  message: z.string().min(10, "Message must be at least 10 characters"),
-});
+export type FormMessages = typeof FORM_MESSAGES_EN;
+
+export function makeDemoFormSchema(m: FormMessages = FORM_MESSAGES_EN) {
+  return z.object({
+    fullName: z.string().min(2, m.nameRequired),
+    email: z
+      .string()
+      .email(m.emailInvalid)
+      .refine((email) => !/(gmail|yahoo|hotmail|outlook)\./i.test(email), m.businessEmail),
+    phone: z.string().min(8, m.phoneRequired),
+    company: z.string().min(2, m.companyRequired),
+    jobTitle: z.string().min(1, m.jobTitleRequired),
+    country: z.string().min(1, m.countryRequired),
+    companySize: z.string().min(1, m.companySizeRequired),
+    industry: z.string().min(1, m.industryRequired),
+    currentERP: z.string().optional(),
+    message: z.string().optional(),
+    consent: z.literal(true, { message: m.consentRequired }),
+    newsletter: z.boolean().optional(),
+  });
+}
+
+export function makeContactFormSchema(m: FormMessages = FORM_MESSAGES_EN) {
+  return z.object({
+    name: z.string().min(2, m.nameRequired),
+    email: z.string().email(m.emailInvalid),
+    phone: z.string().optional(),
+    subject: z.string().min(2, m.subjectRequired),
+    message: z.string().min(10, m.messageMin),
+  });
+}
+
+/** Server-side schemas (API routes): English messages, unchanged contract. */
+export const demoFormSchema = makeDemoFormSchema();
+export const contactFormSchema = makeContactFormSchema();
 
 export const newsletterSchema = z.object({
   email: z.string().email("Invalid email address"),

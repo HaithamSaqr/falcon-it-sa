@@ -40,6 +40,12 @@ COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
+# Image optimizer (next/image): the standalone output traces sharp and its
+# musl binaries into node_modules. Fail the build if they are missing, and give
+# the optimizer a writable cache directory.
+RUN node -e "require('sharp')" && \
+    mkdir -p /app/.next/cache && chown nextjs:nodejs /app/.next/cache
+
 # Data directory for settings, leads, content (persist via Docker volume)
 RUN mkdir -p /app/data && chown nextjs:nodejs /app/data
 VOLUME /app/data

@@ -9,6 +9,7 @@ import { demoFormSchema } from "@/lib/validations";
 import { createLead, createCalendarEvent } from "@/lib/odoo/client";
 import { sendDemoConfirmation } from "@/lib/email/resend";
 import { addLead, getIntegrations } from "@/lib/data-store";
+import { parseLeadAttribution } from "@/lib/lead-attribution";
 import {
   checkRateLimit,
   jsonSuccess,
@@ -40,6 +41,9 @@ export async function POST(request: NextRequest) {
   const data = result.data;
   const locale = getLocale(request);
   const utm = getUtmParams(request);
+  // Which sector page and role the visitor booked from (`?sector=&role=` on
+  // the demo link). Validated; anything unknown or malformed is left out.
+  const attribution = parseLeadAttribution(body);
 
   // 4. Log lead locally (always — as fallback)
   logLeadFallback("Demo Request", {
@@ -53,7 +57,7 @@ export async function POST(request: NextRequest) {
     await addLead({
       type: "demo",
       status: "new",
-      data: { ...data, locale, ...utm },
+      data: { ...data, locale, ...utm, ...attribution },
       source: request.headers.get("referer") || "/demo",
       locale,
       ip: request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown",

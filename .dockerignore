@@ -6,3 +6,15 @@ node_modules
 *.md
 .vscode
 .claude
+
+# Build context hygiene: local runtime state, test fixtures and QA tooling never
+# belong in an image. data/ holds db-config.json (database credentials).
+data
+.env.test
+.env*.local
+qa
+tests
+playwright-report
+test-results
+.superpowers
+scripts/qa

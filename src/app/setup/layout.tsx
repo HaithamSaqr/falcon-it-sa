@@ -1,7 +1,7 @@
 import "@/app/globals.css";
 
 export const metadata = {
-  title: "Quick Setup — Falcon",
+  title: "Quick setup | Falcon",
   robots: { index: false, follow: false },
 };
 

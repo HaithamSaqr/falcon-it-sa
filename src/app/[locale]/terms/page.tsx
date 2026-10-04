@@ -1,33 +1,17 @@
-import { useTranslations } from "next-intl";
-import Container from "@/components/ui/container";
+import type { Metadata } from "next";
+import { setRequestLocale } from "next-intl/server";
+import { pageMetadata } from "@/lib/page-meta";
+import BlockPage from "@/components/v2/block-page";
 
-export default function TermsPage() {
-  const t = useTranslations("legal");
+type Props = { params: Promise<{ locale: string }> };
 
-  return (
-    <section className="py-20 lg:py-28">
-      <Container>
-        <div className="mx-auto max-w-3xl">
-          <h1 className="mb-8 text-3xl font-extrabold text-text-primary sm:text-4xl">
-            {t("termsTitle")}
-          </h1>
-          <div className="prose prose-slate max-w-none text-text-secondary">
-            <p className="text-lg leading-relaxed">{t("termsIntro")}</p>
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { locale } = await params;
+  return pageMetadata("terms", locale);
+}
 
-            <h2 className="mt-8 text-xl font-bold text-text-primary">{t("useOfService")}</h2>
-            <p>{t("useOfServiceText")}</p>
-
-            <h2 className="mt-8 text-xl font-bold text-text-primary">{t("intellectualProperty")}</h2>
-            <p>{t("intellectualPropertyText")}</p>
-
-            <h2 className="mt-8 text-xl font-bold text-text-primary">{t("limitation")}</h2>
-            <p>{t("limitationText")}</p>
-
-            <h2 className="mt-8 text-xl font-bold text-text-primary">{t("contact")}</h2>
-            <p>{t("contactText")}</p>
-          </div>
-        </div>
-      </Container>
-    </section>
-  );
+export default async function TermsPage({ params }: Props) {
+  const { locale } = await params;
+  setRequestLocale(locale);
+  return <BlockPage page="terms" locale={locale} />;
 }

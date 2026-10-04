@@ -52,6 +52,8 @@ export interface SiteContent {
     company: string;
     quote: BilingualText;
     image?: string;
+    /** false hides the testimonial on the public site (row is kept). Missing = keep stored value / true. */
+    enabled?: boolean;
   }>;
   faqs: Array<{
     id: string;
@@ -131,6 +133,10 @@ export interface SiteSettings {
     whatsapp: string;
     /** Dynamic list of office branches (admin can add/remove). */
     branches: Branch[];
+    /** v2: unified national number (CR). Missing on save = keep the stored value. */
+    crNumber?: string;
+    /** v2: VAT registration number. Missing on save = keep the stored value. */
+    vatNumber?: string;
   };
   notifications: {
     emailOnNewLead: boolean;
@@ -146,6 +152,10 @@ export interface SiteSettings {
   };
   /** External URL the navbar "Login" button points to. */
   loginUrl: string;
+  /** v2: show the blog in nav, footer and sitemap. Missing on save = keep the stored value. */
+  blogEnabled?: boolean;
+  /** v2: global primary CTA label and the demo page it links to. Missing on save = keep the stored value. */
+  primaryCta?: { label: BilingualText; demoUrl: string };
   /** Clients marquee speed — seconds per logo (higher = slower). */
   clientsSpeed: number;
   /**
@@ -211,6 +221,10 @@ export interface Sector {
   featured: boolean;
   enabled: boolean;
   sortOrder: number;
+  /** v2 card and hero photo (upload path). Missing on save = keep the stored value. */
+  photo?: string;
+  /** v2 one-line promise on sector cards. Missing on save = keep the stored value. */
+  shortPromise?: BilingualText;
 }
 
 export interface VolumeDiscountTier {

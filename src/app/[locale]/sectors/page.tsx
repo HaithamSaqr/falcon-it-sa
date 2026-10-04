@@ -1,26 +1,33 @@
-import { setRequestLocale, getTranslations } from "next-intl/server";
+import type { Metadata } from "next";
+import { setRequestLocale } from "next-intl/server";
+import { buildMetadata } from "@/lib/seo";
 import { getSectors } from "@/lib/data-store";
-import SectorsGrid from "@/components/sections/sectors-grid";
+import { pagesWithBlocks } from "@/lib/blocks/store";
+import { sectorsIndexBlocks } from "@/lib/blocks/sectors-index";
+import BlockRenderer from "@/components/v2/blocks";
 
 type Props = { params: Promise<{ locale: string }> };
 
-export async function generateMetadata({ params }: Props) {
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: "sectors" });
-  return { title: `${t("heading")} — Falcon` };
+  return buildMetadata({
+    page: "sectors",
+    path: "/sectors",
+    locale,
+    fallbackTitle: { en: "Sectors we serve", ar: "القطاعات التي نخدمها" },
+    fallbackDescription: {
+      en: "Pick your sector to see the problems we solve and how Falcon sets up the ERP for it.",
+      ar: "اختر قطاعك لترى المشكلات التي نحلّها، وكيف يضبط فالكون النظام له.",
+    },
+  });
 }
 
-export default async function AllSectorsPage({ params }: Props) {
+export default async function SectorsIndexPage({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const sectors = await getSectors(true);
-  const sorted = [...sectors].sort((a, b) => {
-    if (a.featured !== b.featured) return a.featured ? -1 : 1;
-    return a.sortOrder - b.sortOrder;
-  });
-  return (
-    <div className="py-8">
-      <SectorsGrid sectors={sorted} hasMore={false} showSearch />
-    </div>
-  );
+  // A sector with no page layout 404s, so it is not listed.
+  const enabled = await getSectors(true);
+  const listable = await pagesWithBlocks(enabled.map((s) => `sector:${s.id}`));
+  const sectors = enabled.filter((s) => listable.has(`sector:${s.id}`));
+  return <BlockRenderer blocks={sectorsIndexBlocks(sectors)} locale={locale} />;
 }

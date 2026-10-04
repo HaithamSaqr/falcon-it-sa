@@ -1,18 +1,17 @@
+import type { Metadata } from "next";
 import { setRequestLocale } from "next-intl/server";
-import { getContent } from "@/lib/data-store";
-import FAQ from "@/components/sections/faq";
+import { pageMetadata } from "@/lib/page-meta";
+import BlockPage from "@/components/v2/block-page";
 
-type Props = {
-  params: Promise<{ locale: string }>;
-};
+type Props = { params: Promise<{ locale: string }> };
 
-export default async function FAQPage({ params }: Props) {
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { locale } = await params;
+  return pageMetadata("faq", locale);
+}
+
+export default async function FaqPage({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
-
-  const content = await getContent();
-  const faqs = content.faqs.filter((item) =>
-    !/free trial|تجربة مجانية|التجربة المجانية/i.test(`${item.question.en} ${item.question.ar}`),
-  );
-  return <FAQ items={faqs} isAr={locale === "ar"} />;
+  return <BlockPage page="faq" locale={locale} />;
 }

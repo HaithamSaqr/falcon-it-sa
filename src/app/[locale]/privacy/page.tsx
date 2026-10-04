@@ -1,25 +1,42 @@
-import Container from "@/components/ui/container";
+import type { Metadata } from "next";
+import { setRequestLocale } from "next-intl/server";
+import Container from "@/components/v2/ui/container";
+import { pageMetadata } from "@/lib/page-meta";
 
-const sectionHeading = "mt-10 text-2xl font-bold text-text-primary";
-const paragraph = "mt-4 leading-8 text-text-secondary";
+const sectionHeading = "mt-10 text-2xl font-bold text-ink";
+const paragraph = "mt-4 leading-8 text-body";
 
-export default function PrivacyPage() {
+type Props = { params: Promise<{ locale: string }> };
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { locale } = await params;
+  return pageMetadata("privacy", locale);
+}
+
+/**
+ * The Falcon Valley app privacy policy (linked from the app stores, so it
+ * stays at /privacy). The text is bilingual on one page in both locales; the
+ * website's own policy is /privacy-policy.
+ */
+export default async function PrivacyPage({ params }: Props) {
+  const { locale } = await params;
+  setRequestLocale(locale);
   return (
-    <section className="bg-surface py-16 sm:py-20 lg:py-24">
+    <section className="bg-page py-16 sm:py-20 lg:py-24">
       <Container>
-        <article className="mx-auto max-w-4xl rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200 sm:p-10 lg:p-14">
-          <section lang="ar" dir="rtl" className="text-right">
-            <h1 className="text-3xl font-extrabold text-text-primary sm:text-4xl">
+        <article className="mx-auto max-w-4xl rounded-3xl bg-surface p-6 shadow-[inset_0_0_0_1px_rgba(11,26,51,0.08)] sm:p-10 lg:p-14">
+          <section lang="ar" dir="rtl" className="text-start">
+            <h1 className="text-3xl font-extrabold text-ink sm:text-4xl">
               سياسة الخصوصية
             </h1>
-            <p className="mt-3 font-semibold text-primary" dir="ltr">Falcon Valley</p>
+            <p className="mt-3 font-semibold text-brand" dir="ltr">Falcon Valley</p>
             <p className={paragraph}>آخر تحديث: ٧ سبتمبر ٢٠٢٦</p>
             <p className={paragraph}>
               توضح هذه السياسة كيفية التعامل مع البيانات عند استخدام تطبيق فالكون فالي للوصول إلى أنظمة إدارة الأعمال الخاصة بمؤسستك. تختلف البيانات المتاحة بحسب الخادم الذي تختاره وصلاحيات حسابك والخدمات التي تستخدمها.
             </p>
 
             <h2 className={sectionHeading}>البيانات التي يعالجها التطبيق</h2>
-            <ul className="mt-4 list-disc space-y-3 pr-6 leading-8 text-text-secondary">
+            <ul className="mt-4 list-disc space-y-3 ps-6 leading-8 text-body">
               <li>بيانات الاتصال بالخادم والحساب، مثل اسم المستخدم والاسم والبريد الإلكتروني ورقم الهاتف والصورة الشخصية عند توفيرها.</li>
               <li>بيانات العمل التي تعرضها أو تدخلها، مثل العملاء والفواتير والمخزون والمشاريع والمهام وطلبات الموظفين والحضور وكشوف الرواتب. تُرسل العمليات ذات الصلة إلى خادم المؤسسة المحدد في التطبيق.</li>
               <li>موقع الجهاز عند منح الإذن واستخدام ميزات تعتمد عليه، مثل تحديد موقع العمل والتحقق من الحضور.</li>
@@ -36,7 +53,7 @@ export default function PrivacyPage() {
             <p className={paragraph}>
               تعالج مؤسستك ومشغّل الخادم الذي تتصل به بيانات أعمالك وفق إعداداتهما وسياساتهما. يتضمن التطبيق خدمات جوجل للإشعارات والإعلانات؛ وقد تعالج هذه الخدمات معرّفات الجهاز وعنوان الإنترنت والبيانات التقنية والتفاعلات وفق إعداداتها وسياسات جوجل. تتأثر إتاحة الإعلانات بإعدادات التطبيق والخدمة. وقد تُنقل البيانات إلى خوادم خارج بلدك.
             </p>
-            <p className={paragraph}><a className="font-semibold text-primary underline underline-offset-4" href="https://policies.google.com/privacy">سياسة خصوصية جوجل</a></p>
+            <p className={paragraph}><a className="font-semibold text-brand underline underline-offset-4" href="https://policies.google.com/privacy">سياسة خصوصية جوجل</a></p>
 
             <h2 className={sectionHeading}>الأذونات وخياراتك</h2>
             <p className={paragraph}>
@@ -58,13 +75,13 @@ export default function PrivacyPage() {
               قد تُحدّث هذه السياسة عند تغير ميزات التطبيق أو ممارسات معالجة البيانات، ويُذكر تاريخ التحديث أعلى الصفحة. للاستفسارات وطلبات الخصوصية:
             </p>
             <p className={paragraph} dir="ltr">
-              <a className="text-primary underline underline-offset-4" href="mailto:info@falcon-v.com">info@falcon-v.com</a><br />
-              <a className="text-primary underline underline-offset-4" href="https://www.falcon-v.com/">www.falcon-v.com</a>
+              <a className="text-brand underline underline-offset-4" href="mailto:info@falcon-v.com">info@falcon-v.com</a><br />
+              <a className="text-brand underline underline-offset-4" href="https://www.falcon-v.com/">www.falcon-v.com</a>
             </p>
           </section>
 
-          <section lang="en" dir="ltr" className="mt-14 border-t border-slate-200 pt-10 text-left">
-            <h1 className="text-3xl font-extrabold text-text-primary sm:text-4xl">Privacy Policy — Falcon Valley</h1>
+          <section lang="en" dir="ltr" className="mt-14 border-t border-ink/10 pt-10 text-start">
+            <h1 className="text-3xl font-extrabold text-ink sm:text-4xl">Falcon Valley privacy policy</h1>
             <p className={paragraph}>Last updated: September 7, 2026</p>
             <p className={paragraph}>
               Falcon Valley connects to your organization&apos;s business systems. Available information depends on your selected server, account permissions, and the features you use.
@@ -82,7 +99,7 @@ export default function PrivacyPage() {
             <p className={paragraph}>
               Information supports authentication, requested business operations, notifications and app features. Your organization and selected server operator process business records under their own settings and policies. The app includes Google notification and advertising services, which may process device or installation identifiers, notification tokens, IP addresses, technical information and interactions under Google&apos;s policies and service configuration. Advertising availability depends on app and service settings. Data may be processed outside your country.
             </p>
-            <p className={paragraph}><a className="font-semibold text-primary underline underline-offset-4" href="https://policies.google.com/privacy">Google Privacy Policy</a></p>
+            <p className={paragraph}><a className="font-semibold text-brand underline underline-offset-4" href="https://policies.google.com/privacy">Google Privacy Policy</a></p>
 
             <h2 className={sectionHeading}>Your choices, retention and deletion</h2>
             <p className={paragraph}>
@@ -99,8 +116,8 @@ export default function PrivacyPage() {
 
             <h2 className={sectionHeading}>Contact</h2>
             <p className={paragraph}>
-              <a className="text-primary underline underline-offset-4" href="mailto:info@falcon-v.com">info@falcon-v.com</a><br />
-              <a className="text-primary underline underline-offset-4" href="https://www.falcon-v.com/">www.falcon-v.com</a>
+              <a className="text-brand underline underline-offset-4" href="mailto:info@falcon-v.com">info@falcon-v.com</a><br />
+              <a className="text-brand underline underline-offset-4" href="https://www.falcon-v.com/">www.falcon-v.com</a>
             </p>
           </section>
         </article>

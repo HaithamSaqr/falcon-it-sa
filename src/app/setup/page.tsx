@@ -4,7 +4,7 @@ import { isSetupComplete } from "@/lib/auth";
 import SetupForm from "./setup-form";
 
 export const metadata = {
-  title: "Quick Setup — Falcon",
+  title: "Quick setup | Falcon",
 };
 
 // Always evaluate install state at request time.

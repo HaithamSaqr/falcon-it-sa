@@ -4,8 +4,13 @@
  * then drop the legacy JSON store. Idempotent (safe to run repeatedly).
  */
 
-import type { Pool } from "pg";
+import type { Pool, PoolClient } from "pg";
 import { ensureSchema } from "./schema";
+import { withTransaction } from "./tx";
+import { SEED } from "@/lib/blocks/seed";
+import type { SeedBlock } from "@/lib/blocks/seed";
+import { V2_SECTORS, V2_SECTOR_SLUGS } from "@/lib/blocks/seed/sectors";
+import { insertBlocks, lockPage, markPageSeeded, pageSeededKey } from "@/lib/blocks/db";
 import {
   writeSettings,
   writeContent,
@@ -28,6 +33,7 @@ import {
 import {
   DEFAULT_SETTINGS,
   DEFAULT_CONTENT,
+  DEFAULT_COMPANY_IDS,
   DEFAULT_INTEGRATIONS,
   DEFAULT_SEO,
   DEFAULT_FOOTER_LINKS,
@@ -185,4 +191,208 @@ export async function ensureReady(pool: Pool): Promise<void> {
 
   // ── Retire the legacy JSON store ──
   await pool.query(`DROP TABLE IF EXISTS singletons`);
+
+  // ── v2: one-off data fixes, then page content seeds ──
+  await runDataFixes(pool);
+  await seedPageBlocks(pool);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// v2 one-off data fixes
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Run `fix` once per database. The `data_fixes` row and the fix commit in the
+ * same transaction, under an advisory lock, so concurrent boots cannot apply a
+ * fix twice and a failed fix leaves nothing behind (it is retried next boot).
+ */
+async function runOnce(pool: Pool, key: string, fix: (c: PoolClient) => Promise<void>): Promise<void> {
+  await withTransaction(pool, async (client) => {
+    await client.query(`SELECT pg_advisory_xact_lock(hashtext($1))`, [key]);
+    const done = await client.query(`SELECT 1 FROM data_fixes WHERE key = $1`, [key]);
+    if (done.rowCount === 0) {
+      await fix(client);
+      await client.query(`INSERT INTO data_fixes (key) VALUES ($1)`, [key]);
+    }
+  });
+}
+
+/**
+ * Keep the seven v2 sectors on their existing slugs (insert any that are
+ * missing), give them their v2 names, photos and promises, and disable every
+ * other sector row (RetailBasic, construction, healthcare, ...). Nothing is
+ * deleted; old titles and descriptions are left as they are.
+ */
+async function fixSectorSlugs(c: PoolClient): Promise<void> {
+  for (let i = 0; i < V2_SECTORS.length; i++) {
+    const s = V2_SECTORS[i];
+    await c.query(
+      `INSERT INTO sectors (id, name_en, name_ar, title_en, title_ar, systems, enabled, sort_order,
+                            photo, short_promise_en, short_promise_ar)
+       VALUES ($1, $2, $3, $2, $3, $4, true, $5, $6, $7, $8)
+       ON CONFLICT (id) DO UPDATE SET
+         name_en = EXCLUDED.name_en, name_ar = EXCLUDED.name_ar,
+         enabled = true, sort_order = EXCLUDED.sort_order, photo = EXCLUDED.photo,
+         short_promise_en = EXCLUDED.short_promise_en, short_promise_ar = EXCLUDED.short_promise_ar`,
+      [s.slug, s.name.en, s.name.ar, ["desktop", "cloud", "odoo"], i, s.photo, s.promise.en, s.promise.ar]
+    );
+  }
+  // Exact (case-sensitive) match keeps only the seven canonical rows; any
+  // other spelling such as "RetailBasic", "retailbasic" or "Retail" is disabled.
+  await c.query(`UPDATE sectors SET enabled = false WHERE NOT (id = ANY($1::text[]))`, [V2_SECTOR_SLUGS]);
+}
+
+/**
+ * Sector pages use `title_en`/`title_ar` as the page <title>. Production still
+ * holds the old default titles (the pre-v2 sector names), so move those to the
+ * v2 names. A title is replaced only when it exactly equals an old default
+ * title or name for that sector (per language); admin-written text is kept.
+ */
+async function fixSectorTitles(c: PoolClient): Promise<void> {
+  for (const s of V2_SECTORS) {
+    const old = DEFAULT_SECTORS.find((d) => d.id === s.slug);
+    if (!old) continue;
+    const oldEn = [...new Set([old.title.en, old.name.en])].filter(Boolean);
+    const oldAr = [...new Set([old.title.ar, old.name.ar])].filter(Boolean);
+    await c.query(
+      `UPDATE sectors SET
+         title_en = CASE WHEN title_en = ANY($2::text[]) THEN $4 ELSE title_en END,
+         title_ar = CASE WHEN title_ar = ANY($3::text[]) THEN $5 ELSE title_ar END
+       WHERE id = $1`,
+      [s.slug, oldEn, oldAr, s.name.en, s.name.ar],
+    );
+  }
+}
+
+/** The applications brochure stays hidden until real content exists. */
+async function fixApplicationsBrochure(c: PoolClient): Promise<void> {
+  await c.query(`UPDATE product_brochures SET enabled = false, updated_at = now() WHERE slug = 'applications'`);
+}
+
+/** Hide the placeholder testimonials shipped in DEFAULT_CONTENT (matched by name and company). */
+async function fixDemoTestimonials(c: PoolClient): Promise<void> {
+  const demo = DEFAULT_CONTENT.testimonials;
+  await c.query(
+    `UPDATE testimonials t SET enabled = false
+     FROM unnest($1::text[], $2::text[]) AS d(name, company)
+     WHERE lower(trim(t.name)) = lower(d.name) AND lower(trim(t.company)) = lower(d.company)`,
+    [demo.map((t) => t.name.toLowerCase()), demo.map((t) => t.company.toLowerCase())]
+  );
+}
+
+/**
+ * Fill the unified national number and VAT number shown in the footer.
+ * Only blanks are filled, so a value an admin already entered is kept.
+ */
+async function fixCompanyIds(c: PoolClient): Promise<void> {
+  await c.query(
+    `UPDATE site_settings SET
+       cr_number  = CASE WHEN trim(cr_number)  = '' THEN $1 ELSE cr_number  END,
+       vat_number = CASE WHEN trim(vat_number) = '' THEN $2 ELSE vat_number END
+     WHERE id = 1`,
+    [DEFAULT_COMPANY_IDS.crNumber, DEFAULT_COMPANY_IDS.vatNumber]
+  );
+}
+
+/** Old default footer labels that move to sentence case (matched exactly, so admin edits are kept). */
+const FOOTER_LABEL_FIXES: [id: string, from: string, to: string][] = [
+  ["about", "About Us", "About us"],
+  ["help", "Help Center", "Help center"],
+  ["privacy", "Privacy Policy", "Privacy policy"],
+  ["terms", "Terms of Service", "Terms of service"],
+];
+
+/**
+ * The footer links to the website privacy policy (/privacy-policy); the app
+ * policy stays at /privacy for the store listing. Untouched default labels
+ * move to sentence case.
+ */
+async function fixFooterLinks(c: PoolClient): Promise<void> {
+  for (const [id, from, to] of FOOTER_LABEL_FIXES) {
+    await c.query(`UPDATE footer_links SET label_en = $3 WHERE id = $1 AND label_en = $2`, [id, from, to]);
+  }
+  await c.query(`UPDATE footer_links SET url = '/privacy-policy' WHERE id = 'privacy' AND url = '/privacy'`);
+}
+
+/**
+ * The shipped brochure copy used em dashes (copy rule: none). Each pair swaps
+ * one old default phrase for the new wording; anything an admin wrote around
+ * it is kept, and an edited phrase simply no longer matches.
+ */
+export const BROCHURE_COPY_FIXES: readonly [from: string, to: string][] = [
+  ["runs on — from a single server", "runs on, from a single server"],
+  ["containerized platform — so your systems", "containerized platform, so your systems"],
+  ["أعمالك — من خادم واحد", "أعمالك، من خادم واحد"],
+  ["حاويات متكاملة — لتبقى", "حاويات متكاملة، لتبقى"],
+  ["with confidence — from messy", "with confidence, from messy"],
+  ["SAP and others) — accurately mapped", "SAP and others), accurately mapped"],
+  ["بثقة — من الأنظمة", "بثقة، من الأنظمة"],
+  ["وغيرها) — مع مطابقة", "وغيرها)، مع مطابقة"],
+  ["your business needs — mobile, web and Odoo", "your business needs: mobile, web and Odoo"],
+  ["Mobile apps — Android", "Mobile apps: Android"],
+  ["exact processes — internal tools", "exact processes: internal tools"],
+  ["تحتاجها أعمالك — جوال", "تحتاجها أعمالك: جوال"],
+  ["تطبيقات الجوال — أندرويد", "تطبيقات الجوال: أندرويد"],
+  ["بالضبط — أدوات", "بالضبط: أدوات"],
+];
+
+async function fixBrochureCopy(c: PoolClient): Promise<void> {
+  for (const [from, to] of BROCHURE_COPY_FIXES) {
+    await c.query(
+      `UPDATE product_brochures
+       SET content_en = replace(content_en, $1, $2), content_ar = replace(content_ar, $1, $2), updated_at = now()
+       WHERE strpos(content_en, $1) > 0 OR strpos(content_ar, $1) > 0`,
+      [from, to],
+    );
+  }
+}
+
+const DATA_FIXES: [key: string, fix: (c: PoolClient) => Promise<void>][] = [
+  ["v2-sector-slugs", fixSectorSlugs],
+  ["v2-sector-titles", fixSectorTitles],
+  ["v2-disable-applications-brochure", fixApplicationsBrochure],
+  ["v2-disable-demo-testimonials", fixDemoTestimonials],
+  ["v2-company-ids", fixCompanyIds],
+  ["v2-footer-links", fixFooterLinks],
+  ["v2-brochure-copy", fixBrochureCopy],
+];
+
+/** Apply every pending one-off fix. A failing fix is logged and retried next boot; it never blocks the site. */
+export async function runDataFixes(pool: Pool): Promise<void> {
+  for (const [key, fix] of DATA_FIXES) {
+    try {
+      await runOnce(pool, key, fix);
+    } catch (err) {
+      console.error(`[migrate] data fix "${key}" failed (will retry next boot):`, err);
+    }
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// v2 page content seeds
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Insert `SEED[page]` for every page that has never been seeded or saved by an
+ * admin and has no rows. Admin edits are never overwritten: a page that was
+ * seeded once (or saved, even to an empty list) is not refilled.
+ */
+export async function seedPageBlocks(pool: Pool, seed: Record<string, SeedBlock[]> = SEED): Promise<void> {
+  for (const [page, blocks] of Object.entries(seed)) {
+    if (blocks.length === 0) continue; // nothing to seed yet; do not mark the page
+    try {
+      // Connecting happens inside the try too: a seeding failure never rejects ensureReady.
+      await withTransaction(pool, async (client) => {
+        await lockPage(client, page);
+        const marked = await client.query(`SELECT 1 FROM data_fixes WHERE key = $1`, [pageSeededKey(page)]);
+        if (marked.rowCount === 0) {
+          const existing = await client.query(`SELECT count(*)::int AS n FROM page_blocks WHERE page = $1`, [page]);
+          if (existing.rows[0].n === 0) await insertBlocks(client, page, blocks);
+          await markPageSeeded(client, page);
+        }
+      });
+    } catch (err) {
+      console.error(`[migrate] seeding page "${page}" failed (will retry next boot):`, err);
+    }
+  }
 }

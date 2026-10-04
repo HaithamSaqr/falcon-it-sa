@@ -1,34 +1,40 @@
 import type { Metadata } from "next";
-import { Inter, Tajawal } from "next/font/google";
+import { Alexandria, Schibsted_Grotesk } from "next/font/google";
 import { NextIntlClientProvider, hasLocale } from "next-intl";
 import { getMessages, setRequestLocale } from "next-intl/server";
 import { notFound, redirect } from "next/navigation";
+import { cookies } from "next/headers";
 
 import Script from "next/script";
 import { isInstalled } from "@/lib/db/config";
 import { getSeo, getIntegrations } from "@/lib/data-store";
 import { routing } from "@/i18n/routing";
+import { clientMessages } from "@/i18n/client-messages";
 import { cn } from "@/lib/utils";
 import Navbar from "@/components/layout/navbar";
 import Footer from "@/components/layout/footer";
 import WhatsAppWidget from "@/components/layout/whatsapp-widget";
 import MobileBottomBar from "@/components/layout/mobile-bottom-bar";
-import SnapPixel from "@/components/layout/snap-pixel";
+import CookieConsent from "@/components/layout/cookie-consent";
 import { SettingsProvider } from "@/components/providers/settings-provider";
+import { getPublicSettings } from "@/lib/public-settings";
+import { JsonLd } from "@/components/v2/json-ld";
+import { SITE_URL, organizationLd } from "@/lib/seo";
+import { CONSENT_COOKIE, parseConsent } from "@/lib/consent";
 
 import "@/app/globals.css";
 
-const inter = Inter({
+const schibsted = Schibsted_Grotesk({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700", "800"],
-  variable: "--font-inter",
+  variable: "--font-schibsted",
   display: "swap",
 });
 
-const tajawal = Tajawal({
+const alexandria = Alexandria({
   subsets: ["arabic"],
-  weight: ["400", "500", "700"],
-  variable: "--font-tajawal",
+  weight: ["300", "400", "500", "600", "700", "800"],
+  variable: "--font-alexandria",
   display: "swap",
 });
 
@@ -42,10 +48,13 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   const isAr = locale === "ar";
+  // Pages that call buildMetadata add their own canonical and hreflang.
+  const metadataBase = new URL(SITE_URL);
   try {
     const [seo, integrations] = await Promise.all([getSeo(), getIntegrations()]);
     const g = integrations.google;
     return {
+      metadataBase,
       title: isAr ? seo.metaTitle.ar : seo.metaTitle.en,
       description: isAr ? seo.metaDescription.ar : seo.metaDescription.en,
       keywords: (isAr ? seo.metaKeywords.ar : seo.metaKeywords.en)
@@ -59,13 +68,12 @@ export async function generateMetadata({
         locale: isAr ? "ar_SA" : "en_US",
         type: "website",
       },
-      alternates: { languages: { en: "/en", ar: "/ar" } },
       ...(g?.enabled && g.verification
         ? { verification: { google: g.verification } }
         : {}),
     };
   } catch {
-    return {};
+    return { metadataBase };
   }
 }
 
@@ -89,28 +97,38 @@ export default async function LocaleLayout({
 
   setRequestLocale(locale);
 
-  const messages = await getMessages();
+  // Only the namespaces client components read go to the browser.
+  const messages = clientMessages(await getMessages());
   const isRTL = locale === "ar";
+
+  // Chrome data (nav, footer, WhatsApp) rendered on the server; the client
+  // provider only adds geo-based WhatsApp routing on top.
+  const publicSettings = await getPublicSettings();
 
   // Marketing tags — injected only when enabled in Integrations.
   const integrations = await getIntegrations().catch(() => null);
   const g = integrations?.google;
   const googleOn = !!g?.enabled;
   const gtagId = g?.ga4Id || g?.adsId || "";
-  // Snapchat Snap Pixel.
+  // Snapchat Snap Pixel: loads only after the visitor accepts the cookie banner.
   const snap = integrations?.snapchat;
   const snapOn = !!snap?.enabled && !!snap?.pixelId;
+  const consent = snapOn ? parseConsent((await cookies()).get(CONSENT_COOKIE)?.value) : null;
 
   return (
-    <html lang={locale} dir={isRTL ? "rtl" : "ltr"} suppressHydrationWarning>
+    <html
+      lang={locale}
+      dir={isRTL ? "rtl" : "ltr"}
+      // The font variables live on <html> so the `--font-sans` / `--font-arabic`
+      // theme tokens (declared on :root) can resolve them.
+      className={cn(schibsted.variable, alexandria.variable)}
+      suppressHydrationWarning
+    >
       <body
-        className={cn(
-          inter.variable,
-          tajawal.variable,
-          isRTL ? "font-arabic" : "font-sans",
-          "antialiased"
-        )}
+        className={cn(isRTL ? "font-arabic" : "font-sans", "antialiased")}
       >
+        <JsonLd data={organizationLd(publicSettings)} />
+
         {/* Google Tag Manager (noscript) */}
         {googleOn && g?.gtmId && (
           <noscript>
@@ -123,16 +141,15 @@ export default async function LocaleLayout({
           </noscript>
         )}
 
-        {/* Snapchat Snap Pixel — sitewide (init once + PAGE_VIEW on load & route change) */}
-        {snapOn && <SnapPixel pixelId={snap!.pixelId} />}
-
         <NextIntlClientProvider locale={locale} messages={messages}>
-          <SettingsProvider>
-            <Navbar />
+          <SettingsProvider initial={publicSettings}>
+            <Navbar settings={publicSettings} />
             <main>{children}</main>
-            <Footer />
+            <Footer settings={publicSettings} cookieSettings={snapOn} />
             <WhatsAppWidget />
             <MobileBottomBar />
+            {/* Snapchat Snap Pixel: banner first; the pixel (init once + PAGE_VIEW on load and route change) only after Accept. */}
+            {snapOn && <CookieConsent pixelId={snap!.pixelId} initial={consent} />}
           </SettingsProvider>
         </NextIntlClientProvider>
 

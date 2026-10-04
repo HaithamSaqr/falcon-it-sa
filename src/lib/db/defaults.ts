@@ -36,35 +36,35 @@ export const DEFAULT_CONTENT: SiteContent = {
   },
   testimonials: [
     {
-      id: "ts-1", name: "Ahmed Al-Rashid", role: "CFO", company: "Saudi Emar Developments",
+      id: "ts-1", enabled: false, name: "Ahmed Al-Rashid", role: "CFO", company: "Saudi Emar Developments",
       quote: {
         en: "Falcon ERP completely transformed our operations. We migrated from SAP in just 6 weeks and saved 60% on costs. Arabic support and ZATCA compliance were ready from day one.",
         ar: "فالكون ERP حوّل عملياتنا بالكامل. انتقلنا من SAP خلال 6 أسابيع فقط ووفرنا 60% من التكاليف. الدعم العربي والامتثال مع ZATCA كان جاهزًا من اليوم الأول.",
       },
     },
     {
-      id: "ts-2", name: "Mohammed Hassan", role: "IT Director", company: "Haddad Group",
+      id: "ts-2", enabled: false, name: "Mohammed Hassan", role: "IT Director", company: "Haddad Group",
       quote: {
         en: "We were using Excel to manage 8 branches. Falcon Cloud unified everything — inventory, accounting, and HR in one system. Stock reconciliation that took 3 days is now instant.",
         ar: "كنا نستخدم Excel لإدارة 8 فروع. فالكون كلاود وحّد كل شيء — المخزون، المحاسبة، والموارد البشرية في نظام واحد. تسوية المخزون التي كانت تستغرق 3 أيام أصبحت فورية.",
       },
     },
     {
-      id: "ts-3", name: "Khaled Al-Omari", role: "CEO", company: "Almada Construction",
+      id: "ts-3", enabled: false, name: "Khaled Al-Omari", role: "CEO", company: "Almada Construction",
       quote: {
         en: "We tried two Odoo partners before Falcon. The difference was night and day — they understood Saudi market requirements from the start. Localization is flawless and our data stays on our servers in Riyadh.",
         ar: "جربنا شريكين أودو قبل فالكون. الفرق كان كبير — فهموا متطلبات السوق السعودي من البداية. التعريب ممتاز والبيانات تبقى على خوادمنا في الرياض.",
       },
     },
     {
-      id: "ts-4", name: "Sara Al-Mutairi", role: "Operations Manager", company: "Nile Food Industries",
+      id: "ts-4", enabled: false, name: "Sara Al-Mutairi", role: "Operations Manager", company: "Nile Food Industries",
       quote: {
         en: "Falcon's POS system completely changed how we operate. Linking 5 restaurant branches in one system with real-time reports. We reduced waste by 30% in the first 3 months.",
         ar: "نظام نقاط البيع من فالكون غيّر طريقة عملنا تمامًا. ربط 5 فروع مطاعم في نظام واحد مع تقارير لحظية. تقليل الهدر بنسبة 30% خلال أول 3 أشهر.",
       },
     },
     {
-      id: "ts-5", name: "Abdulrahman Al-Subaie", role: "General Manager", company: "Delta Pharma Egypt",
+      id: "ts-5", enabled: false, name: "Abdulrahman Al-Subaie", role: "General Manager", company: "Delta Pharma Egypt",
       quote: {
         en: "The transition to Falcon was easier than we expected. Support team available 24/7 in Arabic. ZATCA Phase 2 compliance happened automatically — we didn't have to lift a finger.",
         ar: "الانتقال إلى فالكون كان أسهل مما توقعنا. فريق الدعم متاح 24/7 وباللغة العربية. امتثال المرحلة الثانية من ZATCA تم تلقائيًا بدون أي تدخل منا.",
@@ -267,6 +267,20 @@ export const DEFAULT_HOME: HomeContent = {
   },
 };
 
+/** v2 company ids shown in the footer (site_settings.cr_number, vat_number). */
+export const DEFAULT_COMPANY_IDS = {
+  /** Unified national number (CR certificate, issued 2025-03-13). */
+  crNumber: "7049432656",
+  /** VAT certificate, Falcon Smart Solution. */
+  vatNumber: "311410985900003",
+};
+
+/** v2 global primary CTA (site_settings.cta_label_*, demo_url). */
+export const DEFAULT_PRIMARY_CTA = {
+  label: { en: "Book a demo", ar: "احجز عرضًا تجريبيًا" },
+  demoUrl: "/demo",
+};
+
 export const DEFAULT_SETTINGS: SiteSettings = {
   company: {
     name: { en: "Falcon Smart Solutions", ar: "فالكون للحلول الذكية" },
@@ -287,6 +301,7 @@ export const DEFAULT_SETTINGS: SiteSettings = {
         phone: "+201000000000",
       },
     ],
+    ...DEFAULT_COMPANY_IDS,
   },
   notifications: {
     emailOnNewLead: true,
@@ -301,6 +316,8 @@ export const DEFAULT_SETTINGS: SiteSettings = {
     tiktok: "",
   },
   loginUrl: "https://falcon-valley.com",
+  blogEnabled: false,
+  primaryCta: DEFAULT_PRIMARY_CTA,
   clientsSpeed: 3,
   whatsappRouting: { domains: [], countries: [] },
   landingCta: { mode: "whatsapp", url: "", label: { en: "", ar: "" }, note: { en: "", ar: "" } },
@@ -421,8 +438,8 @@ export const DEFAULT_PRODUCTS: Product[] = [
     eyebrow: { en: "Infrastructure", ar: "البنية التحتية" },
     title: { en: "Servers that never sleep.", ar: "خوادم لا تتوقف أبداً." },
     description: {
-      en: "End-to-end management of your servers — provisioning, monitoring, security hardening, backups and 24/7 support. Keep your infrastructure fast, secure and always online.",
-      ar: "إدارة متكاملة لخوادمك — التجهيز والمراقبة وتعزيز الأمان والنسخ الاحتياطي والدعم على مدار الساعة. أبقِ بنيتك التحتية سريعة وآمنة ومتاحة دائماً.",
+      en: "End-to-end management of your servers: provisioning, monitoring, security hardening, backups and 24/7 support. Keep your infrastructure fast, secure and always online.",
+      ar: "إدارة متكاملة لخوادمك: التجهيز والمراقبة وتعزيز الأمان والنسخ الاحتياطي والدعم على مدار الساعة. أبقِ بنيتك التحتية سريعة وآمنة ومتاحة دائماً.",
     },
     heroImage: "",
     cardImage: "",
@@ -457,8 +474,8 @@ export const DEFAULT_PRODUCTS: Product[] = [
     eyebrow: { en: "Custom Software", ar: "برمجيات مخصصة" },
     title: { en: "Apps built around your business.", ar: "تطبيقات مصمّمة حول أعمالك." },
     description: {
-      en: "Custom web and mobile applications tailored to your workflows — from internal tools to customer-facing products, designed, built and maintained by our team.",
-      ar: "تطبيقات ويب وجوال مخصصة مصمّمة لسير عملك — من الأدوات الداخلية إلى المنتجات الموجهة للعملاء، نصمّمها ونبنيها وندعمها بفريقنا.",
+      en: "Custom web and mobile applications tailored to your workflows, from internal tools to customer-facing products, designed, built and maintained by our team.",
+      ar: "تطبيقات ويب وجوال مخصصة مصمّمة لسير عملك، من الأدوات الداخلية إلى المنتجات الموجهة للعملاء، نصمّمها ونبنيها وندعمها بفريقنا.",
     },
     heroImage: "",
     cardImage: "",
@@ -478,8 +495,8 @@ export const DEFAULT_BROCHURES: ProductBrochure[] = [
     title: { en: "Server Setup, Docker & Containers", ar: "إعداد السيرفرات والدوكر والكونتينرز" },
     enabled: true,
     content: {
-      en: `<h2>Server setup, Docker &amp; containers</h2><p>We design, provision and harden the infrastructure your business runs on — from a single server to a full containerized platform — so your systems stay fast, secure and always online.</p><h3>Server provisioning &amp; preparation</h3><p>Operating-system setup, networking, firewalls, SSL certificates and security hardening. We prepare your servers for production workloads with best-practice configuration.</p><h3>Docker &amp; containers</h3><p>We containerize your applications with Docker for portability, isolation and effortless scaling, and orchestrate them with Docker Compose so every environment behaves identically.</p><h3>Getting servers production-ready</h3><ul><li>Databases, reverse proxies (Nginx) and load balancing</li><li>Automated backups and disaster recovery</li><li>Monitoring, logging and alerting</li><li>Zero-downtime deployments and updates</li></ul>`,
-      ar: `<h2>إعداد السيرفرات والدوكر والكونتينرز</h2><p>نُصمّم ونُجهّز ونُؤمّن البنية التحتية التي تعمل عليها أعمالك — من خادم واحد إلى منصة حاويات متكاملة — لتبقى أنظمتك سريعة وآمنة ومتاحة دائماً.</p><h3>تجهيز وإعداد الخوادم</h3><p>إعداد نظام التشغيل والشبكات والجدران النارية وشهادات SSL وتعزيز الأمان. نُجهّز خوادمك للعمل الإنتاجي وفق أفضل الممارسات.</p><h3>الدوكر والحاويات (Docker &amp; Containers)</h3><p>نحوّل تطبيقاتك إلى حاويات Docker لسهولة النقل والعزل والتوسّع، وننظّمها عبر Docker Compose لتتطابق كل البيئات تماماً.</p><h3>تجهيز الخوادم للعمل</h3><ul><li>قواعد البيانات والـ Reverse Proxy (Nginx) وموازنة الأحمال</li><li>نسخ احتياطي تلقائي وخطط تعافٍ من الكوارث</li><li>المراقبة والسجلّات والتنبيهات</li><li>نشر وتحديثات بدون توقف</li></ul>`,
+      en: `<h2>Server setup, Docker &amp; containers</h2><p>We design, provision and harden the infrastructure your business runs on, from a single server to a full containerized platform, so your systems stay fast, secure and always online.</p><h3>Server provisioning &amp; preparation</h3><p>Operating-system setup, networking, firewalls, SSL certificates and security hardening. We prepare your servers for production workloads with best-practice configuration.</p><h3>Docker &amp; containers</h3><p>We containerize your applications with Docker for portability, isolation and effortless scaling, and orchestrate them with Docker Compose so every environment behaves identically.</p><h3>Getting servers production-ready</h3><ul><li>Databases, reverse proxies (Nginx) and load balancing</li><li>Automated backups and disaster recovery</li><li>Monitoring, logging and alerting</li><li>Zero-downtime deployments and updates</li></ul>`,
+      ar: `<h2>إعداد السيرفرات والدوكر والكونتينرز</h2><p>نُصمّم ونُجهّز ونُؤمّن البنية التحتية التي تعمل عليها أعمالك، من خادم واحد إلى منصة حاويات متكاملة، لتبقى أنظمتك سريعة وآمنة ومتاحة دائماً.</p><h3>تجهيز وإعداد الخوادم</h3><p>إعداد نظام التشغيل والشبكات والجدران النارية وشهادات SSL وتعزيز الأمان. نُجهّز خوادمك للعمل الإنتاجي وفق أفضل الممارسات.</p><h3>الدوكر والحاويات (Docker &amp; Containers)</h3><p>نحوّل تطبيقاتك إلى حاويات Docker لسهولة النقل والعزل والتوسّع، وننظّمها عبر Docker Compose لتتطابق كل البيئات تماماً.</p><h3>تجهيز الخوادم للعمل</h3><ul><li>قواعد البيانات والـ Reverse Proxy (Nginx) وموازنة الأحمال</li><li>نسخ احتياطي تلقائي وخطط تعافٍ من الكوارث</li><li>المراقبة والسجلّات والتنبيهات</li><li>نشر وتحديثات بدون توقف</li></ul>`,
     },
   },
   {
@@ -487,17 +504,18 @@ export const DEFAULT_BROCHURES: ProductBrochure[] = [
     title: { en: "Data Analysis & Migration", ar: "تحليل البيانات ونقلها" },
     enabled: true,
     content: {
-      en: `<h2>Data analysis &amp; migration</h2><p>Centralize, analyze and move your business data with confidence — from messy legacy systems to clean, modern, world-class software.</p><h3>Data analysis</h3><p>We turn raw data into clear dashboards and actionable insights, so you can make decisions based on facts, not guesswork.</p><h3>Data migration</h3><p>We migrate your data from any old or legacy program to modern, globally trusted software (such as Odoo, SAP and others) — accurately mapped, cleaned, validated and transferred with zero data loss.</p><ul><li>Migration from any legacy system to modern platforms</li><li>Data cleansing, deduplication and validation</li><li>ETL pipelines and integrations</li><li>Dashboards and business intelligence</li></ul>`,
-      ar: `<h2>تحليل البيانات ونقلها (Data Migration)</h2><p>وحّد بياناتك وحلّلها وانقلها بثقة — من الأنظمة القديمة المبعثرة إلى برمجيات حديثة عالمية المستوى.</p><h3>تحليل البيانات</h3><p>نحوّل بياناتك الخام إلى لوحات واضحة ورؤى قابلة للتنفيذ، لتتّخذ قراراتك بناءً على حقائق لا تخمين.</p><h3>ترحيل ونقل البيانات</h3><p>ننقل بيانات عميلك من أي برنامج قديم إلى البرامج الحديثة والمشهورة عالمياً (مثل Odoo وSAP وغيرها) — مع مطابقة دقيقة وتنظيف وتحقّق ونقل بدون فقدان أي بيانات.</p><ul><li>الترحيل من أي نظام قديم إلى المنصات الحديثة</li><li>تنظيف البيانات وإزالة التكرار والتحقّق منها</li><li>مسارات ETL والتكاملات</li><li>لوحات التحليل وذكاء الأعمال</li></ul>`,
+      en: `<h2>Data analysis &amp; migration</h2><p>Centralize, analyze and move your business data with confidence, from messy legacy systems to clean, modern, world-class software.</p><h3>Data analysis</h3><p>We turn raw data into clear dashboards and actionable insights, so you can make decisions based on facts, not guesswork.</p><h3>Data migration</h3><p>We migrate your data from any old or legacy program to modern, globally trusted software (such as Odoo, SAP and others), accurately mapped, cleaned, validated and transferred with zero data loss.</p><ul><li>Migration from any legacy system to modern platforms</li><li>Data cleansing, deduplication and validation</li><li>ETL pipelines and integrations</li><li>Dashboards and business intelligence</li></ul>`,
+      ar: `<h2>تحليل البيانات ونقلها (Data Migration)</h2><p>وحّد بياناتك وحلّلها وانقلها بثقة، من الأنظمة القديمة المبعثرة إلى برمجيات حديثة عالمية المستوى.</p><h3>تحليل البيانات</h3><p>نحوّل بياناتك الخام إلى لوحات واضحة ورؤى قابلة للتنفيذ، لتتّخذ قراراتك بناءً على حقائق لا تخمين.</p><h3>ترحيل ونقل البيانات</h3><p>ننقل بيانات عميلك من أي برنامج قديم إلى البرامج الحديثة والمشهورة عالمياً (مثل Odoo وSAP وغيرها)، مع مطابقة دقيقة وتنظيف وتحقّق ونقل بدون فقدان أي بيانات.</p><ul><li>الترحيل من أي نظام قديم إلى المنصات الحديثة</li><li>تنظيف البيانات وإزالة التكرار والتحقّق منها</li><li>مسارات ETL والتكاملات</li><li>لوحات التحليل وذكاء الأعمال</li></ul>`,
     },
   },
   {
     slug: "applications",
     title: { en: "Custom Applications", ar: "صناعة التطبيقات" },
-    enabled: true,
+    // Disabled until real content exists (owner answer 2026-10-03).
+    enabled: false,
     content: {
-      en: `<h2>Custom applications</h2><p>From idea to launch, we design and build the apps your business needs — mobile, web and Odoo.</p><h3>Mobile apps — Android &amp; iOS</h3><p>Native and cross-platform mobile applications for Android and iPhone, with great UX, performance and store publishing.</p><h3>Custom &amp; bespoke applications</h3><p>Tailor-made software built around your exact processes — internal tools, portals and customer-facing products.</p><h3>Odoo apps &amp; modules</h3><p>Custom Odoo modules and apps that extend your ERP with the exact features your business needs.</p><ul><li>Android &amp; iOS mobile apps</li><li>Custom web applications</li><li>Custom Odoo modules &amp; integrations</li><li>UI/UX design, development &amp; maintenance</li></ul>`,
-      ar: `<h2>صناعة التطبيقات</h2><p>من الفكرة إلى الإطلاق، نُصمّم ونبني التطبيقات التي تحتاجها أعمالك — جوال وويب وأودو.</p><h3>تطبيقات الجوال — أندرويد وآيفون</h3><p>تطبيقات جوال أصلية ومتعددة المنصات لأندرويد وآيفون، بتجربة استخدام ممتازة وأداء عالٍ ونشر على المتاجر.</p><h3>تطبيقات مخصّصة</h3><p>برمجيات مصمّمة حول عملياتك بالضبط — أدوات داخلية وبوابات ومنتجات موجّهة للعملاء.</p><h3>تطبيقات وموديولات أودو</h3><p>موديولات وتطبيقات أودو مخصّصة تُوسّع نظامك بالمزايا التي تحتاجها أعمالك تماماً.</p><ul><li>تطبيقات جوال أندرويد وآيفون</li><li>تطبيقات ويب مخصّصة</li><li>موديولات وتكاملات أودو مخصّصة</li><li>تصميم واجهات وتطوير وصيانة</li></ul>`,
+      en: `<h2>Custom applications</h2><p>From idea to launch, we design and build the apps your business needs: mobile, web and Odoo.</p><h3>Mobile apps: Android &amp; iOS</h3><p>Native and cross-platform mobile applications for Android and iPhone, with great UX, performance and store publishing.</p><h3>Custom &amp; bespoke applications</h3><p>Tailor-made software built around your exact processes: internal tools, portals and customer-facing products.</p><h3>Odoo apps &amp; modules</h3><p>Custom Odoo modules and apps that extend your ERP with the exact features your business needs.</p><ul><li>Android &amp; iOS mobile apps</li><li>Custom web applications</li><li>Custom Odoo modules &amp; integrations</li><li>UI/UX design, development &amp; maintenance</li></ul>`,
+      ar: `<h2>صناعة التطبيقات</h2><p>من الفكرة إلى الإطلاق، نُصمّم ونبني التطبيقات التي تحتاجها أعمالك: جوال وويب وأودو.</p><h3>تطبيقات الجوال: أندرويد وآيفون</h3><p>تطبيقات جوال أصلية ومتعددة المنصات لأندرويد وآيفون، بتجربة استخدام ممتازة وأداء عالٍ ونشر على المتاجر.</p><h3>تطبيقات مخصّصة</h3><p>برمجيات مصمّمة حول عملياتك بالضبط: أدوات داخلية وبوابات ومنتجات موجّهة للعملاء.</p><h3>تطبيقات وموديولات أودو</h3><p>موديولات وتطبيقات أودو مخصّصة تُوسّع نظامك بالمزايا التي تحتاجها أعمالك تماماً.</p><ul><li>تطبيقات جوال أندرويد وآيفون</li><li>تطبيقات ويب مخصّصة</li><li>موديولات وتكاملات أودو مخصّصة</li><li>تصميم واجهات وتطوير وصيانة</li></ul>`,
     },
   },
 ];
@@ -538,14 +556,14 @@ export const DEFAULT_SEO: SeoSettings = {
 };
 
 export const DEFAULT_FOOTER_LINKS: FooterLink[] = [
-  { id: "about", section: "about", label: { en: "About Us", ar: "من نحن" }, url: "/about" },
+  { id: "about", section: "about", label: { en: "About us", ar: "من نحن" }, url: "/about" },
   { id: "blog", section: "about", label: { en: "Blog", ar: "المدونة" }, url: "/blog" },
-  { id: "careers", section: "about", label: { en: "Careers", ar: "الوظائف" }, url: "/careers" },
+  { id: "careers", section: "about", label: { en: "Careers", ar: "الوظائف" }, url: "/about" },
   { id: "faq", section: "support", label: { en: "FAQ", ar: "الأسئلة الشائعة" }, url: "/faq" },
-  { id: "help", section: "support", label: { en: "Help Center", ar: "مركز المساعدة" }, url: "/help" },
-  { id: "webinars", section: "support", label: { en: "Webinars", ar: "الندوات" }, url: "/webinars" },
-  { id: "privacy", section: "legal", label: { en: "Privacy Policy", ar: "سياسة الخصوصية" }, url: "/privacy" },
-  { id: "terms", section: "legal", label: { en: "Terms of Service", ar: "الشروط والأحكام" }, url: "/terms" },
+  { id: "help", section: "support", label: { en: "Help center", ar: "مركز المساعدة" }, url: "/contact" },
+  { id: "webinars", section: "support", label: { en: "Webinars", ar: "الندوات" }, url: "/demo" },
+  { id: "privacy", section: "legal", label: { en: "Privacy policy", ar: "سياسة الخصوصية" }, url: "/privacy-policy" },
+  { id: "terms", section: "legal", label: { en: "Terms of service", ar: "الشروط والأحكام" }, url: "/terms" },
 ];
 
 export const DEFAULT_INTEGRATIONS: IntegrationSettings = {
