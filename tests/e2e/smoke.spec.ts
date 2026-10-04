@@ -12,8 +12,23 @@ test("GET /ar returns 200 with an RTL document", async ({ page }) => {
   await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
 });
 
-test("unknown URL: 404 page uses the v2 fonts and tokens", async ({ page }) => {
+test("unknown URL: the localized 404 uses the v2 fonts and tokens", async ({ page }) => {
   const res = await page.goto("/no-such-page-xyz");
+  expect(res?.status()).toBe(404);
+  await expect(page.getByRole("heading", { level: 1, name: "This page could not be found." })).toBeVisible();
+  const style = await page.evaluate(() => {
+    const b = getComputedStyle(document.body);
+    const section = document.querySelector("main section");
+    return { font: b.fontFamily, bg: section ? getComputedStyle(section).backgroundColor : "" };
+  });
+  expect(style.font).toMatch(/Schibsted/i);
+  expect(style.font).not.toMatch(/\bInter\b/);
+  expect(style.bg).toBe("rgb(245, 247, 250)");
+  await expect(page.locator('a[href="/"]').first()).toBeVisible();
+});
+
+test("a path outside the locale routes keeps the root 404 in the v2 tokens", async ({ page }) => {
+  const res = await page.goto("/no-such-file.txt");
   expect(res?.status()).toBe(404);
   await expect(page.getByText("This page could not be found.")).toBeVisible();
   const style = await page.evaluate(() => {
@@ -21,7 +36,6 @@ test("unknown URL: 404 page uses the v2 fonts and tokens", async ({ page }) => {
     return { font: b.fontFamily, bg: b.backgroundColor };
   });
   expect(style.font).toMatch(/Schibsted/i);
-  expect(style.font).not.toMatch(/\bInter\b/);
   expect(style.bg).toBe("rgb(245, 247, 250)");
   await expect(page.locator('a[href="/"]').first()).toBeVisible();
 });

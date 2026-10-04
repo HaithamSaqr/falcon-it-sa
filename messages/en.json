@@ -528,5 +528,12 @@
     "consentRequired": "You must agree to the privacy policy",
     "subjectRequired": "Subject is required",
     "messageMin": "Message must be at least 10 characters"
+  },
+  "notFound": {
+    "metaTitle": "Page not found",
+    "title": "This page could not be found.",
+    "body": "The link may be out of date, or the page has moved.",
+    "home": "Go to the home page",
+    "sectors": "See the sectors"
   }
 }
