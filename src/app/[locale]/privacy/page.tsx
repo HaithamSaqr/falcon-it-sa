@@ -81,7 +81,7 @@ export default async function PrivacyPage({ params }: Props) {
           </section>
 
           <section lang="en" dir="ltr" className="mt-14 border-t border-ink/10 pt-10 text-start">
-            <h1 className="text-3xl font-extrabold text-ink sm:text-4xl">Privacy Policy — Falcon Valley</h1>
+            <h1 className="text-3xl font-extrabold text-ink sm:text-4xl">Falcon Valley privacy policy</h1>
             <p className={paragraph}>Last updated: September 7, 2026</p>
             <p className={paragraph}>
               Falcon Valley connects to your organization&apos;s business systems. Available information depends on your selected server, account permissions, and the features you use.

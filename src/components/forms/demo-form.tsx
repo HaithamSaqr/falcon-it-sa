@@ -17,10 +17,10 @@ import { CHECK, CHIP, FIELD, NOTE, SELECT, TEXTAREA } from "./styles";
 
 const JOB_TITLE_KEYS = ["jobCeo", "jobCfo", "jobCto", "jobCoo", "jobAccountant", "jobItManager", "jobOther"] as const;
 
+// Gulf-first list; Egypt was removed with the Egypt office (visitors pick "Other").
 const COUNTRY_KEYS = [
   "countrySaudi",
   "countryUae",
-  "countryEgypt",
   "countryQatar",
   "countryBahrain",
   "countryKuwait",

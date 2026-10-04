@@ -8,6 +8,7 @@ import Script from "next/script";
 import { isInstalled } from "@/lib/db/config";
 import { getSeo, getIntegrations } from "@/lib/data-store";
 import { routing } from "@/i18n/routing";
+import { clientMessages } from "@/i18n/client-messages";
 import { cn } from "@/lib/utils";
 import Navbar from "@/components/layout/navbar";
 import Footer from "@/components/layout/footer";
@@ -94,7 +95,8 @@ export default async function LocaleLayout({
 
   setRequestLocale(locale);
 
-  const messages = await getMessages();
+  // Only the namespaces client components read go to the browser.
+  const messages = clientMessages(await getMessages());
   const isRTL = locale === "ar";
 
   // Chrome data (nav, footer, WhatsApp) rendered on the server; the client

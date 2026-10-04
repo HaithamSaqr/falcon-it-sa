@@ -11,11 +11,11 @@ import fs from "node:fs";
 import path from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { Pool, type PoolConfig } from "pg";
-import { ensureReady, seedPageBlocks } from "@/lib/db/migrate";
+import { BROCHURE_COPY_FIXES, ensureReady, seedPageBlocks } from "@/lib/db/migrate";
 import * as dbStore from "@/lib/db/store";
 import { SEED, SEED_PAGES } from "@/lib/blocks/seed";
 import { V2_SECTORS, withV2Sectors } from "@/lib/blocks/seed/sectors";
-import { DEFAULT_SECTORS } from "@/lib/db/defaults";
+import { DEFAULT_BROCHURES, DEFAULT_SECTORS } from "@/lib/db/defaults";
 import { parseBlock } from "@/lib/blocks/registry";
 import type { Block } from "@/lib/blocks/types";
 import {
@@ -624,5 +624,70 @@ describe.skipIf(!canUseDb)("v2 data fixes on an existing production-like databas
     const byId = new Map(r.rows.map((x) => [x.id, x.enabled]));
     expect(byId.get("ts-1")).toBe(false);
     expect(byId.get("real-1")).toBe(true);
+  });
+});
+
+describe("default brochure copy", () => {
+  it("has no em or en dash (copy rule)", () => {
+    for (const b of DEFAULT_BROCHURES) {
+      for (const text of [b.title.en, b.title.ar, b.content.en, b.content.ar]) {
+        expect(text, b.slug).not.toMatch(/[–—]/);
+      }
+    }
+  });
+
+  it("every copy fix turns an old phrase into text the defaults now use", () => {
+    const all = DEFAULT_BROCHURES.map((b) => b.content.en + b.content.ar).join("");
+    for (const [from, to] of BROCHURE_COPY_FIXES) {
+      expect(from).toMatch(/—/);
+      expect(all).toContain(to);
+    }
+  });
+});
+
+describe.skipIf(!canUseDb)("v2 data fix: brochure copy without dashes on an existing database", () => {
+  const schema = "t13_brochure_copy";
+  let pool: Pool;
+  const old = (lang: "en" | "ar") =>
+    BROCHURE_COPY_FIXES.map(([from]) => from)
+      .filter((f) => /[a-z]/i.test(f) === (lang === "en"))
+      .map((f) => `<p>${f}</p>`)
+      .join("");
+
+  beforeAll(async () => {
+    pool = scratchPool(schema);
+    await resetSchema(pool, schema);
+    await pool.query(`
+      CREATE TABLE product_brochures (
+        slug text PRIMARY KEY, title_en text NOT NULL DEFAULT '', title_ar text NOT NULL DEFAULT '',
+        content_en text NOT NULL DEFAULT '', content_ar text NOT NULL DEFAULT '',
+        enabled boolean NOT NULL DEFAULT false, updated_at timestamptz NOT NULL DEFAULT now()
+      )`);
+    await pool.query(
+      `INSERT INTO product_brochures (slug, title_en, content_en, content_ar, enabled) VALUES
+        ('server-management', 'Servers', $1, $2, true),
+        ('data-management', 'Data', '<p>Admin text kept as written.</p>', '', true)`,
+      [old("en") + "<p>Admin sentence kept.</p>", old("ar")],
+    );
+    await ensureReady(pool);
+    await ensureReady(pool);
+  }, 60_000);
+
+  afterAll(async () => {
+    await pool.query(`DROP SCHEMA IF EXISTS ${schema} CASCADE`);
+    await pool.end();
+  });
+
+  it("replaces the old dashed phrases once and keeps everything else", async () => {
+    const r = await pool.query(`SELECT slug, content_en, content_ar FROM product_brochures ORDER BY slug`);
+    const bySlug = new Map(r.rows.map((x) => [x.slug, x]));
+    const sm = bySlug.get("server-management");
+    expect(sm.content_en + sm.content_ar).not.toMatch(/—/);
+    expect(sm.content_en).toContain("runs on, from a single server");
+    expect(sm.content_en).toContain("<p>Admin sentence kept.</p>");
+    expect(sm.content_ar).toContain("أعمالك، من خادم واحد");
+    expect(bySlug.get("data-management").content_en).toBe("<p>Admin text kept as written.</p>");
+    const keys = (await pool.query(`SELECT key FROM data_fixes WHERE key = 'v2-brochure-copy'`)).rows;
+    expect(keys).toHaveLength(1);
   });
 });

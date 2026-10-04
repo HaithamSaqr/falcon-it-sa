@@ -11,7 +11,7 @@ export async function generateMetadata({ params }: Props) {
   const { locale, slug } = await params;
   const b = await getBrochure(slug);
   if (!b || !b.enabled) return {};
-  return { title: `${locale === "ar" ? b.title.ar : b.title.en} — Falcon` };
+  return { title: `${locale === "ar" ? b.title.ar : b.title.en} | Falcon` };
 }
 
 export default async function BrochurePage({ params }: Props) {

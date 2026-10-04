@@ -111,7 +111,9 @@ for (const L of LOCALES) {
       const main = page.locator("main");
       // Both language versions of the app policy, as before.
       await expect(main.locator('section[lang="ar"] h1')).toHaveText("سياسة الخصوصية");
-      await expect(main.locator('section[lang="en"] h1')).toHaveText("Privacy Policy — Falcon Valley");
+      await expect(main.locator('section[lang="en"] h1')).toHaveText("Falcon Valley privacy policy");
+      // Copy rule: no em or en dash anywhere on the page.
+      expect(await main.innerText()).not.toMatch(/[–—]/);
       await expect(main).toContainText("Falcon Valley");
       await expect(main).toContainText("آخر تحديث: ٧ سبتمبر ٢٠٢٦");
       await expect(main).toContainText("Last updated: September 7, 2026");

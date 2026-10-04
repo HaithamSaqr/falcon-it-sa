@@ -292,12 +292,46 @@ async function fixFooterLinks(c: PoolClient): Promise<void> {
   await c.query(`UPDATE footer_links SET url = '/privacy-policy' WHERE id = 'privacy' AND url = '/privacy'`);
 }
 
+/**
+ * The shipped brochure copy used em dashes (copy rule: none). Each pair swaps
+ * one old default phrase for the new wording; anything an admin wrote around
+ * it is kept, and an edited phrase simply no longer matches.
+ */
+export const BROCHURE_COPY_FIXES: readonly [from: string, to: string][] = [
+  ["runs on — from a single server", "runs on, from a single server"],
+  ["containerized platform — so your systems", "containerized platform, so your systems"],
+  ["أعمالك — من خادم واحد", "أعمالك، من خادم واحد"],
+  ["حاويات متكاملة — لتبقى", "حاويات متكاملة، لتبقى"],
+  ["with confidence — from messy", "with confidence, from messy"],
+  ["SAP and others) — accurately mapped", "SAP and others), accurately mapped"],
+  ["بثقة — من الأنظمة", "بثقة، من الأنظمة"],
+  ["وغيرها) — مع مطابقة", "وغيرها)، مع مطابقة"],
+  ["your business needs — mobile, web and Odoo", "your business needs: mobile, web and Odoo"],
+  ["Mobile apps — Android", "Mobile apps: Android"],
+  ["exact processes — internal tools", "exact processes: internal tools"],
+  ["تحتاجها أعمالك — جوال", "تحتاجها أعمالك: جوال"],
+  ["تطبيقات الجوال — أندرويد", "تطبيقات الجوال: أندرويد"],
+  ["بالضبط — أدوات", "بالضبط: أدوات"],
+];
+
+async function fixBrochureCopy(c: PoolClient): Promise<void> {
+  for (const [from, to] of BROCHURE_COPY_FIXES) {
+    await c.query(
+      `UPDATE product_brochures
+       SET content_en = replace(content_en, $1, $2), content_ar = replace(content_ar, $1, $2), updated_at = now()
+       WHERE strpos(content_en, $1) > 0 OR strpos(content_ar, $1) > 0`,
+      [from, to],
+    );
+  }
+}
+
 const DATA_FIXES: [key: string, fix: (c: PoolClient) => Promise<void>][] = [
   ["v2-sector-slugs", fixSectorSlugs],
   ["v2-disable-applications-brochure", fixApplicationsBrochure],
   ["v2-disable-demo-testimonials", fixDemoTestimonials],
   ["v2-company-ids", fixCompanyIds],
   ["v2-footer-links", fixFooterLinks],
+  ["v2-brochure-copy", fixBrochureCopy],
 ];
 
 /** Apply every pending one-off fix. A failing fix is logged and retried next boot; it never blocks the site. */
