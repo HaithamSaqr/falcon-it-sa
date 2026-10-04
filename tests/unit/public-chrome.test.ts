@@ -63,6 +63,22 @@ describe("mentionsEgypt", () => {
   it.each(["Riyadh, Saudi Arabia", "مكتب السعودية", "الرياض", ""])("does not match %j", (text) =>
     expect(mentionsEgypt(text)).toBe(false),
   );
+
+  // Whole words only: مصرف (bank) and مصروفات (expenses) contain مصر.
+  it.each(["فرع مصر", "القاهرة، مصر", "Cairo office", "وفي مصر", "بمصر", "لمصر", "فمصر", "والقاهرة", "(Egypt)", "egypt."])(
+    "matches the whole word in %j",
+    (text) => expect(mentionsEgypt(text)).toBe(true),
+  );
+
+  it.each([
+    "برج مصرف الراجحي، الرياض",
+    "مصروفات التشغيل",
+    "المصرف الأهلي",
+    "مصري",
+    "Egyptology",
+    "Cairokit",
+    "notegypt",
+  ])("does not match %j", (text) => expect(mentionsEgypt(text)).toBe(false));
 });
 
 describe("isVisibleBranch", () => {
@@ -106,6 +122,16 @@ describe("safeWhatsapp", () => {
 
   it("never falls back to an Egyptian number", () => {
     expect(safeWhatsapp("201234567890", "201000000000")).toBe(SAUDI_WHATSAPP_FALLBACK);
+  });
+
+  it.each([
+    ["+966 56 840 6006", "966568406006"],
+    ["00966 56 840 6006", "966568406006"],
+    ["(966) 56-840-6006", "966568406006"],
+  ])("normalises %j to wa.me digits", (n, want) => expect(safeWhatsapp(n, "966500000001")).toBe(want));
+
+  it("normalises the fallback too", () => {
+    expect(safeWhatsapp("", "+966 50 000 0001")).toBe("966500000001");
   });
 });
 

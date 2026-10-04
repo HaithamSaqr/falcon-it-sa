@@ -542,3 +542,34 @@
     transform: none !important;
   }
 }
+
+/* ── NAV SECTORS MENU ──
+   SectorsMenu sets data-open after hydration; before it (no data-ready),
+   hover and focus-within open the panel without JavaScript. */
+@layer components {
+  .nav-sectors-panel {
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 200ms, visibility 200ms;
+  }
+  .nav-sectors-caret {
+    transition: rotate 200ms;
+  }
+  .nav-sectors[data-open] .nav-sectors-panel,
+  .nav-sectors:not([data-ready]):is(:hover, :focus-within) .nav-sectors-panel {
+    visibility: visible;
+    opacity: 1;
+    /* Visible at once on open (so focus can move in); fades out on close. */
+    transition: opacity 200ms;
+  }
+  .nav-sectors[data-open] .nav-sectors-caret,
+  .nav-sectors:not([data-ready]):is(:hover, :focus-within) .nav-sectors-caret {
+    rotate: 180deg;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .nav-sectors-panel,
+    .nav-sectors-caret {
+      transition: none;
+    }
+  }
+}

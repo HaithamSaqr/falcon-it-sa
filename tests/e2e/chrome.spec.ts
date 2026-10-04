@@ -203,9 +203,6 @@ test.describe("mobile bottom bar", () => {
 test.describe("language toggle", () => {
   test("goes from /sectors/real-estate to /ar/sectors/real-estate", async ({ page }) => {
     await page.goto("/sectors/real-estate");
-    // Click after hydration: before it, a plain link to the unprefixed page is
-    // bounced back by the stored locale cookie (see task-7 report, concerns).
-    await page.waitForLoadState("networkidle");
     await page.locator('header a[lang="ar"]:visible').first().click();
     // A client navigation to a not-yet-compiled dev route can take a while when the suite runs in parallel.
     await expect(page).toHaveURL(/\/ar\/sectors\/real-estate$/, { timeout: 20_000 });
@@ -214,11 +211,87 @@ test.describe("language toggle", () => {
 
   test("goes back to English from /ar/sectors/real-estate", async ({ page }) => {
     await page.goto("/ar/sectors/real-estate");
-    // Click after hydration: before it, a plain link to the unprefixed page is
-    // bounced back by the stored locale cookie (see task-7 report, concerns).
-    await page.waitForLoadState("networkidle");
     await page.locator('header a[lang="en"]:visible').first().click();
     await expect(page).toHaveURL(/\/sectors\/real-estate$/, { timeout: 20_000 });
     await expect(page.locator("html")).toHaveAttribute("lang", "en", { timeout: 20_000 });
+  });
+});
+
+test.describe("sectors menu (desktop)", () => {
+  test("announces its state and closes with Escape", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/");
+    const trigger = page.locator('header nav a[aria-haspopup="true"]');
+    await expect(trigger).toHaveCount(1);
+    await expect(trigger).toHaveAttribute("aria-expanded", "false");
+    const menu = page.locator("#nav-sectors-menu");
+    await expect(menu).toBeHidden();
+
+    // Keyboard: focusing the trigger opens the menu and the sectors are reachable with Tab.
+    await trigger.focus();
+    await expect(trigger).toHaveAttribute("aria-expanded", "true");
+    await expect(menu).toBeVisible();
+    await page.keyboard.press("Tab");
+    await expect(menu.locator("a").first()).toBeFocused();
+
+    // Escape closes it and returns focus to the trigger.
+    await page.keyboard.press("Escape");
+    await expect(menu).toBeHidden();
+    await expect(trigger).toHaveAttribute("aria-expanded", "false");
+    await expect(trigger).toBeFocused();
+
+    // ArrowDown on the trigger reopens it.
+    await page.keyboard.press("ArrowDown");
+    await expect(menu).toBeVisible();
+    await expect(menu.locator("a").first()).toBeFocused();
+    await page.keyboard.press("Escape");
+    await expect(menu).toBeHidden();
+
+    // Hover still opens it.
+    await page.mouse.move(0, 600);
+    await trigger.hover();
+    await expect(menu).toBeVisible();
+    await expect(trigger).toHaveAttribute("aria-expanded", "true");
+    await page.mouse.move(700, 700);
+    await expect(menu).toBeHidden();
+  });
+});
+
+test.describe("unprefixed URLs are always English", () => {
+  test("a stored NEXT_LOCALE=ar cookie does not redirect /sectors/real-estate", async ({ request, baseURL }) => {
+    const res = await request.get("/sectors/real-estate", {
+      headers: { cookie: "NEXT_LOCALE=ar", "accept-language": "ar" },
+      maxRedirects: 0,
+    });
+    expect(res.status(), `redirected to ${res.headers()["location"] ?? ""}`).toBe(200);
+    const html = await res.text();
+    expect(html).toMatch(/<html[^>]*lang="en"/);
+    expect(baseURL).toBeTruthy();
+  });
+
+  test("/ar still serves Arabic", async ({ request }) => {
+    const res = await request.get("/ar/sectors/real-estate", { maxRedirects: 0 });
+    expect(res.status()).toBe(200);
+    expect(await res.text()).toMatch(/<html[^>]*lang="ar"/);
+  });
+
+  test.describe("before hydration (JavaScript disabled)", () => {
+    test.use({ javaScriptEnabled: false });
+
+    test("clicking English on an Arabic page lands on the English page", async ({ page, context, baseURL }) => {
+      await context.addCookies([{ name: "NEXT_LOCALE", value: "ar", url: baseURL! }]);
+      await page.goto("/ar/sectors/real-estate");
+      await page.locator('header a[lang="en"]:visible').first().click();
+      await expect(page).toHaveURL(/\/sectors\/real-estate$/);
+      expect(new URL(page.url()).pathname).toBe("/sectors/real-estate");
+      await expect(page.locator("html")).toHaveAttribute("lang", "en");
+    });
+
+    test("clicking العربية on an English page lands on the Arabic page", async ({ page }) => {
+      await page.goto("/sectors/real-estate");
+      await page.locator('header a[lang="ar"]:visible').first().click();
+      await expect(page).toHaveURL(/\/ar\/sectors\/real-estate$/);
+      await expect(page.locator("html")).toHaveAttribute("lang", "ar");
+    });
   });
 });

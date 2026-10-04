@@ -119,11 +119,21 @@ export function isHiddenPhone(phone: string | null | undefined): boolean {
   return digits === "" || digits === PLACEHOLDER_DIGITS;
 }
 
-const EGYPT_WORDS = /egypt|cairo|مصر|القاهرة/i;
+/** Arabic letters (diacritics excluded, they never end a word). */
+const AR_LETTER = "\u0620-\u064A\u066E-\u06D3\u06FA-\u06FF\u0750-\u077F";
+const AR_MARKS = "\u064B-\u065F\u0670";
+const EGYPT_LATIN = /\b(?:egypt|cairo)\b/i;
+/**
+ * مصر / القاهرة as whole words, allowing one prefix (و ب ل ف ال), so مصرف (bank)
+ * and مصروفات (expenses) do not match.
+ */
+const EGYPT_ARABIC = new RegExp(
+  `(?<![${AR_LETTER}${AR_MARKS}])(?:و|ب|ل|ف|ال)?(?:مصر|القاهرة)(?![${AR_MARKS}]*[${AR_LETTER}])`,
+);
 
-/** True when a text names Egypt or Cairo (English or Arabic). */
+/** True when a text names Egypt or Cairo as a whole word (English or Arabic). */
 export function mentionsEgypt(text: string | null | undefined): boolean {
-  return typeof text === "string" && EGYPT_WORDS.test(text);
+  return typeof text === "string" && (EGYPT_LATIN.test(text) || EGYPT_ARABIC.test(text));
 }
 
 function hasText(v: BilingualText | null | undefined): boolean {
@@ -143,10 +153,13 @@ export function isUnusableWhatsapp(number: string | null | undefined): boolean {
   return intlDigits(number as string).startsWith("20");
 }
 
-/** The number itself when usable, else the fallback, else the Saudi number. */
+/**
+ * The number itself when usable, else the fallback, else the Saudi number,
+ * always as wa.me digits (`+966 56 840 6006` becomes `966568406006`).
+ */
 export function safeWhatsapp(number: string | null | undefined, fallback: string): string {
-  if (!isUnusableWhatsapp(number)) return (number as string).trim();
-  if (!isUnusableWhatsapp(fallback)) return fallback.trim();
+  if (!isUnusableWhatsapp(number)) return intlDigits(number as string);
+  if (!isUnusableWhatsapp(fallback)) return intlDigits(fallback);
   return SAUDI_WHATSAPP_FALLBACK;
 }
 

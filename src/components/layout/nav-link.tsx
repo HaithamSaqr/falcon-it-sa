@@ -1,6 +1,6 @@
 "use client";
 
-import type { ReactNode } from "react";
+import type { AnchorHTMLAttributes, ReactNode } from "react";
 import { Link, usePathname } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 
@@ -11,7 +11,7 @@ type NavLinkProps = {
   /** Classes added when the link matches the current page (or a page below it). */
   activeClassName?: string;
   onClick?: () => void;
-};
+} & Pick<AnchorHTMLAttributes<HTMLAnchorElement>, "aria-haspopup" | "aria-expanded" | "aria-controls">;
 
 /** True when `pathname` is `href` or a page below it (`/sectors` matches `/sectors/retail`). */
 export function isActivePath(pathname: string, href: string): boolean {
@@ -20,13 +20,14 @@ export function isActivePath(pathname: string, href: string): boolean {
 }
 
 /** Locale-aware nav link that marks the current page with `aria-current`. */
-export default function NavLink({ href, children, className, activeClassName, onClick }: NavLinkProps) {
+export default function NavLink({ href, children, className, activeClassName, onClick, ...aria }: NavLinkProps) {
   const pathname = usePathname();
   const active = isActivePath(pathname, href);
   return (
     <Link
       href={href}
       onClick={onClick}
+      {...aria}
       aria-current={pathname === href ? "page" : undefined}
       className={cn(className, active && activeClassName)}
     >

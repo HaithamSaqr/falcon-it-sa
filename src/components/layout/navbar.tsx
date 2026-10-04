@@ -10,6 +10,7 @@ import Icon from "@/components/v2/ui/icon";
 import LanguageToggle from "@/components/layout/language-toggle";
 import MobileMenu from "@/components/layout/mobile-menu";
 import NavLink from "@/components/layout/nav-link";
+import SectorsMenu from "@/components/layout/sectors-menu";
 
 const LINK =
   "inline-flex items-center gap-1 whitespace-nowrap rounded-full text-[15px] leading-none text-ink no-underline transition-colors duration-200 hover:text-brand outline-brand focus-visible:outline-3 focus-visible:outline-offset-3";
@@ -42,7 +43,7 @@ function Logo({ name, short, className }: { name: string; short: string; classNa
 
 /**
  * Floating island navbar (server-rendered). Desktop: one line with the
- * sectors menu (opens on hover and keyboard focus, no JavaScript needed),
+ * sectors menu (hover, keyboard focus, Escape; see SectorsMenu),
  * the two ERPs, About, Contact, the language link and the primary CTA.
  * Below `lg`: logo, language link and a menu button that opens a sheet.
  */
@@ -78,47 +79,42 @@ export default async function Navbar({ settings }: { settings: PublicSettings })
 
           {/* Desktop links */}
           <ul className="hidden items-center gap-5 lg:flex xl:gap-7">
-            <li className="group/sectors relative">
-              <NavLink href="/sectors" className={LINK} activeClassName={ACTIVE}>
-                {t("sectors")}
-                <Icon
-                  name="CaretDown"
-                  size={14}
-                  className="transition-transform duration-200 group-hover/sectors:rotate-180 group-focus-within/sectors:rotate-180 motion-reduce:transition-none"
-                />
-              </NavLink>
-              <div
-                className={cn(
-                  "invisible absolute -start-5 top-full pt-4 opacity-0 transition-[opacity,visibility] duration-200 motion-reduce:transition-none",
-                  "group-hover/sectors:visible group-hover/sectors:opacity-100 group-focus-within/sectors:visible group-focus-within/sectors:opacity-100",
-                )}
-              >
-                <ul className="w-[320px] rounded-[22px] bg-surface p-2 shadow-[0_0_0_1px_rgba(11,26,51,0.06),0_30px_60px_-30px_rgba(12,60,120,0.4)]">
-                  {sectors.map((s) => (
-                    <li key={s.href}>
-                      <NavLink
-                        href={s.href}
-                        className="flex min-h-11 items-center rounded-[14px] px-3.5 text-[15px] leading-snug text-ink no-underline transition-colors duration-200 hover:bg-page hover:text-brand outline-brand focus-visible:outline-3 focus-visible:-outline-offset-3"
-                        activeClassName="bg-sky font-semibold text-brand"
-                      >
-                        {s.label}
-                      </NavLink>
-                    </li>
-                  ))}
-                  <li className="mt-1 pt-1 shadow-[inset_0_1px_0_rgba(11,26,51,0.08)]">
-                    <Link
-                      href="/sectors"
-                      className="group flex min-h-11 items-center justify-between rounded-[14px] px-3.5 text-[15px] font-semibold text-brand no-underline transition-colors duration-200 hover:bg-page outline-brand focus-visible:outline-3 focus-visible:-outline-offset-3"
+            <SectorsMenu
+              href="/sectors"
+              linkClassName={LINK}
+              activeClassName={ACTIVE}
+              label={
+                <>
+                  {t("sectors")}
+                  <Icon name="CaretDown" size={14} className="nav-sectors-caret" />
+                </>
+              }
+            >
+              <ul className="w-[320px] rounded-[22px] bg-surface p-2 shadow-[0_0_0_1px_rgba(11,26,51,0.06),0_30px_60px_-30px_rgba(12,60,120,0.4)]">
+                {sectors.map((s) => (
+                  <li key={s.href}>
+                    <NavLink
+                      href={s.href}
+                      className="flex min-h-11 items-center rounded-[14px] px-3.5 text-[15px] leading-snug text-ink no-underline transition-colors duration-200 hover:bg-page hover:text-brand outline-brand focus-visible:outline-3 focus-visible:-outline-offset-3"
+                      activeClassName="bg-sky font-semibold text-brand"
                     >
-                      {t("allSectors")}
-                      <span className="v2-icon-nudge inline-flex">
-                        <Icon name="ArrowUpRight" size={16} />
-                      </span>
-                    </Link>
+                      {s.label}
+                    </NavLink>
                   </li>
-                </ul>
-              </div>
-            </li>
+                ))}
+                <li className="mt-1 pt-1 shadow-[inset_0_1px_0_rgba(11,26,51,0.08)]">
+                  <Link
+                    href="/sectors"
+                    className="group flex min-h-11 items-center justify-between rounded-[14px] px-3.5 text-[15px] font-semibold text-brand no-underline transition-colors duration-200 hover:bg-page outline-brand focus-visible:outline-3 focus-visible:-outline-offset-3"
+                  >
+                    {t("allSectors")}
+                    <span className="v2-icon-nudge inline-flex">
+                      <Icon name="ArrowUpRight" size={16} />
+                    </span>
+                  </Link>
+                </li>
+              </ul>
+            </SectorsMenu>
             {links.map((l) => (
               <li key={l.href}>
                 <NavLink href={l.href} className={LINK} activeClassName={ACTIVE}>
