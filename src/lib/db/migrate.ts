@@ -13,6 +13,7 @@ import { V2_SECTORS, V2_SECTOR_SLUGS } from "@/lib/blocks/seed/sectors";
 import { insertBlocks, lockPage, markPageSeeded, pageSeededKey } from "@/lib/blocks/db";
 import { logoWallDefaults } from "@/lib/blocks/schemas/logo_wall";
 import { CLIENT_LOGOS, CLIENT_NAME_FIXES, clientLogoPath, newClientId } from "./client-logos";
+import { HOME_SCREENS } from "@/lib/blocks/seed/home";
 import {
   writeSettings,
   writeContent,
@@ -431,6 +432,36 @@ async function fixClientLogos(c: PoolClient): Promise<void> {
 
 export const CLIENT_LOGOS_FIX_KEY = "v2-client-logos-2026-10";
 
+/**
+ * The home hero and departments images move from the scene photos to real
+ * Falcon ERP screens. A block is changed only while its image is still the
+ * old seeded photo; its alt text follows only where it is still exactly the
+ * old seeded alt (per language), so admin-chosen images and words are kept.
+ */
+async function fixHomeScreens(c: PoolClient): Promise<void> {
+  await lockPage(c, "home");
+  const targets = [
+    { type: "hero", image: ["card", "image"], alt: ["card", "alt"], screen: HOME_SCREENS.dashboard },
+    { type: "departments", image: ["image"], alt: ["imageAlt"], screen: HOME_SCREENS.trialBalance },
+  ];
+  for (const t of targets) {
+    for (const lang of ["en", "ar"] as const) {
+      await c.query(
+        `UPDATE page_blocks SET content = jsonb_set(content, $3::text[], to_jsonb($5::text)), updated_at = now()
+         WHERE page = 'home' AND type = $1 AND content #>> $2::text[] = $6 AND content #>> $3::text[] = $4`,
+        [t.type, t.image, [...t.alt, lang], t.screen.old.alt[lang], t.screen.alt[lang], t.screen.old.image],
+      );
+    }
+    await c.query(
+      `UPDATE page_blocks SET content = jsonb_set(content, $2::text[], to_jsonb($3::text)), updated_at = now()
+       WHERE page = 'home' AND type = $1 AND content #>> $2::text[] = $4`,
+      [t.type, t.image, t.screen.image, t.screen.old.image],
+    );
+  }
+}
+
+export const HOME_SCREENS_FIX_KEY = "v2-home-screens-2026-10";
+
 const DATA_FIXES: [key: string, fix: (c: PoolClient) => Promise<void>][] = [
   ["v2-sector-slugs", fixSectorSlugs],
   ["v2-sector-titles", fixSectorTitles],
@@ -440,6 +471,7 @@ const DATA_FIXES: [key: string, fix: (c: PoolClient) => Promise<void>][] = [
   ["v2-footer-links", fixFooterLinks],
   ["v2-brochure-copy", fixBrochureCopy],
   [CLIENT_LOGOS_FIX_KEY, fixClientLogos],
+  [HOME_SCREENS_FIX_KEY, fixHomeScreens],
 ];
 
 /** Apply every pending one-off fix. A failing fix is logged and retried next boot; it never blocks the site. */

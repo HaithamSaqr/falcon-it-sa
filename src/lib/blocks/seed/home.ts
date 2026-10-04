@@ -6,6 +6,43 @@ import { b, demoCta, noCta } from "../fields";
 import { seedPage } from "./helpers";
 import { V2_SECTORS } from "./sectors";
 
+/**
+ * Real Falcon ERP desktop screens (scripts/assets/falcon-screens.mjs) and the
+ * scene photos they replaced. The `v2-home-screens-2026-10` data fix
+ * (src/lib/db/migrate.ts) moves stored home pages from `old` to `image` only
+ * while they still hold the old value.
+ */
+export const HOME_SCREENS = {
+  dashboard: {
+    image: "/images/v2/screen-dashboard.png",
+    alt: b(
+      "Falcon ERP desktop dashboard in Arabic: items sold, employee and item counts, and this week's purchase totals",
+      "لوحة تحكم فالكون ERP على سطح المكتب: الأصناف المباعة وعدد الموظفين والأصناف وإجماليات مشتريات الأسبوع",
+    ),
+    old: {
+      image: "/images/v2/photo-hero-laptop.jpg",
+      alt: b(
+        "Falcon ERP sales dashboard in Arabic on a laptop, in an office overlooking Riyadh at dusk",
+        "لوحة مبيعات فالكون ERP بالعربية على لابتوب، في مكتب يطل على الرياض وقت الغروب",
+      ),
+    },
+  },
+  trialBalance: {
+    image: "/images/v2/screen-trial-balance.png",
+    alt: b(
+      "Falcon ERP desktop trial balance by main accounts, in Arabic: account codes and names with their debit and credit totals",
+      "ميزان المراجعة بالحسابات الرئيسية في فالكون ERP على سطح المكتب: أكواد الحسابات وأسماؤها مع أرصدتها المدينة والدائنة",
+    ),
+    old: {
+      image: "/images/v2/photo-hero-office.jpg",
+      alt: b(
+        "A finance manager reviewing the Falcon ERP sales dashboard on a monitor, Riyadh skyline behind",
+        "مدير مالي يراجع لوحة مبيعات فالكون ERP على الشاشة، وخلفه أفق الرياض",
+      ),
+    },
+  },
+} as const;
+
 const sector = (slug: string) => {
   const s = V2_SECTORS.find((x) => x.slug === slug);
   if (!s) throw new Error(`Unknown v2 sector ${slug}`);
@@ -48,11 +85,8 @@ export const HOME_SEED = seedPage("home", [
       secondaryCta: { label: b("Talk on WhatsApp", "تحدث معنا على واتساب"), href: "https://wa.me/966568406006" },
       sectorsLabel: b("See it for", "شاهده لقطاع"),
       card: {
-        image: "/images/v2/photo-hero-laptop.jpg",
-        alt: b(
-          "Falcon ERP sales dashboard in Arabic on a laptop, in an office overlooking Riyadh at dusk",
-          "لوحة مبيعات فالكون ERP بالعربية على لابتوب، في مكتب يطل على الرياض وقت الغروب",
-        ),
+        image: HOME_SCREENS.dashboard.image,
+        alt: HOME_SCREENS.dashboard.alt,
         caption: b("Every department, one system", "كل الأقسام، نظام واحد"),
       },
       sectorPills: [
@@ -153,11 +187,8 @@ export const HOME_SEED = seedPage("home", [
           line: b("The numbers you need, every morning, on your phone.", "الأرقام التي تحتاجها، كل صباح، على جوالك."),
         },
       ],
-      image: "/images/v2/photo-hero-office.jpg",
-      imageAlt: b(
-        "A finance manager reviewing the Falcon ERP sales dashboard on a monitor, Riyadh skyline behind",
-        "مدير مالي يراجع لوحة مبيعات فالكون ERP على الشاشة، وخلفه أفق الرياض",
-      ),
+      image: HOME_SCREENS.trialBalance.image,
+      imageAlt: HOME_SCREENS.trialBalance.alt,
     },
   },
   {

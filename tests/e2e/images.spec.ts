@@ -52,13 +52,17 @@ test("the optimizer answers with WebP, smaller than the original", async ({ requ
 
 test.describe("uploads", () => {
   const dir = path.join(process.cwd(), "data", "uploads");
-  const file = "e2e-images-spec.png";
+  // One file per worker: with fullyParallel the tests of this block (and of
+  // each project) run in different workers, each with its own beforeAll and
+  // afterAll, so one worker's afterAll must not delete another worker's file.
+  let file = "";
   // 1x1 transparent PNG.
   const png = Buffer.from(
     "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=",
     "base64",
   );
-  test.beforeAll(() => {
+  test.beforeAll(({}, info) => {
+    file = `e2e-images-spec-${info.project.name}-${info.workerIndex}.png`;
     fs.mkdirSync(dir, { recursive: true });
     fs.writeFileSync(path.join(dir, file), png);
   });

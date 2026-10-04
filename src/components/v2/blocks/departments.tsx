@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { canOptimize } from "@/lib/image-src";
+import { canOptimize, isScreenshot } from "@/lib/image-src";
 import { cn } from "@/lib/utils";
 import Container from "@/components/v2/ui/container";
 import Section from "@/components/v2/ui/section";
@@ -59,7 +59,12 @@ export default function DepartmentsBlock({ content: c, ctx, place }: BlockProps<
         </div>
         {image && (
           <div className="rounded-[26px] bg-ink/[0.035] p-1.5 shadow-[inset_0_0_0_1px_rgba(11,26,51,0.06)] sm:rounded-[32px] sm:p-2">
-            <div className="overflow-hidden rounded-[20px] bg-[#16151F] shadow-[0_40px_80px_-40px_rgba(12,60,120,0.45)] sm:rounded-[25px]">
+            <div
+              className={cn(
+                "overflow-hidden rounded-[20px] shadow-[0_40px_80px_-40px_rgba(12,60,120,0.45)] sm:rounded-[25px]",
+                isScreenshot(image) ? "bg-surface" : "bg-[#16151F]",
+              )}
+            >
               <Image
                 src={image}
                 alt={tx(ctx, c.imageAlt)}
@@ -67,7 +72,10 @@ export default function DepartmentsBlock({ content: c, ctx, place }: BlockProps<
                 height={1000}
                 sizes="(min-width: 1280px) 580px, (min-width: 1024px) 46vw, calc(100vw - 40px)"
                 unoptimized={!canOptimize(image)}
-                className="block h-[280px] w-full object-cover sm:h-[420px] lg:h-[520px] xl:h-[560px]"
+                className={cn(
+                  "block h-[280px] w-full object-cover sm:h-[420px] lg:h-[520px] xl:h-[560px]",
+                  isScreenshot(image) && "object-right-top",
+                )}
               />
             </div>
           </div>

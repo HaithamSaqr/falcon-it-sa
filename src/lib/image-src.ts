@@ -10,3 +10,11 @@ export function canOptimize(src: string): boolean {
   if (src.includes("?") || src.includes("#")) return false;
   return !/\.svg$/i.test(src);
 }
+
+/**
+ * A real Falcon ERP screenshot (public/images/v2/screen-*.png). Frames show it
+ * anchored at its top right, where the Arabic UI starts, on a white ground.
+ */
+export function isScreenshot(src: string): boolean {
+  return /^\/images\/v2\/screen-[^/]+$/.test(src);
+}

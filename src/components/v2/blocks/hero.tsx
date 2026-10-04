@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { canOptimize } from "@/lib/image-src";
+import { canOptimize, isScreenshot } from "@/lib/image-src";
 import { cn } from "@/lib/utils";
 import Container from "@/components/v2/ui/container";
 import Section from "@/components/v2/ui/section";
@@ -107,7 +107,9 @@ export default function HeroBlock({ content: c, ctx, place }: BlockProps<"hero">
                         "block h-[250px] w-full sm:h-[360px] lg:h-[430px] xl:h-[484px]",
                         isLogo(c.card.image)
                           ? "object-contain p-12 mix-blend-multiply sm:p-20 lg:p-24"
-                          : "object-cover",
+                          : isScreenshot(c.card.image)
+                            ? "object-cover object-right-top"
+                            : "object-cover",
                       )}
                     />
                   </div>
