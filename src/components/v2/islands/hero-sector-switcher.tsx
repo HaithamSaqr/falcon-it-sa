@@ -96,9 +96,11 @@ type HeroTileProps = {
   /** Server-rendered arrow icon. */
   arrow: ReactNode;
   className?: string;
+  /** A shorter photo, for the card beside a wide product screen. */
+  compact?: boolean;
 };
 
-export function HeroTile({ fallback, arrow, className }: HeroTileProps) {
+export function HeroTile({ fallback, arrow, className, compact = false }: HeroTileProps) {
   const ctx = useContext(HeroContext);
   const tile = ctx?.selected ? ctx.selected.tile : fallback;
   if (!tile || (!tile.caption && !tile.image)) return null;
@@ -109,13 +111,18 @@ export function HeroTile({ fallback, arrow, className }: HeroTileProps) {
       className={cn("block overflow-hidden rounded-[20px] bg-surface", ctx?.changed && "animate-settle")}
     >
       {tile.image && (
-        <span className="block h-[108px] overflow-hidden bg-[#16151F] sm:h-[150px] lg:h-[190px]">
+        <span
+          className={cn(
+            "block overflow-hidden bg-[#16151F]",
+            compact ? "h-[120px] sm:h-[140px] lg:h-[120px]" : "h-[108px] sm:h-[150px] lg:h-[190px]",
+          )}
+        >
           <Image
             src={tile.image}
             alt={tile.alt}
             width={580}
             height={380}
-            sizes="(min-width: 1024px) 290px, (min-width: 640px) 270px, 230px"
+            sizes={compact ? "(min-width: 1024px) 250px, 320px" : "(min-width: 1024px) 290px, (min-width: 640px) 270px, 230px"}
             unoptimized={!canOptimize(tile.image)}
             className="v2-zoom block h-full w-full object-cover"
             style={tile.position ? { objectPosition: tile.position } : undefined}

@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { canOptimize, isScreenshot } from "@/lib/image-src";
+import { canOptimize, isScreenshot, screenshotSize } from "@/lib/image-src";
 import { cn } from "@/lib/utils";
 import Container from "@/components/v2/ui/container";
 import Section from "@/components/v2/ui/section";
@@ -65,18 +65,28 @@ export default function DepartmentsBlock({ content: c, ctx, place }: BlockProps<
                 isScreenshot(image) ? "bg-surface" : "bg-[#16151F]",
               )}
             >
-              <Image
-                src={image}
-                alt={tx(ctx, c.imageAlt)}
-                width={1120}
-                height={1000}
-                sizes="(min-width: 1280px) 580px, (min-width: 1024px) 46vw, calc(100vw - 40px)"
-                unoptimized={!canOptimize(image)}
-                className={cn(
-                  "block h-[280px] w-full object-cover sm:h-[420px] lg:h-[520px] xl:h-[560px]",
-                  isScreenshot(image) && "object-right-top",
-                )}
-              />
+              {isScreenshot(image) ? (
+                // A real product screen: whole, at its own aspect ratio.
+                <Image
+                  src={image}
+                  alt={tx(ctx, c.imageAlt)}
+                  width={screenshotSize(image)[0]}
+                  height={screenshotSize(image)[1]}
+                  sizes="(min-width: 1280px) 580px, (min-width: 1024px) 48vw, calc(100vw - 40px)"
+                  unoptimized={!canOptimize(image)}
+                  className="block h-auto w-full object-contain"
+                />
+              ) : (
+                <Image
+                  src={image}
+                  alt={tx(ctx, c.imageAlt)}
+                  width={1120}
+                  height={1000}
+                  sizes="(min-width: 1280px) 580px, (min-width: 1024px) 46vw, calc(100vw - 40px)"
+                  unoptimized={!canOptimize(image)}
+                  className="block h-[280px] w-full object-cover sm:h-[420px] lg:h-[520px] xl:h-[560px]"
+                />
+              )}
             </div>
           </div>
         )}

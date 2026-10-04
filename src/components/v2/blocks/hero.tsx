@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { canOptimize, isScreenshot } from "@/lib/image-src";
+import { canOptimize, isScreenshot, screenshotSize } from "@/lib/image-src";
 import { cn } from "@/lib/utils";
 import Container from "@/components/v2/ui/container";
 import Section from "@/components/v2/ui/section";
@@ -51,6 +51,10 @@ export default function HeroBlock({ content: c, ctx, place }: BlockProps<"hero">
       : { image: "", alt: "", caption, sub: "", href: "" }
     : null;
   const hasPhoto = c.card.image !== "";
+  // A real product screen is shown whole, at its own aspect ratio, with the
+  // card tucked under its bottom-left corner (the screen's quiet edge).
+  const screen = hasPhoto && isScreenshot(c.card.image);
+  const [screenW, screenH] = screenshotSize(c.card.image);
 
   return (
     <Section tone="page" className="pt-8 pb-16 md:pt-12 md:pb-20 lg:pt-[72px] lg:pb-24" {...rootProps("hero", place)}>
@@ -85,7 +89,31 @@ export default function HeroBlock({ content: c, ctx, place }: BlockProps<"hero">
             </div>
           </div>
 
-          {(hasPhoto || fallback) && (
+          {(hasPhoto || fallback) && screen && (
+            <div className="animate-rise rise-d4 relative lg:pb-[176px]">
+              <div className="rounded-[26px] bg-ink/[0.035] p-1.5 shadow-[inset_0_0_0_1px_rgba(11,26,51,0.06)] sm:rounded-[30px] sm:p-2">
+                <div className="overflow-hidden rounded-[20px] bg-surface shadow-[0_40px_80px_-40px_rgba(12,60,120,0.4)] sm:rounded-[22px]">
+                  <Image
+                    src={c.card.image}
+                    alt={tx(ctx, c.card.alt)}
+                    width={screenW}
+                    height={screenH}
+                    sizes="(min-width: 1280px) 640px, (min-width: 1024px) 50vw, calc(100vw - 40px)"
+                    unoptimized={!canOptimize(c.card.image)}
+                    preload
+                    className="block h-auto w-full object-contain"
+                  />
+                </div>
+              </div>
+              <HeroTile
+                fallback={fallback}
+                arrow={<Icon name="ArrowUpRight" size={15} />}
+                compact
+                className="relative mt-4 w-full max-w-[320px] lg:absolute lg:bottom-0 lg:left-[-28px] lg:mt-0 lg:w-[250px]"
+              />
+            </div>
+          )}
+          {(hasPhoto || fallback) && !screen && (
             <div className="animate-rise rise-d4 relative pb-24 lg:h-[500px] lg:pb-0 xl:h-[560px]">
               {hasPhoto && (
                 <div className="rounded-[26px] bg-ink/[0.035] p-1.5 shadow-[inset_0_0_0_1px_rgba(11,26,51,0.06)] sm:rounded-[30px] sm:p-2 lg:absolute lg:end-0 lg:top-0 lg:w-[87.5%]">
@@ -105,11 +133,7 @@ export default function HeroBlock({ content: c, ctx, place }: BlockProps<"hero">
                       preload
                       className={cn(
                         "block h-[250px] w-full sm:h-[360px] lg:h-[430px] xl:h-[484px]",
-                        isLogo(c.card.image)
-                          ? "object-contain p-12 mix-blend-multiply sm:p-20 lg:p-24"
-                          : isScreenshot(c.card.image)
-                            ? "object-cover object-right-top"
-                            : "object-cover",
+                        isLogo(c.card.image) ? "object-contain p-12 mix-blend-multiply sm:p-20 lg:p-24" : "object-cover",
                       )}
                     />
                   </div>
