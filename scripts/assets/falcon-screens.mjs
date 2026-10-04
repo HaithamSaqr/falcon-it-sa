@@ -1,70 +1,108 @@
 /**
- * Real Falcon ERP desktop screenshots for the home page, cropped from the
- * owner's captures into public/images/v2/screen-<name>.png.
+ * Real Falcon ERP desktop screens for the home page, from the owner's
+ * captures, as public/images/v2/screen-<name>.png, plus their pixel sizes in
+ * src/lib/screen-sizes.ts (generated) so the site frames each one at its own
+ * aspect ratio.
  *
  *   node scripts/assets/falcon-screens.mjs ["<FALCON DESKTOP SCREENS folder>"]
  *
  * Source (read-only): E:\Abdulrehman\Falcon Company\recorses\FALCON DESKTOP SCREENS
- * (2560x1392 captures of the Arabic desktop app). Each crop keeps the
- * right-hand side, where the Arabic UI starts (side menu, first ribbon tab,
- * first columns), and is sized so the UI text stays readable at the size the
- * site shows it. Output is twice that display size (Next's optimizer serves
- * WebP from it).
+ * (2560x1392 captures of the maximised Arabic desktop app). Each screen shows
+ * the whole application window, from the title bar to the bottom of the
+ * content area: every column of the window stays in, nothing is cropped from
+ * the sides. Output is 1280 px wide, twice the widest frame on the site.
  *
- * Privacy: the crops leave out everything personal in the captures. The
- * dashboard's left panel (employee names, requests, amounts per person) is
- * left of x=495 and the status bar (support phone numbers) is below y=1355;
- * both are outside every crop. Only business-generic figures remain (counts,
- * totals, chart-of-accounts names). Check any new crop for names and phone
- * numbers before adding it. Fields the site must not show (the Egyptian pound
- * currency) are painted over with the surrounding panel colour (`redact`).
+ * Privacy: every area of a capture that holds personal data (or anything the
+ * site must not show) is listed in `private`. Each one must be either outside
+ * the crop or fully covered by one of the screen's `redact` rectangles, which
+ * are painted over with the panel's own plain background, leaving no letters;
+ * the script refuses to write a screen otherwise. Check any new capture for
+ * names, phone numbers and customer data before adding it here.
  */
+import fs from "node:fs";
 import path from "node:path";
 import sharp from "sharp";
 
 const SRC = process.argv[2] ?? "E:/Abdulrehman/Falcon Company/recorses/FALCON DESKTOP SCREENS";
 const OUT = path.join(process.cwd(), "public", "images", "v2");
+const WIDTH = 1280;
+
+/** The status bar of every capture (y 1355 down): support phone numbers. Left out by every crop. */
+const STATUS_BAR = { name: "status bar (phone numbers)", left: 0, top: 1355, width: 2560, height: 37 };
 
 const SCREENS = [
   {
-    // Dashboard: title bar, HR ribbon, side menu and the KPI tiles (839 items sold, 9 employees, 565 items).
-    // Home hero frame: 560x484 at xl, so 1120x968 out.
+    // Dashboard: title bar, module tabs and HR ribbon, side menu, all KPI tiles
+    // (6 negative-stock items, 232M stock value, 353, 13 suppliers, 565 items,
+    // 9 employees, 839 items sold), the purchase/sales tiles, the latest
+    // invoices and items, and the item sales chart.
     file: "2025-11-07_23h18_10.png",
     out: "screen-dashboard.png",
-    crop: { left: 1560, top: 0, width: 1000, height: 864 },
-    size: { width: 1120, height: 968 },
+    crop: { left: 0, top: 0, width: 2560, height: 1354 },
+    private: [
+      // The notifications list: employee names and their requests and amounts.
+      { name: "notifications panel (employee names)", left: 19, top: 323, width: 446, height: 963 },
+      STATUS_BAR,
+    ],
+    redact: [{ left: 19, top: 323, width: 446, height: 963, fill: "#FFFFFF" }],
   },
   {
-    // Trial balance by main accounts (ميزان بالحسابات الرئيسية): filters and the account rows with debit/credit.
-    // Departments frame: 580x560 at xl, so 1160x1120 out.
+    // Trial balance by main accounts (ميزان بالحسابات الرئيسية): accounts ribbon,
+    // filters, and every column of the account rows (code, name, opening,
+    // previous, debit, credit, balances, the account tree) with the totals row.
     file: "2025-11-07_23h23_02.png",
     out: "screen-trial-balance.png",
-    crop: { left: 1440, top: 205, width: 1119, height: 1080 },
-    size: { width: 1160, height: 1120 },
-    // The currency field ("العملة" and its selector, set to the Egyptian pound):
-    // the site shows no Egypt anywhere, so it is painted over with the panel's
-    // own background colour (sampled at the box corner).
-    redact: [{ left: 1963, top: 270, width: 148, height: 32 }],
+    crop: { left: 0, top: 0, width: 2559, height: 1354 },
+    private: [
+      // The currency field (العملة, set to the Egyptian pound): the site shows no Egypt anywhere.
+      { name: "currency field", left: 1963, top: 270, width: 148, height: 32 },
+      STATUS_BAR,
+    ],
+    redact: [{ left: 1963, top: 270, width: 148, height: 32, fill: "#F0F0F0" }],
   },
 ];
 
+const inside = (a, b) =>
+  a.left >= b.left && a.top >= b.top && a.left + a.width <= b.left + b.width && a.top + a.height <= b.top + b.height;
+const overlaps = (a, b) =>
+  a.left < b.left + b.width && b.left < a.left + a.width && a.top < b.top + b.height && b.top < a.top + a.height;
+
+const sizes = {};
 for (const s of SCREENS) {
-  const meta = await sharp(path.join(SRC, s.file)).metadata();
+  const file = path.join(SRC, s.file);
+  const meta = await sharp(file).metadata();
   const { left, top, width, height } = s.crop;
-  if (left < 495 || top + height > 1355 || left + width > meta.width) {
-    throw new Error(`${s.out}: crop reaches the personal-data areas or the image edge`);
+  if (left < 0 || top < 0 || left + width > meta.width || top + height > meta.height) {
+    throw new Error(`${s.out}: crop is outside the capture`);
   }
-  const fills = [];
-  for (const r of s.redact ?? []) {
-    const { data } = await sharp(path.join(SRC, s.file)).extract({ left: r.left, top: r.top, width: 1, height: 1 }).raw().toBuffer({ resolveWithObject: true });
-    const [red, green, blue] = data;
-    fills.push({ input: { create: { width: r.width, height: r.height, channels: 3, background: { r: red, g: green, b: blue } } }, left: r.left, top: r.top });
+  for (const p of s.private) {
+    const hidden = !overlaps(p, s.crop) || (s.redact ?? []).some((r) => inside(p, r));
+    if (!hidden) throw new Error(`${s.out}: "${p.name}" is in the crop and not covered by a redaction`);
   }
-  const source = fills.length ? await sharp(path.join(SRC, s.file)).composite(fills).png().toBuffer() : path.join(SRC, s.file);
-  await sharp(source)
-    .extract(s.crop)
-    .resize(s.size.width, s.size.height, { kernel: "lanczos3", fit: "fill" })
+  const fills = (s.redact ?? []).map((r) => ({
+    input: { create: { width: r.width, height: r.height, channels: 4, background: r.fill } },
+    left: r.left,
+    top: r.top,
+  }));
+  const painted = await sharp(file).composite(fills).png().toBuffer();
+  const h = Math.round((height * WIDTH) / width);
+  await sharp(await sharp(painted).extract(s.crop).png().toBuffer())
+    .resize(WIDTH, h, { kernel: "lanczos3", fit: "fill" })
     .png({ compressionLevel: 9, effort: 10 })
     .toFile(path.join(OUT, s.out));
-  console.log(`${s.out}  ${s.size.width}x${s.size.height}  from ${s.file}`);
+  sizes[`/images/v2/${s.out}`] = [WIDTH, h];
+  console.log(`${s.out}  ${WIDTH}x${h}  from ${s.file}`);
 }
+
+const rows = Object.entries(sizes)
+  .map(([k, [w, h]]) => `  "${k}": [${w}, ${h}],`)
+  .join("\n");
+fs.writeFileSync(
+  path.join(process.cwd(), "src", "lib", "screen-sizes.ts"),
+  `// Generated by scripts/assets/falcon-screens.mjs. Do not edit by hand.
+/** [width, height] in pixels of the bundled Falcon ERP screens (public/images/v2/screen-*.png). */
+export const SCREEN_SIZES: Record<string, readonly [number, number]> = {
+${rows}
+};
+`,
+);

@@ -5,13 +5,15 @@ import { expect, test } from "@playwright/test";
 /**
  * QA: full-page screenshots of the home and clients pages, English and
  * Arabic, at 1440 and 390 wide, into qa/screens/home/ (gitignored), and of
- * the about page (logo strip under the hero) into qa/screens/client-logos/.
+ * the about page (logo strip under the hero) into qa/screens/client-logos/,
+ * and the home hero and departments blocks into qa/screens/screens-fit/.
  * The logo strip is caught mid-drift.
  *
  * Opt-in: QA_HOME_SHOTS=1 E2E_BASE_URL=http://localhost:3300 npx playwright test home-shots --project=desktop
  */
 const OUT = path.join(process.cwd(), "qa", "screens", "home");
 const LOGOS_OUT = path.join(process.cwd(), "qa", "screens", "client-logos");
+const SCREENS_OUT = path.join(process.cwd(), "qa", "screens", "screens-fit");
 
 test.skip(!process.env.QA_HOME_SHOTS, "Set QA_HOME_SHOTS=1 to take the home QA screenshots");
 
@@ -24,6 +26,7 @@ for (const w of [
     test.setTimeout(5 * 60_000);
     fs.mkdirSync(OUT, { recursive: true });
     fs.mkdirSync(LOGOS_OUT, { recursive: true });
+    fs.mkdirSync(SCREENS_OUT, { recursive: true });
     const context = await browser.newContext({ viewport: { width: w.width, height: w.height }, isMobile: w.mobile, hasTouch: w.mobile });
     const page = await context.newPage();
     for (const locale of ["en", "ar"] as const) {
@@ -45,6 +48,12 @@ for (const w of [
         await page.screenshot({ path: path.join(dir, `${name}__${locale}__${w.width}.png`), fullPage: true });
         if (route === "/") {
           await page.screenshot({ path: path.join(OUT, `home-fold__${locale}__${w.width}.png`) });
+          // The product screens, whole, in the hero and beside the departments.
+          for (const type of ["hero", "departments"]) {
+            await page.locator(`[data-block-type="${type}"]`).first().screenshot({
+              path: path.join(SCREENS_OUT, `${type}__${locale}__${w.width}.png`),
+            });
+          }
         }
       }
     }
