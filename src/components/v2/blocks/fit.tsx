@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { canOptimize } from "@/lib/image-src";
 import { cn } from "@/lib/utils";
 import Container from "@/components/v2/ui/container";
 import Section from "@/components/v2/ui/section";
@@ -24,6 +25,7 @@ function Option({ option, side, ctx }: { option: FitContent["odoo"]; side: keyof
           alt={tx(ctx, option.name)}
           width={logo.width}
           height={logo.height}
+          unoptimized={!canOptimize(logo.src)}
           className={cn("w-auto self-start mix-blend-multiply", logo.className)}
         />
         {when && (

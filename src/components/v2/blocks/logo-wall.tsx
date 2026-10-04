@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { canOptimize } from "@/lib/image-src";
 import type { CSSProperties } from "react";
 import { cn } from "@/lib/utils";
 import Container from "@/components/v2/ui/container";
@@ -39,6 +40,7 @@ export default function LogoWallBlock({ content: c, ctx, place }: BlockProps<"lo
                 alt={l.name}
                 width={180}
                 height={60}
+                unoptimized={!canOptimize(l.logo)}
                 className="v2-logo h-[28px] w-full object-contain lg:h-[36px]"
               />
             </li>
@@ -66,7 +68,7 @@ function LogoWallPage({
               key={`${l.logo}-${i}`}
               className="flex h-[104px] items-center justify-center rounded-[20px] bg-surface px-5 shadow-[inset_0_0_0_1px_rgba(11,26,51,0.06)] md:h-[120px]"
             >
-              <Image src={l.logo} alt={l.name} width={180} height={60} className="v2-logo h-[40px] w-full object-contain md:h-[44px]" />
+              <Image src={l.logo} alt={l.name} width={180} height={60} unoptimized={!canOptimize(l.logo)} className="v2-logo h-[40px] w-full object-contain md:h-[44px]" />
             </li>
           ))}
         </ul>

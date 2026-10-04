@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { canOptimize } from "@/lib/image-src";
 import { cn } from "@/lib/utils";
 import { demoHref } from "@/lib/blocks/cta";
 import Container from "@/components/v2/ui/container";
@@ -44,6 +45,8 @@ export default function SectorGridBlock({ content: c, ctx, place }: BlockProps<"
                       alt={card.alt}
                       width={800}
                       height={600}
+                      sizes="(min-width: 1280px) 390px, (min-width: 1024px) 30vw, (min-width: 640px) 50vw, calc(100vw - 40px)"
+                      unoptimized={!canOptimize(card.image)}
                       className="v2-zoom block h-full w-full object-cover"
                     />
                   </span>

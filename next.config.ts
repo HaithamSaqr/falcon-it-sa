@@ -39,7 +39,14 @@ const PRODUCT_MOVED: Record<string, string> = {
 const nextConfig: NextConfig = {
   output: "standalone",
   images: {
-    unoptimized: true,
+    // The optimizer serves phones a smaller WebP instead of the 1400 px
+    // original. Only the site's own images and admin uploads go through it
+    // (src/lib/image-src.ts mirrors this list); the standalone Docker image
+    // ships sharp for it.
+    localPatterns: [
+      { pathname: "/images/**", search: "" },
+      { pathname: "/api/uploads/**", search: "" },
+    ],
   },
   async redirects() {
     return ["", "/ar"].flatMap((prefix) => [

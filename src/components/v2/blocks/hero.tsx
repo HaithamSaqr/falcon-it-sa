@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { canOptimize } from "@/lib/image-src";
 import { cn } from "@/lib/utils";
 import Container from "@/components/v2/ui/container";
 import Section from "@/components/v2/ui/section";
@@ -99,6 +100,8 @@ export default function HeroBlock({ content: c, ctx, place }: BlockProps<"hero">
                       alt={tx(ctx, c.card.alt)}
                       width={1120}
                       height={968}
+                      sizes="(min-width: 1280px) 560px, (min-width: 1024px) 44vw, calc(100vw - 40px)"
+                      unoptimized={!canOptimize(c.card.image)}
                       preload
                       className={cn(
                         "block h-[250px] w-full sm:h-[360px] lg:h-[430px] xl:h-[484px]",

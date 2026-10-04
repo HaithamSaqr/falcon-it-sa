@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { canOptimize } from "@/lib/image-src";
 import { cn } from "@/lib/utils";
 import Container from "@/components/v2/ui/container";
 import Section from "@/components/v2/ui/section";
@@ -55,6 +56,7 @@ export default function QuoteBlock({ content: c, ctx, place }: BlockProps<"quote
                 alt={tx(ctx, c.logoAlt) || company}
                 width={200}
                 height={72}
+                unoptimized={!canOptimize(c.logo)}
                 className="h-full w-auto object-contain"
               />
             </div>

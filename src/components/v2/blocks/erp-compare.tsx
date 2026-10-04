@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { canOptimize } from "@/lib/image-src";
 import { cn } from "@/lib/utils";
 import Container from "@/components/v2/ui/container";
 import Section from "@/components/v2/ui/section";
@@ -26,6 +27,7 @@ function Card({ card, side, ctx }: { card: ErpCompareContent["odoo"]; side: keyo
               alt={tx(ctx, card.logoAlt) || tx(ctx, card.title)}
               width={400}
               height={140}
+              unoptimized={!canOptimize(card.logo)}
               className={cn("w-auto mix-blend-multiply", s.logo)}
             />
           )}

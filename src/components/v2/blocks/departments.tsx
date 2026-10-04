@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { canOptimize } from "@/lib/image-src";
 import { cn } from "@/lib/utils";
 import Container from "@/components/v2/ui/container";
 import Section from "@/components/v2/ui/section";
@@ -64,6 +65,8 @@ export default function DepartmentsBlock({ content: c, ctx, place }: BlockProps<
                 alt={tx(ctx, c.imageAlt)}
                 width={1120}
                 height={1000}
+                sizes="(min-width: 1280px) 580px, (min-width: 1024px) 46vw, calc(100vw - 40px)"
+                unoptimized={!canOptimize(image)}
                 className="block h-[280px] w-full object-cover sm:h-[420px] lg:h-[520px] xl:h-[560px]"
               />
             </div>

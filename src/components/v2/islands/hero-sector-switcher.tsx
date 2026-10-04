@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState, type ReactNode } from "react";
 import Image from "next/image";
+import { canOptimize } from "@/lib/image-src";
 import { Link } from "@/i18n/navigation";
 import { isLocaleRoute } from "@/lib/href";
 import { cn } from "@/lib/utils";
@@ -114,6 +115,8 @@ export function HeroTile({ fallback, arrow, className }: HeroTileProps) {
             alt={tile.alt}
             width={580}
             height={380}
+            sizes="(min-width: 1024px) 290px, (min-width: 640px) 270px, 230px"
+            unoptimized={!canOptimize(tile.image)}
             className="v2-zoom block h-full w-full object-cover"
             style={tile.position ? { objectPosition: tile.position } : undefined}
           />
