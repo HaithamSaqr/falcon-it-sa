@@ -33,8 +33,8 @@ export type RenderContext = {
   sector?: { id: string; name: Bi };
   /** True when a RoleProvider wraps the page. */
   roleAware: boolean;
-  /** Client logos for `logo_wall`. */
-  clients: { name: string; logo: string }[];
+  /** Client logos for `logo_wall` (name is the alt text, per locale). */
+  clients: { name: Bi; logo: string }[];
   /** Site settings for `contact_info`. */
   settings?: PublicSettings;
   /** Section anchors present on this page (e.g. "erp" when a departments block exists). */

@@ -11,6 +11,8 @@ import { SEED } from "@/lib/blocks/seed";
 import type { SeedBlock } from "@/lib/blocks/seed";
 import { V2_SECTORS, V2_SECTOR_SLUGS } from "@/lib/blocks/seed/sectors";
 import { insertBlocks, lockPage, markPageSeeded, pageSeededKey } from "@/lib/blocks/db";
+import { logoWallDefaults } from "@/lib/blocks/schemas/logo_wall";
+import { CLIENT_LOGOS, CLIENT_NAME_FIXES, clientLogoPath, newClientId } from "./client-logos";
 import {
   writeSettings,
   writeContent,
@@ -347,6 +349,88 @@ async function fixBrochureCopy(c: PoolClient): Promise<void> {
   }
 }
 
+/** Logo strip `limit` values the seeds ever shipped (8 everywhere, 7 on real estate, 12 the block default). */
+export const OLD_LOGO_WALL_LIMITS: readonly number[] = [7, 8, 12];
+
+/** Logo strip headings the seeds ever shipped; several clients are outside Saudi Arabia. */
+export const OLD_LOGO_WALL_HEADINGS = {
+  en: [
+    "Companies across Saudi Arabia run on ERPs our team implemented",
+    "Companies across Saudi Arabia and Egypt run on ERPs our team implemented",
+  ],
+  ar: ["شركات في السعودية تعمل على أنظمة ERP طبّقها فريقنا", "شركات في السعودية ومصر تعمل على أنظمة ERP طبّقها فريقنا"],
+} as const;
+
+/**
+ * The owner's full client logo set (src/lib/db/client-logos.ts):
+ * - a production row still holding its original upload gets the cleaned logo,
+ *   and its blank names are filled (an admin-changed logo means the row is left alone);
+ * - known placeholder names are corrected only while they are exactly that pair;
+ * - clients production does not have are added after the existing rows (only
+ *   when the table has rows: an empty table already shows the bundled set);
+ * - the logo strips on home, about and the sector pages show every logo
+ *   (limit 60) where the limit is still a seeded value, and any logo_wall
+ *   heading that is still the old "across Saudi Arabia" text gets the new one.
+ * Nothing is deleted.
+ */
+async function fixClientLogos(c: PoolClient): Promise<void> {
+  for (const l of CLIENT_LOGOS) {
+    if (!l.prod) continue;
+    await c.query(
+      `UPDATE clients SET
+         logo = $3,
+         name_en = CASE WHEN trim(name_en) = '' THEN $4 ELSE name_en END,
+         name_ar = CASE WHEN trim(name_ar) = '' THEN $5 ELSE name_ar END
+       WHERE id = $1 AND logo = $2`,
+      [l.prod.id, l.prod.upload, clientLogoPath(l.slug), l.name.en, l.name.ar],
+    );
+  }
+  for (const f of CLIENT_NAME_FIXES) {
+    await c.query(`UPDATE clients SET name_en = $4, name_ar = $5 WHERE id = $1 AND name_en = $2 AND name_ar = $3`, [
+      f.id,
+      f.from.en,
+      f.from.ar,
+      f.to.en,
+      f.to.ar,
+    ]);
+  }
+
+  const stats = await c.query(`SELECT count(*)::int AS n, coalesce(max(sort_order), -1)::int AS last FROM clients`);
+  if (stats.rows[0].n > 0) {
+    let sort = stats.rows[0].last + 1;
+    for (const l of CLIENT_LOGOS) {
+      if (l.prod) continue;
+      const logo = clientLogoPath(l.slug);
+      const r = await c.query(
+        `INSERT INTO clients (id, name_en, name_ar, logo, tags, sort_order)
+         SELECT $1, $2, $3, $4, '{}', $5
+         WHERE NOT EXISTS (SELECT 1 FROM clients WHERE id = $1 OR logo = $4)`,
+        [newClientId(l.slug), l.name.en, l.name.ar, logo, sort],
+      );
+      if (r.rowCount) sort++;
+    }
+  }
+
+  const pages = await c.query(`SELECT DISTINCT page FROM page_blocks WHERE type = 'logo_wall' ORDER BY page`);
+  for (const { page } of pages.rows) await lockPage(c, page);
+  await c.query(
+    `UPDATE page_blocks SET content = jsonb_set(content, '{limit}', '60'::jsonb), updated_at = now()
+     WHERE type = 'logo_wall' AND (page IN ('home', 'about') OR page LIKE 'sector:%')
+       AND jsonb_typeof(content->'limit') = 'number' AND (content->>'limit')::numeric = ANY($1::numeric[])`,
+    [OLD_LOGO_WALL_LIMITS],
+  );
+  const heading = logoWallDefaults().heading;
+  for (const lang of ["en", "ar"] as const) {
+    await c.query(
+      `UPDATE page_blocks SET content = jsonb_set(content, ARRAY['heading', $3::text], to_jsonb($2::text)), updated_at = now()
+       WHERE type = 'logo_wall' AND content->'heading'->>$3 = ANY($1::text[])`,
+      [OLD_LOGO_WALL_HEADINGS[lang], heading[lang], lang],
+    );
+  }
+}
+
+export const CLIENT_LOGOS_FIX_KEY = "v2-client-logos-2026-10";
+
 const DATA_FIXES: [key: string, fix: (c: PoolClient) => Promise<void>][] = [
   ["v2-sector-slugs", fixSectorSlugs],
   ["v2-sector-titles", fixSectorTitles],
@@ -355,6 +439,7 @@ const DATA_FIXES: [key: string, fix: (c: PoolClient) => Promise<void>][] = [
   ["v2-company-ids", fixCompanyIds],
   ["v2-footer-links", fixFooterLinks],
   ["v2-brochure-copy", fixBrochureCopy],
+  [CLIENT_LOGOS_FIX_KEY, fixClientLogos],
 ];
 
 /** Apply every pending one-off fix. A failing fix is logged and retried next boot; it never blocks the site. */

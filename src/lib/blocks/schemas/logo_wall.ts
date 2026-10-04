@@ -16,10 +16,10 @@ export type LogoWallContent = z.infer<typeof logoWallSchema>;
 
 export const logoWallDefaults = (): LogoWallContent => ({
   heading: b(
-    "Companies across Saudi Arabia run on ERPs our team implemented",
-    "شركات في السعودية تعمل على أنظمة ERP طبّقها فريقنا",
+    "Companies that run on ERPs our team implemented",
+    "شركات تعمل على أنظمة ERP نفّذها فريقنا",
   ),
   intro: b(""),
-  limit: 12,
+  limit: 60,
   link: noCta(),
 });

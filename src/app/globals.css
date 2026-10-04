@@ -179,14 +179,38 @@
   .v2-zoom { transition: transform 600ms var(--ease-out-quint); }
   .group:hover .v2-zoom { transform: scale(1.03); }
 
-  /* Client logos: grey and quiet until hovered. */
-  .v2-logo {
-    filter: grayscale(1);
-    opacity: .6;
-    mix-blend-mode: multiply;
-    transition: opacity 220ms var(--ease-out-quint), filter 220ms var(--ease-out-quint);
+  /* Client logos: their own colours at full strength (cleaned, transparent files). */
+  .v2-logo { display: block; }
+
+  /*
+   * Client logo strip: two identical lists side by side, the track slides one
+   * list width and starts over, so the loop has no seam. Arabic pages read
+   * from the right, so the strip drifts the other way. Hover or keyboard focus
+   * pauses it; reduced motion stops it (see the reduced-motion block).
+   */
+  .v2-marquee {
+    overflow: hidden;
+    border-radius: 4px;
+    outline-offset: 4px;
+    -webkit-mask-image: linear-gradient(to right, transparent, #000 6%, #000 94%, transparent);
+    mask-image: linear-gradient(to right, transparent, #000 6%, #000 94%, transparent);
   }
-  .v2-logo:hover { filter: none; opacity: 1; }
+  .v2-marquee:focus-visible { outline: 3px solid var(--color-brand); }
+  .v2-marquee-track {
+    display: flex;
+    width: max-content;
+    animation: v2-marquee var(--marquee-duration, 180s) linear infinite;
+  }
+  [dir="rtl"] .v2-marquee-track { animation-name: v2-marquee-rtl; }
+  .v2-marquee:hover .v2-marquee-track,
+  .v2-marquee:focus-within .v2-marquee-track {
+    animation-play-state: paused;
+  }
+  .v2-marquee-list {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+  }
 
   /* FAQ accordion (Radix): height follows the measured content. */
   .v2-accordion-content { overflow: hidden; }
@@ -197,6 +221,14 @@
 @keyframes v2-fade {
   from { opacity: 0; }
   to { opacity: 1; }
+}
+
+@keyframes v2-marquee {
+  to { transform: translateX(-50%); }
+}
+
+@keyframes v2-marquee-rtl {
+  to { transform: translateX(50%); }
 }
 
 /* A stage lighting up when the role changes (mockup `lit`). */
@@ -416,6 +448,24 @@
   .v2-stage {
     transition: none !important;
   }
+
+  /* The logo strip stands still: one list, wrapped and centred. */
+  .v2-marquee {
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+  .v2-marquee-track {
+    animation: none !important;
+    width: auto;
+    padding-inline: 20px;
+  }
+  .v2-marquee-track .v2-marquee-list {
+    flex: 1 1 100%;
+    flex-wrap: wrap;
+    justify-content: center;
+    row-gap: 24px;
+  }
+  .v2-marquee [data-marquee-copy] { display: none; }
 
   .v2-press:active,
   .v2-lift:hover,

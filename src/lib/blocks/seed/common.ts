@@ -116,13 +116,13 @@ export function quotePlaceholder(who: Bi = b("a client", "عميل")): SeedInput
 }
 
 /** Client logos (from the clients table) with the general, sector-neutral line. */
-export function clientsWall(limit = 8): SeedInput {
+export function clientsWall(limit = 60): SeedInput {
   return {
     type: "logo_wall",
     content: {
       heading: b(
-        "Companies across Saudi Arabia run on ERPs our team implemented",
-        "شركات في السعودية تعمل على أنظمة ERP طبّقها فريقنا",
+        "Companies that run on ERPs our team implemented",
+        "شركات تعمل على أنظمة ERP نفّذها فريقنا",
       ),
       intro: b(""),
       limit,
