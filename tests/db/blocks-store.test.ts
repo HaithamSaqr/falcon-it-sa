@@ -9,7 +9,7 @@
  */
 import fs from "node:fs";
 import path from "node:path";
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { Pool, type PoolConfig } from "pg";
 import { BROCHURE_COPY_FIXES, ensureReady, seedPageBlocks } from "@/lib/db/migrate";
 import * as dbStore from "@/lib/db/store";
@@ -21,6 +21,7 @@ import type { Block } from "@/lib/blocks/types";
 import {
   getPageBlocks,
   getPageBlocksAdmin,
+  pagesWithBlocks,
   savePageBlocks,
   listPages,
   getPageSeo,
@@ -288,6 +289,25 @@ describe("getPageBlocks with the database unreachable", () => {
   }, 30_000);
 });
 
+describe("pagesWithBlocks with the database unreachable", () => {
+  it("lists the seeded pages and never a page the seed does not have", async () => {
+    const dead = new Pool({
+      host: "127.0.0.1",
+      port: 1,
+      database: "nope",
+      user: "nope",
+      password: "nope",
+      connectionTimeoutMillis: 3000,
+    });
+    try {
+      const got = await pagesWithBlocks(["sector:retail", "product:server-management", "sector:no-such", "home"], dead);
+      expect([...got].sort()).toEqual(["home", "product:server-management", "sector:retail"]);
+    } finally {
+      await dead.end().catch(() => {});
+    }
+  }, 30_000);
+});
+
 // ── Database suites ─────────────────────────────────────────────────
 
 const LOCAL_HOSTS = new Set(["localhost", "127.0.0.1"]);
@@ -451,12 +471,79 @@ describe.skipIf(!canUseDb)("page blocks on a fresh database", () => {
     expect(s.primaryCta).toEqual({ label: { en: "Book a demo", ar: "احجز عرضًا تجريبيًا" }, demoUrl: "/demo" });
   });
 
+  it("logs the same invalid stored block once per process, not on every request", async () => {
+    const page = "log-once-test";
+    const bad = "11111111-1111-4111-8111-111111111111";
+    const bad2 = "22222222-2222-4222-8222-222222222222";
+    await pool.query(
+      `INSERT INTO page_blocks (id, page, type, sort_order, enabled, content) VALUES
+         ($1, $3, 'hero', 0, true, '{}'::jsonb), ($2, $3, 'hero', 1, true, '{}'::jsonb)`,
+      [bad, bad2, page],
+    );
+    const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      for (let i = 0; i < 3; i++) expect(await getPageBlocks(page, pool)).toEqual([]);
+      const lines = spy.mock.calls.map((c) => String(c[0])).filter((m) => m.includes("skipping invalid block"));
+      // Two distinct bad blocks, three requests: two log lines in total.
+      expect(lines).toHaveLength(2);
+      expect(lines.filter((m) => m.includes(bad))).toHaveLength(1);
+      expect(lines.filter((m) => m.includes(bad2))).toHaveLength(1);
+    } finally {
+      spy.mockRestore();
+      await pool.query(`DELETE FROM page_blocks WHERE page = $1`, [page]);
+    }
+  });
+
   it("fresh install: v2 sectors enabled, others disabled, demo testimonials and applications brochure disabled", async () => {
     const enabled = await pool.query(`SELECT id FROM sectors WHERE enabled ORDER BY sort_order`);
     expect(enabled.rows.map((r) => r.id)).toEqual(V2_SECTORS.map((s) => s.slug));
     expect(await count(pool, `SELECT count(*) AS n FROM testimonials WHERE enabled`)).toBe(0);
     const br = await pool.query(`SELECT enabled FROM product_brochures WHERE slug = 'applications'`);
     expect(br.rows[0].enabled).toBe(false);
+  });
+});
+
+describe.skipIf(!canUseDb)("pagesWithBlocks on a database", () => {
+  const schema = "t8_listable";
+  let pool: Pool;
+
+  beforeAll(async () => {
+    pool = scratchPool(schema);
+    await resetSchema(pool, schema);
+    await ensureReady(pool);
+  }, 60_000);
+
+  afterAll(async () => {
+    await pool.query(`DROP SCHEMA IF EXISTS ${schema} CASCADE`);
+    await pool.end();
+  });
+
+  it("pagesWithBlocks lists only pages that would render, matching getPageBlocks", async () => {
+    // Fresh database: every seeded page has blocks; a page the seed does not know has none.
+    const keys = ["sector:retail", "sector:trading", "product:applications", "sector:brand-new", "home"];
+    expect([...(await pagesWithBlocks(keys, pool))].sort()).toEqual(
+      ["home", "product:applications", "sector:retail", "sector:trading"],
+    );
+    expect(await pagesWithBlocks([], pool)).toEqual(new Set());
+
+    // Admin clears a page: it is marked as seeded, stays empty, and drops out.
+    await savePageBlocks("sector:trading", [], pool);
+    // Admin keeps only disabled blocks on another: nothing renders, so it drops out too.
+    const retail = await getPageBlocksAdmin("sector:retail", pool);
+    await savePageBlocks(
+      "sector:retail",
+      retail.map((b) => ({ ...b, enabled: false })) as Block[],
+      pool,
+    );
+    // A new page with an enabled block (not in the seed) is listed.
+    const hero = SEED.home.find((b) => b.type === "hero")!;
+    await savePageBlocks("sector:brand-new", [{ ...structuredClone(hero), id: "x", page: "sector:brand-new" } as unknown as Block], pool);
+
+    for (const key of keys) {
+      const listed = (await pagesWithBlocks([key], pool)).has(key);
+      expect(listed, key).toBe((await getPageBlocks(key, pool)).length > 0);
+    }
+    expect([...(await pagesWithBlocks(keys, pool))].sort()).toEqual(["home", "product:applications", "sector:brand-new"]);
   });
 });
 
@@ -624,6 +711,85 @@ describe.skipIf(!canUseDb)("v2 data fixes on an existing production-like databas
     const byId = new Map(r.rows.map((x) => [x.id, x.enabled]));
     expect(byId.get("ts-1")).toBe(false);
     expect(byId.get("real-1")).toBe(true);
+  });
+});
+
+describe.skipIf(!canUseDb)("v2-sector-titles data fix", () => {
+  const schema = "t3a_titles";
+  let pool: Pool;
+  const oldDefault = (id: string) => DEFAULT_SECTORS.find((s) => s.id === id)!;
+
+  beforeAll(async () => {
+    pool = scratchPool(schema);
+    await resetSchema(pool, schema);
+    const re = oldDefault("real-estate");
+    const mf = oldDefault("manufacturing");
+    const rt = oldDefault("retail");
+    await pool.query(`
+      CREATE TABLE sectors (
+        id text PRIMARY KEY, icon text NOT NULL DEFAULT '', gradient text NOT NULL DEFAULT '',
+        name_en text NOT NULL DEFAULT '', name_ar text NOT NULL DEFAULT '',
+        title_en text NOT NULL DEFAULT '', title_ar text NOT NULL DEFAULT '',
+        description_en text NOT NULL DEFAULT '', description_ar text NOT NULL DEFAULT '',
+        systems text[] NOT NULL DEFAULT '{}', video_url text NOT NULL DEFAULT '',
+        featured boolean NOT NULL DEFAULT false, enabled boolean NOT NULL DEFAULT true,
+        sort_order int NOT NULL DEFAULT 0
+      );`);
+    await pool.query(
+      `INSERT INTO sectors (id, name_en, name_ar, title_en, title_ar, sort_order) VALUES
+         ('real-estate', $1, $2, $1, $2, 0),
+         ('manufacturing', $3, $4, 'Admin written manufacturing title', $4, 1),
+         ('retail', $5, $6, $5, 'عنوان كتبه المسؤول', 2)`,
+      [re.title.en, re.title.ar, mf.title.en, mf.title.ar, rt.title.en, rt.title.ar],
+    );
+    await pool.query(`
+      CREATE TABLE hero_content (
+        id int PRIMARY KEY DEFAULT 1 CHECK (id = 1),
+        title_en text NOT NULL DEFAULT '', title_ar text NOT NULL DEFAULT '',
+        subtitle_en text NOT NULL DEFAULT '', subtitle_ar text NOT NULL DEFAULT '',
+        cta1_en text NOT NULL DEFAULT '', cta1_ar text NOT NULL DEFAULT '',
+        cta2_en text NOT NULL DEFAULT '', cta2_ar text NOT NULL DEFAULT ''
+      );
+      INSERT INTO hero_content (id, title_en) VALUES (1, 'Live hero');`);
+    await ensureReady(pool);
+    await ensureReady(pool);
+  }, 60_000);
+
+  afterAll(async () => {
+    await pool.query(`DROP SCHEMA IF EXISTS ${schema} CASCADE`);
+    await pool.end();
+  });
+
+  const title = async (id: string) =>
+    (await pool.query(`SELECT title_en, title_ar FROM sectors WHERE id = $1`, [id])).rows[0] as {
+      title_en: string;
+      title_ar: string;
+    };
+
+  it("records the fix once", async () => {
+    const r = await pool.query(`SELECT count(*)::int AS n FROM data_fixes WHERE key = 'v2-sector-titles'`);
+    expect(r.rows[0].n).toBe(1);
+  });
+
+  it("moves untouched default titles to the v2 sector names", async () => {
+    const re = V2_SECTORS.find((s) => s.slug === "real-estate")!;
+    expect(await title("real-estate")).toEqual({ title_en: re.name.en, title_ar: re.name.ar });
+  });
+
+  it("never overwrites a title an admin wrote, per language", async () => {
+    const mf = V2_SECTORS.find((s) => s.slug === "manufacturing")!;
+    const rt = V2_SECTORS.find((s) => s.slug === "retail")!;
+    expect(await title("manufacturing")).toEqual({
+      title_en: "Admin written manufacturing title",
+      title_ar: mf.name.ar,
+    });
+    expect(await title("retail")).toEqual({ title_en: rt.name.en, title_ar: "عنوان كتبه المسؤول" });
+  });
+
+  it("does not re-run after the admin edits a title", async () => {
+    await pool.query(`UPDATE sectors SET title_en = 'Edited later' WHERE id = 'real-estate'`);
+    await ensureReady(pool);
+    expect((await title("real-estate")).title_en).toBe("Edited later");
   });
 });
 

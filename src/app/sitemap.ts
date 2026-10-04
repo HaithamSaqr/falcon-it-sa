@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { getProducts, getSectors, getSettings } from "@/lib/data-store";
+import { pagesWithBlocks } from "@/lib/blocks/store";
 import { V2_SECTORS } from "@/lib/blocks/seed/sectors";
 import { ERP_PRODUCT_SLUGS } from "@/lib/public-chrome";
 import { absoluteUrl, alternatesFor, localizedPath } from "@/lib/seo";
@@ -43,11 +44,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       SUPPORT_PRODUCT_SLUGS,
     ),
   ]);
+  // Enabled sectors and services with no blocks 404, so they stay out of the sitemap.
+  const listable = await pagesWithBlocks([
+    ...sectors.map((slug) => `sector:${slug}`),
+    ...products.map((slug) => `product:${slug}`),
+  ]);
 
   const paths = [
     ...STATIC_PATHS,
-    ...sectors.map((slug) => `/sectors/${slug}`),
-    ...products.map((slug) => `/products/${slug}`),
+    ...sectors.filter((slug) => listable.has(`sector:${slug}`)).map((slug) => `/sectors/${slug}`),
+    ...products.filter((slug) => listable.has(`product:${slug}`)).map((slug) => `/products/${slug}`),
     ...(settings?.blogEnabled === true ? ["/blog"] : []),
   ];
 

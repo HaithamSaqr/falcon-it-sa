@@ -66,6 +66,18 @@ function rowMeta(r: BlockRow) {
   return { id: r.id, page: r.page, sortOrder: r.sort_order, enabled: r.enabled };
 }
 
+/** Invalid stored blocks already reported by this process: "page|block id|error". */
+const reportedInvalid = new Set<string>();
+
+/** Log a stored block that no longer validates once per (page, block id, error), not on every request. */
+function reportInvalidBlock(page: string, id: string, error: string): void {
+  const key = `${page}|${id}|${error}`;
+  if (reportedInvalid.has(key)) return;
+  if (reportedInvalid.size >= 1000) reportedInvalid.clear(); // bounded; at worst a line is logged again
+  reportedInvalid.add(key);
+  console.error(`[blocks] skipping invalid block ${id} on "${page}": ${error}`);
+}
+
 /** Enabled blocks of a page, in order. Never throws; falls back to the seed. */
 export async function getPageBlocks(page: string, pool?: Pool): Promise<Block[]> {
   if (!pool && !isInstalledSync()) return seedBlocks(page, true);
@@ -85,12 +97,49 @@ export async function getPageBlocks(page: string, pool?: Pool): Promise<Block[]>
     for (const r of res.rows) {
       const parsed = parseBlock(r.type, r.content, rowMeta(r));
       if (parsed.ok) blocks.push(parsed.block);
-      else console.error(`[blocks] skipping invalid block ${r.id} on "${page}": ${parsed.error}`);
+      else reportInvalidBlock(page, r.id, parsed.error);
     }
     return blocks;
   } catch (err) {
     console.error(`[blocks] getPageBlocks("${page}") failed, serving seed:`, err);
     return seedBlocks(page, true);
+  }
+}
+
+/**
+ * Which of `pages` would render at least one block (the same rule as
+ * `getPageBlocks(page).length > 0`), so navigation, footer, index pages and the
+ * sitemap list only pages that open instead of 404ing. Two queries however
+ * many pages; never throws. Without a database (not installed or unreachable)
+ * the seed decides, as it does for `getPageBlocks`.
+ */
+export async function pagesWithBlocks(pages: string[], pool?: Pool): Promise<Set<string>> {
+  const unique = [...new Set(pages)];
+  const fromSeed = (list: string[]) => new Set(list.filter((p) => seedBlocks(p, true).length > 0));
+  if (unique.length === 0) return new Set();
+  if (!pool && !isInstalledSync()) return fromSeed(unique);
+  try {
+    const db = pool ?? (await getPool());
+    const res = await db.query<{ page: string }>(
+      `SELECT DISTINCT page FROM page_blocks WHERE page = ANY($1::text[]) AND enabled = true`,
+      [unique],
+    );
+    const listed = new Set(res.rows.map((r) => r.page));
+    // No enabled rows and never seeded or saved: the seed is served (see getPageBlocks).
+    const empty = unique.filter((p) => !listed.has(p) && (SEED[p]?.length ?? 0) > 0);
+    if (empty.length > 0) {
+      const marked = await db.query<{ key: string }>(`SELECT key FROM data_fixes WHERE key = ANY($1::text[])`, [
+        empty.map(pageSeededKey),
+      ]);
+      const markedKeys = new Set(marked.rows.map((r) => r.key));
+      for (const p of fromSeed(empty)) {
+        if (!markedKeys.has(pageSeededKey(p))) listed.add(p);
+      }
+    }
+    return listed;
+  } catch (err) {
+    console.error("[blocks] pagesWithBlocks failed, using the seed:", err);
+    return fromSeed(unique);
   }
 }
 

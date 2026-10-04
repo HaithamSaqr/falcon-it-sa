@@ -9,7 +9,7 @@ try {
 }
 
 /** Specs that change site-wide settings or shared page content; they run in their own project, last. */
-const SITE_WIDE = /(blog-enabled|admin-pages)\.spec\.ts$/;
+const SITE_WIDE = /(blog-enabled|admin-pages|empty-listings)\.spec\.ts$/;
 
 const baseURL = process.env.E2E_BASE_URL ?? "http://localhost:3100";
 const port = new URL(baseURL).port || "3100";

@@ -242,6 +242,28 @@ async function fixSectorSlugs(c: PoolClient): Promise<void> {
   await c.query(`UPDATE sectors SET enabled = false WHERE NOT (id = ANY($1::text[]))`, [V2_SECTOR_SLUGS]);
 }
 
+/**
+ * Sector pages use `title_en`/`title_ar` as the page <title>. Production still
+ * holds the old default titles (the pre-v2 sector names), so move those to the
+ * v2 names. A title is replaced only when it exactly equals an old default
+ * title or name for that sector (per language); admin-written text is kept.
+ */
+async function fixSectorTitles(c: PoolClient): Promise<void> {
+  for (const s of V2_SECTORS) {
+    const old = DEFAULT_SECTORS.find((d) => d.id === s.slug);
+    if (!old) continue;
+    const oldEn = [...new Set([old.title.en, old.name.en])].filter(Boolean);
+    const oldAr = [...new Set([old.title.ar, old.name.ar])].filter(Boolean);
+    await c.query(
+      `UPDATE sectors SET
+         title_en = CASE WHEN title_en = ANY($2::text[]) THEN $4 ELSE title_en END,
+         title_ar = CASE WHEN title_ar = ANY($3::text[]) THEN $5 ELSE title_ar END
+       WHERE id = $1`,
+      [s.slug, oldEn, oldAr, s.name.en, s.name.ar],
+    );
+  }
+}
+
 /** The applications brochure stays hidden until real content exists. */
 async function fixApplicationsBrochure(c: PoolClient): Promise<void> {
   await c.query(`UPDATE product_brochures SET enabled = false, updated_at = now() WHERE slug = 'applications'`);
@@ -327,6 +349,7 @@ async function fixBrochureCopy(c: PoolClient): Promise<void> {
 
 const DATA_FIXES: [key: string, fix: (c: PoolClient) => Promise<void>][] = [
   ["v2-sector-slugs", fixSectorSlugs],
+  ["v2-sector-titles", fixSectorTitles],
   ["v2-disable-applications-brochure", fixApplicationsBrochure],
   ["v2-disable-demo-testimonials", fixDemoTestimonials],
   ["v2-company-ids", fixCompanyIds],

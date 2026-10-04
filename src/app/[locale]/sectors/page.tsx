@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { setRequestLocale } from "next-intl/server";
 import { buildMetadata } from "@/lib/seo";
 import { getSectors } from "@/lib/data-store";
+import { pagesWithBlocks } from "@/lib/blocks/store";
 import { sectorsIndexBlocks } from "@/lib/blocks/sectors-index";
 import BlockRenderer from "@/components/v2/blocks";
 
@@ -24,6 +25,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function SectorsIndexPage({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const sectors = await getSectors(true);
+  // A sector with no page layout 404s, so it is not listed.
+  const enabled = await getSectors(true);
+  const listable = await pagesWithBlocks(enabled.map((s) => `sector:${s.id}`));
+  const sectors = enabled.filter((s) => listable.has(`sector:${s.id}`));
   return <BlockRenderer blocks={sectorsIndexBlocks(sectors)} locale={locale} />;
 }
