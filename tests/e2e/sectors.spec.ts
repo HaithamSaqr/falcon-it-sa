@@ -164,6 +164,30 @@ test.describe("redirects and 404", () => {
       expect(res?.status()).toBe(200);
       await expect(page).toHaveURL(new RegExp(`${L.prefix}/sectors/retail$`));
     });
+    for (const [from, to] of [
+      ["Retail", "retail"],
+      ["Real-Estate", "real-estate"],
+    ]) {
+      test(`${L.prefix}/sectors/${from} (mixed case) redirects permanently to ${L.prefix}/sectors/${to}`, async ({ request }) => {
+        const res = await request.get(`${L.prefix}/sectors/${from}`, { maxRedirects: 0 });
+        expect(res.status()).toBe(308);
+        expect(new URL(res.headers()["location"], "http://x").pathname).toBe(`${L.prefix}/sectors/${to}`);
+      });
+    }
+    test(`${L.prefix}/sectors/Retail keeps the query string and lands on the retail page`, async ({ page, request }) => {
+      const res = await request.get(`${L.prefix}/sectors/Retail?role=nope&x=1`, { maxRedirects: 0 });
+      expect(res.status()).toBe(308);
+      const loc = new URL(res.headers()["location"], "http://x");
+      expect(loc.pathname).toBe(`${L.prefix}/sectors/retail`);
+      expect(loc.search).toBe("?role=nope&x=1");
+      const landed = await page.goto(`${L.prefix}/sectors/Retail`);
+      expect(landed?.status()).toBe(200);
+      await expect(page).toHaveURL(new RegExp(`${L.prefix}/sectors/retail$`));
+    });
+    test(`${L.prefix}/sectors/Nope (unknown, mixed case) returns 404`, async ({ page }) => {
+      const res = await page.goto(`${L.prefix}/sectors/Nope`);
+      expect(res?.status()).toBe(404);
+    });
     test(`${L.prefix}/sectors/<unknown> returns 404`, async ({ page }) => {
       const res = await page.goto(`${L.prefix}/sectors/definitely-not-a-sector`);
       expect(res?.status()).toBe(404);

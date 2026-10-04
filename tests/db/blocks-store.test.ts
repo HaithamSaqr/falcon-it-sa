@@ -678,6 +678,65 @@ describe.skipIf(!canUseDb)("pagesWithBlocks on a database", () => {
   });
 });
 
+describe.skipIf(!canUseDb)("v2 sector fix on production's mixed-case `Retail` row", () => {
+  const schema = "t3a_retail_case";
+  let pool: Pool;
+
+  beforeAll(async () => {
+    pool = scratchPool(schema);
+    await resetSchema(pool, schema);
+    // Production's sector row id is `Retail` (capital R); no lowercase `retail` exists yet.
+    await pool.query(`
+      CREATE TABLE sectors (
+        id text PRIMARY KEY, icon text NOT NULL DEFAULT '', gradient text NOT NULL DEFAULT '',
+        name_en text NOT NULL DEFAULT '', name_ar text NOT NULL DEFAULT '',
+        title_en text NOT NULL DEFAULT '', title_ar text NOT NULL DEFAULT '',
+        description_en text NOT NULL DEFAULT '', description_ar text NOT NULL DEFAULT '',
+        systems text[] NOT NULL DEFAULT '{}', video_url text NOT NULL DEFAULT '',
+        featured boolean NOT NULL DEFAULT false, enabled boolean NOT NULL DEFAULT true,
+        sort_order int NOT NULL DEFAULT 0
+      );
+      INSERT INTO sectors (id, name_en, name_ar, title_en, title_ar, enabled, sort_order) VALUES
+        ('Retail', 'Retail', 'التجزئة', 'Retail', 'التجزئة', true, 0);
+    `);
+    await ensureReady(pool);
+  }, 60_000);
+
+  afterAll(async () => {
+    await pool.query(`DROP SCHEMA IF EXISTS ${schema} CASCADE`);
+    await pool.end();
+  });
+
+  it("creates an enabled lowercase `retail` with the v2 name, photo, promise and title", async () => {
+    const v2 = V2_SECTORS.find((s) => s.slug === "retail")!;
+    const r = await pool.query(
+      `SELECT enabled, name_en, name_ar, title_en, title_ar, photo, short_promise_en, short_promise_ar
+       FROM sectors WHERE id = 'retail'`,
+    );
+    expect(r.rows).toHaveLength(1);
+    expect(r.rows[0]).toEqual({
+      enabled: true,
+      name_en: v2.name.en,
+      name_ar: v2.name.ar,
+      title_en: v2.name.en,
+      title_ar: v2.name.ar,
+      photo: v2.photo,
+      short_promise_en: v2.promise.en,
+      short_promise_ar: v2.promise.ar,
+    });
+  });
+
+  it("keeps `Retail` but disables it, and deletes nothing", async () => {
+    const r = await pool.query(`SELECT id, enabled FROM sectors`);
+    const byId = new Map(r.rows.map((x) => [x.id as string, x.enabled as boolean]));
+    expect(byId.get("Retail")).toBe(false);
+    expect(byId.get("retail")).toBe(true);
+    // The one legacy row plus the seven v2 sectors (all seven inserted, `retail` among them).
+    expect(r.rows).toHaveLength(1 + V2_SECTORS.length);
+    for (const s of V2_SECTORS) expect(byId.get(s.slug), s.slug).toBe(true);
+  });
+});
+
 describe.skipIf(!canUseDb)("v2 data fixes on an existing production-like database", () => {
   const schema = "t3a_legacy";
   let pool: Pool;
