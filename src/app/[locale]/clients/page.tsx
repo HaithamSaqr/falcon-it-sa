@@ -20,8 +20,8 @@ const DEFAULT_BLOCKS: Block[] = seedPage("clients", [
     content: {
       heading: b("Our clients", "عملاؤنا"),
       intro: b(
-        "Companies across Saudi Arabia that run on ERPs our team implemented.",
-        "شركات في السعودية تعمل على أنظمة ERP طبّقها فريقنا.",
+        "Companies that run on ERPs our team implemented.",
+        "شركات تعمل على أنظمة ERP نفّذها فريقنا.",
       ),
       limit: 60,
       link: noCta(),

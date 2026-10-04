@@ -46,8 +46,8 @@ export const PAGE_META = {
     path: "/clients",
     title: { en: "Our clients", ar: "عملاؤنا" },
     description: {
-      en: "Companies across Saudi Arabia that run on ERPs our team implemented.",
-      ar: "شركات في السعودية تعمل على أنظمة ERP طبّقها فريقنا.",
+      en: "Companies that run on ERPs our team implemented.",
+      ar: "شركات تعمل على أنظمة ERP نفّذها فريقنا.",
     },
   },
   terms: {

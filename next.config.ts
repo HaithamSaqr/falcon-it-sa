@@ -38,6 +38,9 @@ const PRODUCT_MOVED: Record<string, string> = {
 
 const nextConfig: NextConfig = {
   output: "standalone",
+  // Tests only: Next allows one `next dev` per build directory, so a second
+  // e2e server on another port gets its own (playwright.config.ts sets it).
+  ...(process.env.NEXT_DIST_DIR ? { distDir: process.env.NEXT_DIST_DIR } : {}),
   images: {
     // The optimizer serves phones a smaller WebP instead of the 1400 px
     // original. Only the site's own images and admin uploads go through it

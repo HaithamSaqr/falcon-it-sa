@@ -65,7 +65,7 @@ export const SECTOR_REAL_ESTATE_SEED = seedPage("sector:real-estate", [
         "مطوّرون ومقاولون يعملون على أنظمة طبّقها فريقنا",
       ),
       intro: b(""),
-      limit: 7,
+      limit: 60,
       link: { label: b(""), href: "" },
     },
   },

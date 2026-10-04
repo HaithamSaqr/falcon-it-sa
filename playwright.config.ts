@@ -15,6 +15,14 @@ const CONSENT = /consent\.spec\.ts$/;
 
 const baseURL = process.env.E2E_BASE_URL ?? "http://localhost:3100";
 const port = new URL(baseURL).port || "3100";
+/**
+ * Next runs one `next dev` per build directory. On any port but the default,
+ * the e2e server builds into its own directory (under .next, gitignored), so
+ * it can start while another dev server of this checkout is running, e.g.
+ * E2E_BASE_URL=http://localhost:3300 npx playwright test. tsconfig.json already
+ * lists its type folders, so Next does not rewrite it. NEXT_DIST_DIR overrides.
+ */
+const distDir = process.env.NEXT_DIST_DIR ?? (port === "3100" ? "" : ".next/e2e");
 
 export default defineConfig({
   testDir: "tests/e2e",
@@ -66,6 +74,6 @@ export default defineConfig({
     url: baseURL,
     reuseExistingServer: !process.env.CI,
     timeout: 180_000,
-    env: { NEXT_TELEMETRY_DISABLED: "1" },
+    env: { NEXT_TELEMETRY_DISABLED: "1", ...(distDir ? { NEXT_DIST_DIR: distDir } : {}) },
   },
 });

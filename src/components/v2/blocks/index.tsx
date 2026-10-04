@@ -144,11 +144,11 @@ function renderBlock(block: Block, ctx: RenderContext, place: Placement): ReactN
   }
 }
 
-async function loadClients(): Promise<{ name: string; logo: string }[]> {
+async function loadClients(): Promise<RenderContext["clients"]> {
   const rows = await getClients().catch(() => []);
   const clients = rows
     .filter((c) => (c.logo ?? "").trim() !== "")
-    .map((c) => ({ name: c.name.en || c.name.ar || "", logo: c.logo }));
+    .map((c) => ({ name: { en: c.name?.en ?? "", ar: c.name?.ar ?? "" }, logo: c.logo }));
   return clients.length > 0 ? clients : V2_CLIENT_LOGOS;
 }
 

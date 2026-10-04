@@ -44,7 +44,7 @@ export const validFixtures: { [K in BlockType]: BlockContentMap[K] } = {
     ],
   },
   logo_wall: {
-    heading: bi("Companies across Saudi Arabia run on ERPs our team implemented"),
+    heading: bi("Companies that run on ERPs our team implemented"),
     intro: bi("", "عملاء يعتمدون على أنظمتنا"),
     limit: 12,
     link: { label: bi("See all clients", "كل العملاء"), href: "/clients" },
