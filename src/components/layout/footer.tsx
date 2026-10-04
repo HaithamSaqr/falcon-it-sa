@@ -8,6 +8,7 @@ import { displayPhone, safeSocialHref, supportingServices, telHref, type PublicS
 import Container from "@/components/v2/ui/container";
 import Icon from "@/components/v2/ui/icon";
 import FooterGate from "@/components/layout/footer-gate";
+import { CookieSettingsButton } from "@/components/layout/cookie-consent";
 
 type FooterLinkItem = { href: string; label: string };
 
@@ -91,7 +92,14 @@ function Brand({ name, size = "md" }: { name: string; size?: "md" | "sm" }) {
  * column is in the HTML before any JavaScript runs. Sector landing pages get
  * the compact strip from the approved sector mockup.
  */
-export default async function Footer({ settings }: { settings: PublicSettings }) {
+export default async function Footer({
+  settings,
+  cookieSettings = false,
+}: {
+  settings: PublicSettings;
+  /** Show "Cookie settings" (reopens the cookie banner); on while the Snap Pixel is enabled. */
+  cookieSettings?: boolean;
+}) {
   const locale = await getLocale();
   const lang = locale === "ar" ? "ar" : "en";
   const t = await getTranslations("chrome");
@@ -127,7 +135,7 @@ export default async function Footer({ settings }: { settings: PublicSettings })
   const legalLine = ids.length ? `${copyright} ${ids.join(lang === "ar" ? "، " : ", ")}` : copyright;
 
   const legalNav =
-    legalLinks.length > 0 ? (
+    legalLinks.length > 0 || cookieSettings ? (
       <nav aria-label={t("legal")}>
         <ul className="flex flex-wrap gap-x-5 gap-y-2">
           {legalLinks.map((l, i) => (
@@ -137,6 +145,11 @@ export default async function Footer({ settings }: { settings: PublicSettings })
               </SmartLink>
             </li>
           ))}
+          {cookieSettings && (
+            <li>
+              <CookieSettingsButton label={t("cookieSettings")} className={`cursor-pointer ${STRIP_LINK}`} />
+            </li>
+          )}
         </ul>
       </nav>
     ) : null;

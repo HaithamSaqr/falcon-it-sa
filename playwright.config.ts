@@ -10,6 +10,8 @@ try {
 
 /** Specs that change site-wide settings or shared page content; they run in their own project, last. */
 const SITE_WIDE = /(blog-enabled|admin-pages|empty-listings)\.spec\.ts$/;
+/** Switches the Snap Pixel on (dummy id, requests intercepted), which shows the cookie banner site-wide; runs alone, last. */
+const CONSENT = /consent\.spec\.ts$/;
 
 const baseURL = process.env.E2E_BASE_URL ?? "http://localhost:3100";
 const port = new URL(baseURL).port || "3100";
@@ -29,12 +31,12 @@ export default defineConfig({
   projects: [
     {
       name: "desktop",
-      testIgnore: SITE_WIDE,
+      testIgnore: [SITE_WIDE, CONSENT],
       use: { ...devices["Desktop Chrome"], viewport: { width: 1440, height: 900 } },
     },
     {
       name: "mobile",
-      testIgnore: SITE_WIDE,
+      testIgnore: [SITE_WIDE, CONSENT],
       use: {
         ...devices["Desktop Chrome"],
         viewport: { width: 390, height: 844 },
@@ -48,6 +50,12 @@ export default defineConfig({
       name: "blog-enabled",
       testMatch: SITE_WIDE,
       dependencies: ["desktop", "mobile"],
+      use: { ...devices["Desktop Chrome"], viewport: { width: 1440, height: 900 } },
+    },
+    {
+      name: "consent",
+      testMatch: CONSENT,
+      dependencies: ["blog-enabled"],
       use: { ...devices["Desktop Chrome"], viewport: { width: 1440, height: 900 } },
     },
   ],

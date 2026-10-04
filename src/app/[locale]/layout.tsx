@@ -3,6 +3,7 @@ import { Alexandria, Schibsted_Grotesk } from "next/font/google";
 import { NextIntlClientProvider, hasLocale } from "next-intl";
 import { getMessages, setRequestLocale } from "next-intl/server";
 import { notFound, redirect } from "next/navigation";
+import { cookies } from "next/headers";
 
 import Script from "next/script";
 import { isInstalled } from "@/lib/db/config";
@@ -14,11 +15,12 @@ import Navbar from "@/components/layout/navbar";
 import Footer from "@/components/layout/footer";
 import WhatsAppWidget from "@/components/layout/whatsapp-widget";
 import MobileBottomBar from "@/components/layout/mobile-bottom-bar";
-import SnapPixel from "@/components/layout/snap-pixel";
+import CookieConsent from "@/components/layout/cookie-consent";
 import { SettingsProvider } from "@/components/providers/settings-provider";
 import { getPublicSettings } from "@/lib/public-settings";
 import { JsonLd } from "@/components/v2/json-ld";
 import { SITE_URL, organizationLd } from "@/lib/seo";
+import { CONSENT_COOKIE, parseConsent } from "@/lib/consent";
 
 import "@/app/globals.css";
 
@@ -108,9 +110,10 @@ export default async function LocaleLayout({
   const g = integrations?.google;
   const googleOn = !!g?.enabled;
   const gtagId = g?.ga4Id || g?.adsId || "";
-  // Snapchat Snap Pixel.
+  // Snapchat Snap Pixel: loads only after the visitor accepts the cookie banner.
   const snap = integrations?.snapchat;
   const snapOn = !!snap?.enabled && !!snap?.pixelId;
+  const consent = snapOn ? parseConsent((await cookies()).get(CONSENT_COOKIE)?.value) : null;
 
   return (
     <html
@@ -138,16 +141,15 @@ export default async function LocaleLayout({
           </noscript>
         )}
 
-        {/* Snapchat Snap Pixel — sitewide (init once + PAGE_VIEW on load & route change) */}
-        {snapOn && <SnapPixel pixelId={snap!.pixelId} />}
-
         <NextIntlClientProvider locale={locale} messages={messages}>
           <SettingsProvider initial={publicSettings}>
             <Navbar settings={publicSettings} />
             <main>{children}</main>
-            <Footer settings={publicSettings} />
+            <Footer settings={publicSettings} cookieSettings={snapOn} />
             <WhatsAppWidget />
             <MobileBottomBar />
+            {/* Snapchat Snap Pixel: banner first; the pixel (init once + PAGE_VIEW on load and route change) only after Accept. */}
+            {snapOn && <CookieConsent pixelId={snap!.pixelId} initial={consent} />}
           </SettingsProvider>
         </NextIntlClientProvider>
 

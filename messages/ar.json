@@ -491,7 +491,13 @@
     "legal": "الروابط القانونية",
     "whatsapp": "واتساب",
     "whatsappChat": "تواصل معنا عبر واتساب",
-    "social": "فالكون على {network}"
+    "social": "فالكون على {network}",
+    "consentTitle": "ملفات تعريف الارتباط",
+    "consentText": "نودّ استخدام Snap Pixel لقياس إعلاناتنا على سناب شات. يضع ملفات تعريف ارتباط، ولا يُحمَّل إلا إذا وافقت.",
+    "consentPrivacy": "سياسة الخصوصية",
+    "consentAccept": "موافق",
+    "consentDecline": "رفض",
+    "cookieSettings": "إعدادات ملفات تعريف الارتباط"
   },
   "blocks": {
     "seeModules": "شاهد الوحدات",

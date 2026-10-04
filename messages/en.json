@@ -491,7 +491,13 @@
     "legal": "Legal",
     "whatsapp": "WhatsApp",
     "whatsappChat": "Chat with us on WhatsApp",
-    "social": "Falcon on {network}"
+    "social": "Falcon on {network}",
+    "consentTitle": "Cookies",
+    "consentText": "We would like to use the Snap Pixel to measure our Snapchat ads. It sets cookies, and it loads only if you accept.",
+    "consentPrivacy": "Privacy policy",
+    "consentAccept": "Accept",
+    "consentDecline": "Decline",
+    "cookieSettings": "Cookie settings"
   },
   "blocks": {
     "seeModules": "See the modules",
