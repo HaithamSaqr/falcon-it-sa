@@ -92,7 +92,7 @@ export default function SectorHeroBlock({ content: c, ctx, place }: BlockProps<"
             </div>
             <div className="absolute start-0 bottom-0 hidden w-[300px] rounded-[26px] bg-white/72 p-[7px] backdrop-blur-[12px] shadow-[inset_0_0_0_1px_rgba(11,26,51,0.07),0_30px_60px_-30px_rgba(12,60,120,0.5)] lg:block xl:w-[340px]">
               <div className="overflow-hidden rounded-[20px] bg-[#16151F]">
-                <Image src={APPS_SHOT} alt={ctx.labels.appsAlt} width={1100} height={390} className="block h-auto w-full" />
+                <Image src={APPS_SHOT} alt={ctx.labels.appsAlt} width={1100} height={263} className="block h-auto w-full" />
               </div>
             </div>
           </div>

@@ -243,8 +243,8 @@ export const SECTOR_PROFESSIONAL_SERVICES_SEED = seedPage(
         ),
         points: [
           b(
-            "Projects, tasks and documents in the same system as the accounts",
-            "المشاريع والمهام والمستندات في النظام نفسه مع الحسابات",
+            "Projects, tasks, budgets and documents in the same system as the accounts",
+            "المشاريع والمهام والموازنات والمستندات في النظام نفسه مع الحسابات",
           ),
           b("Arabic-first, quick for accountants to learn", "عربي أولًا، ويتعلّمه المحاسبون بسرعة"),
           b("On your internal network, or Falcon Cloud in the browser", "على شبكتك الداخلية، أو فالكون كلاود من المتصفح"),
@@ -284,8 +284,8 @@ export const SECTOR_PROFESSIONAL_SERVICES_SEED = seedPage(
           "نفوتر بمبلغ ثابت وبالساعة وبأتعاب شهرية ثابتة، هل يكفي نظام واحد؟",
         ),
         answer: b(
-          "In Odoo, billing by milestone or by timesheet hours is standard, and retainers are set up as part of your scope. In Falcon ERP we confirm the billing setup for your contracts in the blueprint. Either way, everything lands in the same accounts.",
-          "في أودو، الفوترة حسب المراحل أو حسب ساعات العمل المسجّلة متاحة بشكل أساسي، والأتعاب الشهرية الثابتة نجهّزها ضمن نطاق مشروعك. وفي فالكون ERP نؤكد إعداد الفوترة لعقودك في المخطط. وفي الحالتين تصل كلها إلى الحسابات نفسها.",
+          "In Odoo, billing by milestone or by timesheet hours is standard, and retainers are set up as part of your scope. In Falcon ERP, we configure the billing for your contracts in the blueprint to match how you work. Either way, everything lands in the same accounts.",
+          "في أودو، الفوترة حسب المراحل أو حسب ساعات العمل المسجّلة متاحة بشكل أساسي، والأتعاب الشهرية الثابتة نجهّزها ضمن نطاق مشروعك. وفي فالكون ERP نضبط فوترة عقودك في المخطط حسب طريقة عملك. وفي الحالتين تصل كلها إلى الحسابات نفسها.",
         ),
       },
       FATOORA_FAQ,

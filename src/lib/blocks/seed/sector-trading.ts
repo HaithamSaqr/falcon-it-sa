@@ -262,8 +262,8 @@ export const SECTOR_TRADING_SEED = seedPage(
             "المبيعات والمشتريات والمخزون والحسابات في نظام واحد عربي أولًا",
           ),
           b(
-            "Multi-warehouse stock with barcode and batch tracking",
-            "مخزون متعدد المستودعات مع الباركود وتتبّع الدفعات",
+            "Stock across warehouses with barcodes, serial numbers and expiry dates",
+            "مخزون في عدة مستودعات مع الباركود والأرقام التسلسلية وتواريخ الصلاحية",
           ),
           b("On your internal network, or Falcon Cloud in the browser", "على شبكتك الداخلية، أو فالكون كلاود من المتصفح"),
         ],
@@ -296,8 +296,8 @@ export const SECTOR_TRADING_SEED = seedPage(
       {
         question: b("Can each customer have its own price list?", "هل يمكن أن يكون لكل عميل قائمة أسعار خاصة؟"),
         answer: b(
-          "In Odoo, price lists per customer or customer group are standard. In Falcon ERP we confirm your pricing rules in the blueprint. Either way, reps quote only from the agreed lists.",
-          "في أودو، قوائم الأسعار لكل عميل أو فئة عملاء متاحة بشكل أساسي. وفي فالكون ERP نؤكد قواعد التسعير لديك في المخطط. وفي الحالتين يعرض المندوب من القوائم المعتمدة فقط.",
+          "In Odoo, price lists per customer or customer group are standard. Falcon ERP works with price lists too, and we configure your pricing rules in the blueprint to match how you work. Either way, reps quote only from the agreed lists.",
+          "في أودو، قوائم الأسعار لكل عميل أو فئة عملاء متاحة بشكل أساسي. وفالكون ERP يعمل بقوائم الأسعار أيضًا، ونضبط قواعد التسعير لديك في المخطط حسب طريقة عملك. وفي الحالتين يعرض المندوب من القوائم المعتمدة فقط.",
         ),
       },
       FATOORA_FAQ,

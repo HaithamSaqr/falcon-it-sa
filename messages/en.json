@@ -496,8 +496,8 @@
   "blocks": {
     "seeModules": "See the modules",
     "seeSetup": "See how we set it up",
-    "modulesAlt": "Falcon ERP apps: accounting, sales, CRM, projects, property management and more",
-    "appsAlt": "Falcon ERP apps: projects, property management, CRM, accounting, sales and more",
+    "modulesAlt": "Falcon ERP apps: accounting, sales, purchasing, inventory, HR, projects, property management and more",
+    "appsAlt": "Falcon ERP apps: projects, property management, accounting, sales, inventory, POS, hotel and more",
     "breadcrumb": "Breadcrumb",
     "quoteRole": "{role} at {company}",
     "phone": "Phone",

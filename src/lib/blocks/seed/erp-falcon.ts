@@ -1,7 +1,9 @@
 /**
- * Falcon ERP page seed. Facts from messages/*.json (desktopPage, cloudPage),
- * the approved mockups and the product screenshots. Falcon ERP is Falcon's own
- * product; it is never presented as built on Odoo.
+ * Falcon ERP page seed. Module and capability statements come only from the
+ * Falcon ERP company handbook (2026-09-30: module catalog and product chapters
+ * 02 to 07, ZATCA chapter); the Desktop, Cloud and hybrid lines repeat what
+ * messages/*.json (desktopPage, cloudPage) already said. Falcon ERP is
+ * Falcon's own product; it is never presented as built on Odoo.
  */
 import { b, demoCta, noCta } from "../fields";
 import { seedPage } from "./helpers";
@@ -32,83 +34,129 @@ export const ERP_FALCON_SEED = seedPage("erp:falcon", [
     content: {
       heading: b("Every department, one Arabic-first system.", "كل الأقسام في نظام واحد، عربي أولًا."),
       intro: b(
-        "The modules share the same data, so a sale, a stock movement and its journal entry are one transaction, not three.",
-        "الوحدات تتشارك البيانات نفسها، فالبيع وحركة المخزون والقيد المحاسبي عملية واحدة لا ثلاث.",
+        "The modules work on the same data: an invoice creates its stock movement and its journal entry from the same document, according to your settings.",
+        "الوحدات تعمل على البيانات نفسها: الفاتورة تُنشئ حركة المخزون والقيد المحاسبي من المستند نفسه، حسب إعداداتك.",
       ),
       items: [
         {
           icon: "Calculator",
           title: b("Accounting & finance", "المحاسبة والمالية"),
           line: b(
-            "General ledger, payables and receivables, fixed assets, budgets, multi-currency and bank reconciliation.",
-            "دفتر الأستاذ والذمم الدائنة والمدينة والأصول الثابتة والموازنات وتعدد العملات وتسوية البنوك.",
+            "General ledger, cash and banks, tax, budgets, letters of guarantee and loans.",
+            "دفتر الأستاذ والصناديق والبنوك والضرائب والموازنات وخطابات الضمان والقروض.",
+          ),
+        },
+        {
+          icon: "Briefcase",
+          title: b("Fixed assets", "الأصول الثابتة"),
+          line: b(
+            "The asset register, depreciation posted to the accounts, and disposal.",
+            "سجل الأصول، والإهلاك مرحّلًا إلى الحسابات، والاستبعاد.",
           ),
         },
         {
           icon: "Receipt",
           title: b("Fatoora e-invoicing", "الفوترة الإلكترونية"),
           line: b(
-            "ZATCA e-invoices with QR codes and credit and debit notes, built into the system.",
-            "فواتير إلكترونية متوافقة مع هيئة الزكاة والضريبة والجمارك برمز QR وإشعارات دائن ومدين، ضمن النظام نفسه.",
+            "Standard and simplified e-invoices with QR codes, sent to ZATCA for clearance or reporting.",
+            "فواتير إلكترونية قياسية ومبسّطة برمز QR، تُرسل إلى هيئة الزكاة والضريبة والجمارك للاعتماد أو الإبلاغ.",
           ),
         },
         {
           icon: "Package",
           title: b("Inventory & warehouses", "المخزون والمستودعات"),
           line: b(
-            "Stock across warehouses with barcodes, reordering and batch or serial tracking.",
-            "المخزون في كل المستودعات مع الباركود وإعادة الطلب وتتبّع الدفعات والأرقام التسلسلية.",
+            "Items, units and barcodes, receipts, issues, transfers between warehouses and stock counts.",
+            "الأصناف والوحدات والباركود، والإضافة والصرف والتحويل بين المستودعات والجرد.",
+          ),
+        },
+        {
+          icon: "ShoppingCart",
+          title: b("Purchasing", "المشتريات"),
+          line: b(
+            "Purchase requests and approvals, purchase orders with payment schedules, and supplier invoices.",
+            "طلبات الشراء واعتمادها، وأوامر الشراء بجداول دفعاتها، وفواتير الموردين.",
           ),
         },
         {
           icon: "Handshake",
-          title: b("Sales & CRM", "المبيعات وإدارة العملاء"),
+          title: b("Sales", "المبيعات"),
           line: b(
-            "Leads, quotations, follow-ups and the sales pipeline in one place.",
-            "العملاء المحتملون وعروض الأسعار والمتابعات ومسار المبيعات في مكان واحد.",
+            "Quotations, sales orders, invoices and returns, price lists and salesperson commissions.",
+            "عروض الأسعار وطلبات البيع والفواتير والمرتجعات، وقوائم الأسعار وعمولات المندوبين.",
+          ),
+        },
+        {
+          icon: "Storefront",
+          title: b("Point of sale", "نقاط البيع"),
+          line: b(
+            "Cash, card and credit sales, with cashier shifts opened and closed against the cash box.",
+            "البيع نقدًا وبالشبكة وبالآجل، مع فتح ورديات الكاشير وإقفالها على الصندوق.",
           ),
         },
         {
           icon: "UsersThree",
           title: b("HR & payroll", "الموارد البشرية والرواتب"),
           line: b(
-            "Employee records, leave, payroll and end-of-service calculations.",
-            "ملفات الموظفين والإجازات والرواتب وحساب مكافأة نهاية الخدمة.",
+            "Employee records, attendance and shifts, leave and payroll.",
+            "ملفات الموظفين، والحضور والورديات، والإجازات والرواتب.",
           ),
         },
         {
           icon: "Factory",
           title: b("Manufacturing", "التصنيع"),
           line: b(
-            "Bills of materials, work orders, quality control and cost tracking.",
-            "قوائم المواد وأوامر العمل ومراقبة الجودة وتتبّع التكلفة.",
+            "Production plans, manufacturing orders and the materials each order needs.",
+            "خطط الإنتاج وأوامر التصنيع، والخامات التي يحتاجها كل أمر.",
           ),
         },
         {
           icon: "Kanban",
-          title: b("Projects", "المشاريع"),
+          title: b("Projects & contracting", "المشاريع والمقاولات"),
           line: b(
-            "Projects and tasks with their cost, in the same system as the accounts.",
-            "المشاريع والمهام بتكلفتها، في النظام نفسه مع الحسابات.",
+            "Tenders, the technical office, project budgets and subcontractor extracts.",
+            "العطاءات والمكتب الفني وموازنات المشاريع ومستخلصات مقاولي الباطن.",
           ),
         },
         {
           icon: "Buildings",
           title: b("Real estate", "العقارات"),
           line: b(
-            "Property directory, owners and brokers, lease contracts and receipt vouchers.",
-            "الدليل العقاري والملاك والوسطاء وعقود الإيجار وسندات القبض.",
+            "Properties and units, lease and sale contracts, and instalment collection.",
+            "العقارات والوحدات، وعقود الإيجار والبيع، وتحصيل الأقساط.",
           ),
         },
         {
-          icon: "Storefront",
-          title: b("POS & hospitality", "نقاط البيع والضيافة"),
-          line: b("Point of sale, kitchen screen and hotel modules.", "نقاط البيع وشاشة المطبخ والفندق."),
+          icon: "Bed",
+          title: b("Hotels", "الفنادق"),
+          line: b(
+            "Rooms, reservations, guest check-in and check-out, and housekeeping.",
+            "الغرف والحجوزات، ودخول النزلاء وخروجهم، والإشراف الداخلي.",
+          ),
         },
         {
           icon: "Wrench",
           title: b("Equipment & maintenance", "المعدات والصيانة"),
-          line: b("Equipment, maintenance and rental.", "المعدات والصيانة والتأجير."),
+          line: b(
+            "Equipment rental, maintenance plans and requests, and customer maintenance contracts.",
+            "تأجير المعدات، وخطط الصيانة وطلباتها، وعقود صيانة العملاء.",
+          ),
+        },
+        {
+          icon: "Truck",
+          title: b("Transport", "النقل"),
+          line: b(
+            "Transport orders, waybills and transport invoices.",
+            "أوامر النقل والبوالص وفواتير النقل.",
+          ),
+        },
+        {
+          icon: "ChartBar",
+          title: b("Reports & dashboards", "التقارير ولوحات المتابعة"),
+          line: b(
+            "A report designer for your own layouts, and dashboards shown by user permission.",
+            "مصمّم تقارير لتنسيقاتك الخاصة، ولوحات متابعة تظهر حسب صلاحيات كل مستخدم.",
+          ),
         },
       ],
     },

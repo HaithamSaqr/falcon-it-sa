@@ -352,15 +352,18 @@ export const SECTOR_REAL_ESTATE_SEED = seedPage("sector:real-estate", [
       falcon: {
         name: b("Falcon ERP", "فالكون ERP"),
         when: b(
-          "If you want a ready-made real estate system on your own server",
-          "إذا أردت نظامًا عقاريًا جاهزًا على سيرفرك",
+          "If you want real estate and contracting on your own server",
+          "إذا أردت العقارات والمقاولات على سيرفرك",
         ),
         points: [
           b(
-            "Real estate investment module: property directory, owners and brokers, lease contracts, receipt vouchers",
-            "وحدة الاستثمار العقاري: الدليل العقاري، الملاك والوسطاء، عقود الإيجار، سندات القبض",
+            "Real estate module: properties and units, lease and sale contracts, instalment collection",
+            "وحدة العقارات: العقارات والوحدات، وعقود الإيجار والبيع، وتحصيل الأقساط",
           ),
-          b("Projects and contracting in the same system", "المشاريع والمقاولات في النظام نفسه"),
+          b(
+            "Tenders, project budgets and subcontractor extracts in the same system",
+            "العطاءات وموازنات المشاريع ومستخلصات مقاولي الباطن في النظام نفسه",
+          ),
           b(
             "On your internal network, or Falcon Cloud in the browser",
             "على شبكتك الداخلية، أو فالكون كلاود من المتصفح",
@@ -445,15 +448,15 @@ export const SECTOR_REAL_ESTATE_SEED = seedPage("sector:real-estate", [
             "نطوّر ونبني ونبيع ونؤجّر، هل يكفي نظام واحد؟",
           ),
           answer: b(
-            "Yes, that is what the cycle is built for: build cost moves to the units, then each unit moves to sale or lease without leaving the system.",
-            "نعم، وهذا ما صُمّمت له الدورة: تكلفة البناء تنتقل إلى الوحدات، ثم تنتقل كل وحدة إلى البيع أو الإيجار دون أن تغادر النظام.",
+            "Yes, one system can hold the whole cycle. How build cost reaches the units, and how each unit then goes to sale or lease, we configure in the blueprint to match how you work.",
+            "نعم، يمكن أن تكون الدورة كلها في نظام واحد. أما كيف تصل تكلفة البناء إلى الوحدات، وكيف تنتقل كل وحدة بعدها إلى البيع أو الإيجار، فنضبط ذلك في المخطط حسب طريقة عملك.",
           ),
         },
         {
           question: b("We are brokers only. Is it for us?", "نحن وسطاء فقط، هل يناسبنا؟"),
           answer: b(
-            "Yes. We implement only what you need: units, leads, deals, commissions and leasing, without the construction stages.",
-            "نعم. نطبّق ما تحتاجه فقط: الوحدات والعملاء والصفقات والعمولات والإيجار، دون مراحل البناء.",
+            "Yes. We implement only what you need, such as units, deals, commissions and leasing, without the construction stages, and we configure it in the blueprint to match how you work.",
+            "نعم. نطبّق ما تحتاجه فقط، مثل الوحدات والصفقات والعمولات والإيجار، دون مراحل البناء، ونضبط ذلك في المخطط حسب طريقة عملك.",
           ),
         },
         {

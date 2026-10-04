@@ -247,15 +247,15 @@ export const SECTOR_LOGISTICS_SEED = seedPage(
       },
       falcon: {
         when: b(
-          "If you want fleet costs and accounts on your own server",
-          "إذا أردت تكاليف الأسطول والحسابات على سيرفرك",
+          "If you want transport operations and accounts on your own server",
+          "إذا أردت عمليات النقل والحسابات على سيرفرك",
         ),
         points: [
           b(
-            "Equipment, maintenance and rental modules in the same system as the accounts",
-            "وحدات المعدات والصيانة والتأجير في النظام نفسه مع الحسابات",
+            "Transport orders, waybills and transport invoices in the same system as the accounts",
+            "أوامر النقل والبوالص وفواتير النقل في النظام نفسه مع الحسابات",
           ),
-          b("Arabic-first, quick for accountants to learn", "عربي أولًا، ويتعلّمه المحاسبون بسرعة"),
+          b("Equipment rental, and maintenance plans and requests", "تأجير المعدات، وخطط الصيانة وطلباتها"),
           b("On your internal network, or Falcon Cloud in the browser", "على شبكتك الداخلية، أو فالكون كلاود من المتصفح"),
         ],
       },
@@ -287,8 +287,8 @@ export const SECTOR_LOGISTICS_SEED = seedPage(
       {
         question: b("Can we see cost per vehicle and per contract?", "هل نرى التكلفة لكل مركبة ولكل عقد؟"),
         answer: b(
-          "That is what we set up in the blueprint: fuel, maintenance and driver costs recorded against the vehicle and the trip, so both views come from the same data. In Odoo, cost per vehicle is tracked as standard; cost per contract is configured as part of your scope.",
-          "هذا ما نجهّزه في المخطط: الوقود والصيانة وتكاليف السائق تُسجَّل على المركبة والرحلة، فتأتي الصورتان من البيانات نفسها. في أودو، تكلفة كل مركبة متاحة بشكل أساسي، وتكلفة كل عقد نجهّزها ضمن نطاق مشروعك.",
+          "In Odoo, cost per vehicle is tracked as standard. Cost per contract, and both views in Falcon ERP, we configure in the blueprint to match how you work.",
+          "في أودو، تكلفة كل مركبة متاحة بشكل أساسي. أما تكلفة كل عقد، والصورتان معًا في فالكون ERP، فنضبطها في المخطط حسب طريقة عملك.",
         ),
       },
       FATOORA_FAQ,

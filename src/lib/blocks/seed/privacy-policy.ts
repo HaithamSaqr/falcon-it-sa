@@ -2,6 +2,8 @@
  * Website privacy policy for falcon-it.sa (owner answer 2026-10-03: the
  * Falcon Valley app policy stays at /privacy; this one lives at
  * /privacy-policy). Factual description of what the site does; not legal advice.
+ * Owner decisions 2026-10-04: lead and contact data kept one year from the last
+ * contact; the Snap Pixel loads only after consent in the cookie banner.
  */
 import { b } from "../fields";
 import { seedPage } from "./helpers";
@@ -12,7 +14,7 @@ export const PRIVACY_POLICY_SEED = seedPage("privacy-policy", [
     content: {
       heading: b("Website privacy policy", "سياسة خصوصية الموقع"),
       paragraphs: [
-        b("Last updated: 3 October 2026", "آخر تحديث: 3 أكتوبر 2026"),
+        b("Last updated: 4 October 2026", "آخر تحديث: 4 أكتوبر 2026"),
         b(
           "This policy explains how Falcon Smart Solutions (unified national number 7049432656) handles personal data collected through falcon-it.sa. It covers this website only; the Falcon Valley app has its own policy at /privacy.",
           "توضح هذه السياسة كيف تتعامل فالكون للحلول الذكية (الرقم الوطني الموحد 7049432656) مع البيانات الشخصية التي تُجمع عبر موقع falcon-it.sa. وهي تخص هذا الموقع فقط؛ ولتطبيق Falcon Valley سياسة خاصة به على الرابط /privacy.",
@@ -26,16 +28,16 @@ export const PRIVACY_POLICY_SEED = seedPage("privacy-policy", [
           "**لماذا نستخدمها.** للرد عليك، ولجدولة عرضك التجريبي والتحضير له، ولإدارة علاقتنا معك. تُحفظ النماذج في قاعدة بيانات الموقع وفي نظام إدارة علاقات العملاء لدينا (أودو) الذي تشغّله فالكون. وإذا حجزت عرضًا تجريبيًا، ننشئ له موعدًا في التقويم.",
         ),
         b(
-          "**Cookies and tracking.** We use Google Tag Manager, Google Analytics 4, Google Ads and the Snap Pixel to measure visits and the results of our advertising. These tools may set cookies and receive data such as your IP address, device and the pages you view. You can block or delete cookies in your browser settings.",
-          "**ملفات تعريف الارتباط والتتبّع.** نستخدم Google Tag Manager وGoogle Analytics 4 وGoogle Ads وSnap Pixel لقياس الزيارات ونتائج إعلاناتنا. قد تضع هذه الأدوات ملفات تعريف ارتباط وتستقبل بيانات مثل عنوان IP والجهاز والصفحات التي تشاهدها. ويمكنك حظر ملفات تعريف الارتباط أو حذفها من إعدادات متصفحك.",
+          "**Cookies and tracking.** We use Google Tag Manager, Google Analytics 4 and Google Ads to measure visits and the results of our advertising. These tools may set cookies and receive data such as your IP address, device and the pages you view. The Snap Pixel, which measures our Snapchat advertising, loads only after you accept it in the cookie banner; if you decline, it does not load. We remember your choice in a cookie on this site for 12 months, and you can change it at any time through Cookie settings at the bottom of the page. You can also block or delete cookies in your browser settings.",
+          "**ملفات تعريف الارتباط والتتبّع.** نستخدم Google Tag Manager وGoogle Analytics 4 وGoogle Ads لقياس الزيارات ونتائج إعلاناتنا. قد تضع هذه الأدوات ملفات تعريف ارتباط وتستقبل بيانات مثل عنوان IP والجهاز والصفحات التي تشاهدها. أما Snap Pixel، الذي يقيس إعلاناتنا على سناب شات، فلا يُحمَّل إلا بعد موافقتك عليه في شريط ملفات تعريف الارتباط، وإذا رفضت فلن يُحمَّل. نحفظ اختيارك في ملف تعريف ارتباط خاص بهذا الموقع لمدة 12 شهرًا، ويمكنك تغييره في أي وقت من رابط إعدادات ملفات تعريف الارتباط أسفل الصفحة. ويمكنك أيضًا حظر ملفات تعريف الارتباط أو حذفها من إعدادات متصفحك.",
         ),
         b(
           "**Who we share it with.** We do not sell your personal data. We share it only with service providers that process it for us, such as Resend, which sends our emails, our hosting provider and the analytics and advertising tools listed above, or where the law requires it.",
           "**مع من نشاركها.** لا نبيع بياناتك الشخصية. نشاركها فقط مع مقدّمي خدمات يعالجونها نيابة عنا، مثل Resend الذي يرسل رسائلنا الإلكترونية، ومزوّد الاستضافة، وأدوات التحليل والإعلان المذكورة أعلاه، أو حين يُلزمنا النظام بذلك.",
         ),
         b(
-          "**How long we keep it.** We keep enquiry and demo records for as long as we need them to respond to you and manage our relationship with you, then delete or anonymise them, unless the law requires us to keep them longer.",
-          "**مدة الاحتفاظ.** نحتفظ بسجلات الاستفسارات والعروض التجريبية طوال المدة اللازمة للرد عليك وإدارة علاقتنا معك، ثم نحذفها أو نُخفي هويتها، ما لم يُلزمنا النظام بالاحتفاظ بها مدة أطول.",
+          "**How long we keep it.** We keep lead and contact data, such as demo bookings, enquiries and newsletter sign-ups, for one year from the last contact with you, then delete or anonymise it, unless a contract or the law requires us to keep it longer.",
+          "**مدة الاحتفاظ.** نحتفظ ببيانات الطلبات والتواصل، مثل حجوزات العروض التجريبية والاستفسارات والاشتراك في النشرة البريدية، لمدة سنة واحدة من آخر تواصل معك، ثم نحذفها أو نُخفي هويتها، ما لم يُلزمنا عقد أو نظام بالاحتفاظ بها مدة أطول.",
         ),
         b(
           "**How we protect it.** Access to submissions is limited to our team, and we apply technical and organisational measures suited to the data.",

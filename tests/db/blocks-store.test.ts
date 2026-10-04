@@ -207,7 +207,7 @@ describe("SEED", () => {
       expect(text(page), page).not.toMatch(/\$|\bSAR\b|\bUSD\b|ريال|دولار|\bper user\b/i);
     }
     const privacy = text("privacy-policy");
-    for (const needle of ["Last updated: 3 October 2026", "7049432656", "Resend", "Google Tag Manager", "Snap", "PDPL"]) {
+    for (const needle of ["Last updated: 4 October 2026", "7049432656", "Resend", "Google Tag Manager", "Snap", "PDPL"]) {
       expect(privacy, needle).toContain(needle);
     }
     expect(SEED.contact.some((x) => x.type === "contact_info")).toBe(true);
@@ -249,6 +249,137 @@ describe("SEED", () => {
       expect(s.promise.ar.trim()).not.toBe("");
       expect(s.photo.startsWith("/images/v2/photo-")).toBe(true);
     }
+  });
+});
+
+/**
+ * Task 13b, owner decisions of 2026-10-04: Falcon ERP claims come only from
+ * the company handbook, sector FAQ capability answers use the softer
+ * blueprint wording, and the privacy policy states the retention period and
+ * the Snap consent.
+ */
+describe("SEED owner decisions (Task 13b)", () => {
+  type Bi = { en: string; ar: string };
+  type Fit = { falcon: unknown; odoo: unknown };
+  const sectorPages = V2_SECTORS.map((s) => `sector:${s.slug}`);
+
+  /** Every Falcon ERP statement: the Falcon page (minus the Odoo column), Falcon fit columns, the home Falcon card, About. */
+  function falconClaims(): string[] {
+    const out: string[] = [];
+    for (const blk of SEED["erp:falcon"]) {
+      if (blk.type === "fit") out.push(...strings((blk.content as unknown as Fit).falcon));
+      else if (blk.type === "faq_ref") {
+        const items = (blk.content as { items: { question: Bi; answer: Bi }[] }).items;
+        out.push(...items.filter((i) => !/built on Odoo/.test(i.question.en)).flatMap((i) => strings(i)));
+      } else out.push(...strings(blk.content));
+    }
+    for (const [page, blocks] of Object.entries(SEED)) {
+      for (const blk of blocks) {
+        if (blk.type === "fit" && page !== "erp:falcon") out.push(...strings((blk.content as unknown as Fit).falcon));
+        if (blk.type === "erp_compare") out.push(...strings((blk.content as unknown as Fit).falcon));
+      }
+    }
+    out.push(...strings(SEED.about));
+    // Sentences of sector FAQ answers that name Falcon ERP (Odoo sentences in the same answer are not Falcon claims).
+    const sentences = (s: string) => s.split(/(?<=\.)\s+/);
+    for (const page of sectorPages) {
+      const faq = SEED[page].find((b) => b.type === "faq_ref")!.content as { items: { answer: Bi }[] };
+      for (const i of faq.items) {
+        out.push(...sentences(i.answer.en).filter((x) => /Falcon/.test(x)));
+        out.push(...sentences(i.answer.ar).filter((x) => /فالكون/.test(x)));
+      }
+    }
+    return out;
+  }
+
+  // Claims the handbook does not establish for the desktop product (module catalog, chapters 02 to 07).
+  const NOT_IN_HANDBOOK: [string, RegExp][] = [
+    ["kitchen display or restaurant dispatcher", /kitchen|مطبخ/i],
+    ["CRM, leads or pipeline", /\bCRM\b|\bleads?\b|pipeline|إدارة العملاء|العملاء المحتملون|مسار المبيعات/i],
+    ["end of service", /end-of-service|end of service|نهاية الخدمة/i],
+    ["quality control", /quality control|مراقبة الجودة/i],
+    ["reordering", /reorder|إعادة الطلب|يعيد الطلب/i],
+    ["batch tracking", /\bbatch|تتبّع الدفعات|تتبع الدفعات/i],
+    ["bills of materials or work orders", /bills? of materials|work orders|قوائم المواد|أوامر العمل/i],
+    ["owners and brokers directory", /owners and brokers|الملاك والوسطاء|property directory|الدليل العقاري/i],
+    ["receipt vouchers", /receipt vouchers|سندات القبض/i],
+    ["multi-currency or bank reconciliation", /multi-currency|bank reconciliation|تعدد العملات|تسوية البنوك/i],
+    ["GOSI or WPS", /\bGOSI\b|\bWPS\b/],
+    ["certification", /certified|معتمد من الهيئة/i],
+  ];
+
+  it("states no Falcon ERP capability the handbook does not establish", () => {
+    const claims = falconClaims();
+    expect(claims.length).toBeGreaterThan(40);
+    for (const s of claims) {
+      for (const [what, re] of NOT_IN_HANDBOOK) expect(re.test(s), `${what}: ${s}`).toBe(false);
+    }
+  });
+
+  it("describes the Falcon ERP app screenshot with handbook modules only", async () => {
+    const en = (await import("../../messages/en.json")).default as unknown as { blocks: Record<string, string> };
+    const ar = (await import("../../messages/ar.json")).default as unknown as { blocks: Record<string, string> };
+    for (const m of [en, ar]) {
+      for (const key of ["modulesAlt", "appsAlt"]) {
+        for (const [what, re] of NOT_IN_HANDBOOK) expect(re.test(m.blocks[key]), `${what}: ${m.blocks[key]}`).toBe(false);
+      }
+    }
+  });
+
+  it("lists the handbook domains on the Falcon ERP page", () => {
+    const modules = SEED["erp:falcon"].find((b) => b.type === "departments")!.content as {
+      items: { title: Bi; line: Bi }[];
+    };
+    const text = strings(modules).join("\n");
+    for (const needle of [
+      "General ledger",
+      "Fixed assets",
+      "ZATCA",
+      "Purchase orders",
+      "Quotations",
+      "commissions",
+      "cashier shifts",
+      "Attendance",
+      "Manufacturing orders",
+      "Tenders",
+      "subcontractor extracts",
+      "Lease and sale contracts",
+      "Reservations",
+      "Maintenance plans",
+      "Transport orders",
+      "Report designer",
+    ]) {
+      expect(text.toLowerCase(), needle).toContain(needle.toLowerCase());
+    }
+  });
+
+  it("uses the softer blueprint wording in every sector FAQ", () => {
+    for (const page of sectorPages) {
+      const faq = SEED[page].find((b) => b.type === "faq_ref")!.content as { items: { answer: Bi }[] };
+      const answers = faq.items.map((i) => i.answer);
+      expect(
+        answers.some((a) => a.en.includes("in the blueprint to match how you work")),
+        `${page} en`,
+      ).toBe(true);
+      expect(
+        answers.some((a) => a.ar.includes("في المخطط حسب طريقة عملك")),
+        `${page} ar`,
+      ).toBe(true);
+    }
+  });
+
+  it("keeps lead data one year from the last contact and loads the Snap Pixel only after consent", () => {
+    const rt = SEED["privacy-policy"].find((b) => b.type === "rich_text")!.content as { paragraphs: Bi[] };
+    const en = rt.paragraphs.map((p) => p.en).join("\n");
+    const ar = rt.paragraphs.map((p) => p.ar).join("\n");
+    expect(en).toContain("Last updated: 4 October 2026");
+    expect(ar).toContain("آخر تحديث: 4 أكتوبر 2026");
+    expect(en).toContain("one year from the last contact");
+    expect(ar).toContain("سنة واحدة من آخر تواصل");
+    expect(en).toMatch(/Snap Pixel[^.]*only after you accept/);
+    expect(ar).toMatch(/Snap Pixel[^.]*إلا بعد موافقتك/);
+    expect(en).toContain("Cookie settings");
+    expect(ar).toContain("إعدادات ملفات تعريف الارتباط");
   });
 });
 

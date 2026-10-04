@@ -241,15 +241,18 @@ export const SECTOR_HOSPITALITY_SEED = seedPage(
       },
       falcon: {
         when: b(
-          "If you want restaurants and hospitality on your own server, in Arabic",
-          "إذا أردت نظام المطاعم والضيافة على سيرفرك، وبالعربية",
+          "If you run hotels, or want POS and accounts on your own server, in Arabic",
+          "إذا كنت تدير فنادق، أو تريد نقاط البيع والحسابات على سيرفرك وبالعربية",
         ),
         points: [
           b(
-            "POS, kitchen screen and hotel modules in the same system as the accounts",
-            "نقاط البيع وشاشة المطبخ والفندق في النظام نفسه مع الحسابات",
+            "POS for cash, card and credit sales, with cashier shifts closed against the cash box",
+            "نقاط بيع بالنقد والشبكة والآجل، مع إقفال ورديات الكاشير على الصندوق",
           ),
-          b("Arabic-first, quick for cashiers and accountants to learn", "عربي أولًا، ويتعلّمه الكاشير والمحاسب بسرعة"),
+          b(
+            "Hotel rooms, reservations and housekeeping in the same system as the accounts",
+            "غرف الفندق والحجوزات والإشراف الداخلي في النظام نفسه مع الحسابات",
+          ),
           b("On your internal network, or Falcon Cloud in the browser", "على شبكتك الداخلية، أو فالكون كلاود من المتصفح"),
         ],
       },
@@ -281,16 +284,16 @@ export const SECTOR_HOSPITALITY_SEED = seedPage(
       {
         question: b("Do sales reduce stock by recipe?", "هل تنقص المبيعات المخزون حسب الوصفة؟"),
         answer: b(
-          "That is what we set up in the blueprint: each dish linked to its recipe, so sales reduce the ingredients and you can compare actual and theoretical food cost. We confirm how it works in your chosen system before we build.",
-          "هذا ما نجهّزه في المخطط: كل طبق مربوط بوصفته، فتنقص المبيعات مكوّناته وتقارن تكلفة الطعام الفعلية بالمفترضة. ونؤكد طريقة عمل ذلك في النظام الذي تختاره قبل أن نبدأ البناء.",
+          "Linking each dish to its recipe, so that sales reduce the ingredients, is something we configure in the blueprint to match how you work, in the system you choose, before we build.",
+          "ربط كل طبق بوصفته لتنقص المبيعات مكوّناته أمر نضبطه في المخطط حسب طريقة عملك، في النظام الذي تختاره، قبل أن نبدأ البناء.",
         ),
       },
       FATOORA_FAQ,
       {
         question: b("Can we add branches later?", "هل يمكن إضافة فروع لاحقًا؟"),
         answer: b(
-          "Yes. We set up a new branch on the same menu, recipes and setup, with its own stock and reports.",
-          "نعم. نجهّز الفرع الجديد على القائمة والوصفات والإعداد نفسه، بمخزونه وتقاريره الخاصة.",
+          "Yes. A new branch joins the same system with its own warehouse and reports, and we set it up the way your other branches work.",
+          "نعم. ينضم الفرع الجديد إلى النظام نفسه بمستودعه وتقاريره، ونجهّزه على طريقة عمل فروعك الأخرى.",
         ),
       },
     ],

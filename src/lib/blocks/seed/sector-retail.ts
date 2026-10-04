@@ -240,7 +240,10 @@ export const SECTOR_RETAIL_SEED = seedPage(
         ),
         points: [
           b("POS, inventory and accounts in one Arabic-first system", "نقاط البيع والمخزون والحسابات في نظام واحد عربي أولًا"),
-          b("Multi-store stock with barcode tracking", "مخزون متعدد الفروع مع الباركود"),
+          b(
+            "Stock in every store, with barcodes and transfers between warehouses",
+            "مخزون كل فرع مع الباركود والتحويل بين المستودعات",
+          ),
           b("On your internal network, or Falcon Cloud in the browser", "على شبكتك الداخلية، أو فالكون كلاود من المتصفح"),
         ],
       },
@@ -272,8 +275,8 @@ export const SECTOR_RETAIL_SEED = seedPage(
       {
         question: b("Can our online store use the same stock?", "هل يمكن لمتجرنا الإلكتروني أن يستخدم المخزون نفسه؟"),
         answer: b(
-          "Yes, that is the point of the setup. In the blueprint we agree how your online store and your branches share one stock and one price list.",
-          "نعم، وهذا هدف الإعداد. نتفق في المخطط على طريقة مشاركة المتجر الإلكتروني والفروع لمخزون واحد وقائمة أسعار واحدة.",
+          "That is the aim of the setup. How your online store and your branches share one stock and one price list, we configure in the blueprint to match how you work.",
+          "هذا هدف الإعداد. أما طريقة مشاركة المتجر الإلكتروني والفروع لمخزون واحد وقائمة أسعار واحدة، فنضبطها في المخطط حسب طريقة عملك.",
         ),
       },
       FATOORA_FAQ,

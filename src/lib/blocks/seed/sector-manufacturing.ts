@@ -255,14 +255,11 @@ export const SECTOR_MANUFACTURING_SEED = seedPage(
         ),
         points: [
           b(
-            "Manufacturing, maintenance and inventory in the same system as the accounts",
-            "التصنيع والصيانة والمخزون في النظام نفسه مع الحسابات",
+            "Production plans, manufacturing orders and material requirements, in the same system as the accounts",
+            "خطط الإنتاج وأوامر التصنيع واحتياجات الخامات، في النظام نفسه مع الحسابات",
           ),
+          b("Maintenance plans and requests for your machines", "خطط الصيانة وطلباتها لآلاتك"),
           b("On your internal network, or Falcon Cloud in the browser", "على شبكتك الداخلية، أو فالكون كلاود من المتصفح"),
-          b(
-            "Arabic-first, quick for accountants and storekeepers to learn",
-            "عربي أولًا، ويتعلّمه المحاسبون وأمناء المستودعات بسرعة",
-          ),
         ],
       },
     },
@@ -296,8 +293,8 @@ export const SECTOR_MANUFACTURING_SEED = seedPage(
       {
         question: b("We make to order and to stock. One system?", "نصنّع حسب الطلب وللمخزون، هل يكفي نظام واحد؟"),
         answer: b(
-          "In Odoo this is standard: a sales order can start production, and reordering rules replenish stock items at minimum levels. Falcon ERP reorders at minimum levels, and we confirm in the blueprint how orders start production in your flow.",
-          "في أودو هذا متاح بشكل أساسي: أمر البيع يمكن أن يُطلق الإنتاج، وأصناف المخزون يُعاد طلبها عند الحد الأدنى. وفالكون ERP يعيد الطلب عند الحد الأدنى، ونؤكد في المخطط كيف تُطلق الطلبات الإنتاج في دورتك.",
+          "In Odoo this is standard: a sales order can start production, and reordering rules replenish stock items at minimum levels. Falcon ERP has production plans and manufacturing orders, and how orders and stock levels start production we configure in the blueprint to match how you work.",
+          "في أودو هذا متاح بشكل أساسي: أمر البيع يمكن أن يُطلق الإنتاج، وأصناف المخزون يُعاد طلبها عند الحد الأدنى. وفي فالكون ERP خطط إنتاج وأوامر تصنيع، أما كيف تُطلق الطلبات ومستويات المخزون الإنتاج فنضبطه في المخطط حسب طريقة عملك.",
         ),
       },
       FATOORA_FAQ,
