@@ -33,6 +33,8 @@ export default function CookieConsent({ pixelId, initial }: { pixelId: string; i
   const t = useTranslations("chrome");
   const [consent, setConsent] = useState<Consent | null>(initial);
   const [open, setOpen] = useState(initial === null);
+  // Bumped on every reopen, so focus moves into the banner even if it is already open.
+  const [reopened, setReopened] = useState(0);
   const panel = useRef<HTMLElement>(null);
   const returnFocus = useRef<HTMLElement | null>(null);
 
@@ -40,6 +42,7 @@ export default function CookieConsent({ pixelId, initial }: { pixelId: string; i
     const reopen = () => {
       returnFocus.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
       setOpen(true);
+      setReopened((n) => n + 1);
     };
     window.addEventListener(OPEN_CONSENT_EVENT, reopen);
     return () => window.removeEventListener(OPEN_CONSENT_EVENT, reopen);
@@ -47,8 +50,8 @@ export default function CookieConsent({ pixelId, initial }: { pixelId: string; i
 
   // Reopened from the footer: move focus into the banner so the choice is the next stop.
   useEffect(() => {
-    if (open && returnFocus.current) panel.current?.focus();
-  }, [open]);
+    if (open && reopened > 0) panel.current?.focus();
+  }, [open, reopened]);
 
   const close = useCallback(() => {
     setOpen(false);
