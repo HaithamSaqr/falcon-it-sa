@@ -15,7 +15,9 @@ import LogoWallBlock, { MARQUEE_MIN_LOGOS } from "@/components/v2/blocks/logo-wa
 import type { Placement, RenderContext } from "@/components/v2/blocks/context";
 import { logoWallDefaults } from "@/lib/blocks/schemas/logo_wall";
 import { V2_CLIENT_LOGOS } from "@/lib/blocks/seed/clients";
-import { CLIENT_LOGOS } from "@/lib/db/client-logos";
+import { CLIENT_LOGOS, DEFAULT_LOGO_SIZE, clientLogoPath, clientLogoSize } from "@/lib/db/client-logos";
+import { CLIENT_LOGO_SIZES } from "@/lib/db/client-logo-sizes";
+import sharp from "sharp";
 
 const place = (over: Partial<Placement> = {}): Placement => ({ tone: "page", first: false, afterHero: true, ownRoleSwitcher: false, ...over });
 
@@ -41,6 +43,35 @@ describe("bundled client logos", () => {
       expect(l.logo).toMatch(/^\/images\/v2\/clients\/[a-z0-9-]+\.png$/);
       expect(l.name.en).not.toBe("");
       expect(l.name.ar).not.toBe("");
+    }
+  });
+});
+
+describe("client logo sizes", () => {
+  it("every clients logo has its real pixel size recorded", async () => {
+    expect(Object.keys(CLIENT_LOGO_SIZES).sort()).toEqual(CLIENT_LOGOS.map((c) => c.slug).sort());
+    for (const c of CLIENT_LOGOS) {
+      const meta = await sharp(path.join(process.cwd(), "public", clientLogoPath(c.slug))).metadata();
+      expect([meta.width, meta.height], c.slug).toEqual([...CLIENT_LOGO_SIZES[c.slug]]);
+      expect(clientLogoSize(clientLogoPath(c.slug))).toEqual(CLIENT_LOGO_SIZES[c.slug]);
+    }
+  });
+
+  it("falls back to the canvas box for logos it does not know (admin uploads)", () => {
+    expect(clientLogoSize("/api/uploads/abc.png")).toEqual(DEFAULT_LOGO_SIZE);
+    expect(clientLogoSize("/images/v2/clients/not-there.png")).toEqual(DEFAULT_LOGO_SIZE);
+  });
+
+  it("renders every strip and wall logo with its real width and height", () => {
+    for (const out of [render("en"), render("en", { place: { first: true, afterHero: false }, limit: 60 })]) {
+      const tags = out.match(/<img [^>]*>/g) ?? [];
+      expect(tags.length).toBeGreaterThan(0);
+      for (const tag of tags) {
+        const src = decodeURIComponent(/url=([^&"]+)/.exec(tag)?.[1] ?? /src="([^"]+)"/.exec(tag)![1]);
+        const [w, h] = clientLogoSize(src);
+        expect(tag, src).toContain(`width="${w}"`);
+        expect(tag, src).toContain(`height="${h}"`);
+      }
     }
   });
 });

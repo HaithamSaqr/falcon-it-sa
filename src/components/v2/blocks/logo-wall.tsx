@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { canOptimize } from "@/lib/image-src";
+import { clientLogoSize } from "@/lib/db/client-logos";
 import type { CSSProperties } from "react";
 import { cn } from "@/lib/utils";
 import Container from "@/components/v2/ui/container";
@@ -11,6 +12,12 @@ type Logo = RenderContext["clients"][number];
 
 /** Below this many logos one copy of the strip is narrower than the page, so it stays a still row. */
 export const MARQUEE_MIN_LOGOS = 12;
+
+/** The logo's real pixel size, so its box is reserved before it loads and the strip never reflows. */
+function logoBox(src: string): { width: number; height: number } {
+  const [width, height] = clientLogoSize(src);
+  return { width, height };
+}
 
 /** Seconds per logo for one full loop (about 40px a second): slow enough to read every name. */
 const SECONDS_PER_LOGO = 4;
@@ -83,8 +90,7 @@ function LogoList({ logos, ctx, copy = false, still = false }: { logos: Logo[]; 
           <Image
             src={l.logo}
             alt={copy ? "" : tx(ctx, l.name)}
-            width={480}
-            height={160}
+            {...logoBox(l.logo)}
             sizes="(min-width: 1024px) 120px, 96px"
             // Loaded up front at low priority: lazy images inside the clipped,
             // moving strip would only start loading as they drift into sight.
@@ -113,8 +119,7 @@ function LogoWallPage({ content: c, ctx, place, logos }: BlockProps<"logo_wall">
               <Image
                 src={l.logo}
                 alt={tx(ctx, l.name)}
-                width={480}
-                height={160}
+                {...logoBox(l.logo)}
                 sizes="(min-width: 768px) 192px, 168px"
                 unoptimized={!canOptimize(l.logo)}
                 className="v2-logo h-14 w-auto max-w-full object-contain md:h-16"

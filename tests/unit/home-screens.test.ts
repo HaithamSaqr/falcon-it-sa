@@ -40,6 +40,20 @@ describe("home page product screens", () => {
     }
   });
 
+  it("shows no currency field on the trial balance (the Egyptian pound selector is painted over)", async () => {
+    // The field sat at source x 1963-2111, y 270-302: output x 542-696, y 67-100 (scale 1160/1119, crop at 1440,205).
+    const { data, info } = await sharp(path.join(process.cwd(), "public", HOME_SCREENS.trialBalance.image))
+      .extract({ left: 546, top: 70, width: 146, height: 28 })
+      .removeAlpha()
+      .raw()
+      .toBuffer({ resolveWithObject: true });
+    let off = 0;
+    for (let i = 0; i < data.length; i += info.channels) {
+      if (Math.abs(data[i] - 240) > 3 || Math.abs(data[i + 1] - 240) > 3 || Math.abs(data[i + 2] - 240) > 3) off++;
+    }
+    expect(off).toBe(0);
+  });
+
   it("only treats the bundled screens as screenshots", () => {
     expect(isScreenshot("/images/v2/photo-hero-office.jpg")).toBe(false);
     expect(isScreenshot("/api/uploads/screen-1.png")).toBe(false);

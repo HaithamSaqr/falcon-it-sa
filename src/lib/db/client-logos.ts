@@ -16,6 +16,7 @@
  * the Diet Fitness and Diamond Home logos, so they stay hidden as they are.
  */
 import type { Bi } from "@/lib/blocks/bi";
+import { CLIENT_LOGO_SIZES } from "./client-logo-sizes";
 
 export type ClientLogo = {
   slug: string;
@@ -26,6 +27,18 @@ export type ClientLogo = {
 
 /** Public path of a cleaned logo. */
 export const clientLogoPath = (slug: string): string => `/images/v2/clients/${slug}.png`;
+
+/** Box for a logo whose size is unknown (an admin upload): the cleaned logos' canvas. */
+export const DEFAULT_LOGO_SIZE: readonly [number, number] = [480, 160];
+
+/**
+ * [width, height] of a logo: the real size of a bundled cleaned logo, so its
+ * box is reserved before it loads; the default box for anything else.
+ */
+export function clientLogoSize(src: string): readonly [number, number] {
+  const m = /^\/images\/v2\/clients\/([a-z0-9-]+)\.png$/.exec(src);
+  return (m && CLIENT_LOGO_SIZES[m[1]]) || DEFAULT_LOGO_SIZE;
+}
 
 /** Row id used when a client is inserted by the data fix. */
 export const newClientId = (slug: string): string => `v2-client-${slug}`;

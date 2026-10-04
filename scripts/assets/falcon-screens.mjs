@@ -16,7 +16,8 @@
  * left of x=495 and the status bar (support phone numbers) is below y=1355;
  * both are outside every crop. Only business-generic figures remain (counts,
  * totals, chart-of-accounts names). Check any new crop for names and phone
- * numbers before adding it.
+ * numbers before adding it. Fields the site must not show (the Egyptian pound
+ * currency) are painted over with the surrounding panel colour (`redact`).
  */
 import path from "node:path";
 import sharp from "sharp";
@@ -40,6 +41,10 @@ const SCREENS = [
     out: "screen-trial-balance.png",
     crop: { left: 1440, top: 205, width: 1119, height: 1080 },
     size: { width: 1160, height: 1120 },
+    // The currency field ("العملة" and its selector, set to the Egyptian pound):
+    // the site shows no Egypt anywhere, so it is painted over with the panel's
+    // own background colour (sampled at the box corner).
+    redact: [{ left: 1963, top: 270, width: 148, height: 32 }],
   },
 ];
 
@@ -49,7 +54,14 @@ for (const s of SCREENS) {
   if (left < 495 || top + height > 1355 || left + width > meta.width) {
     throw new Error(`${s.out}: crop reaches the personal-data areas or the image edge`);
   }
-  await sharp(path.join(SRC, s.file))
+  const fills = [];
+  for (const r of s.redact ?? []) {
+    const { data } = await sharp(path.join(SRC, s.file)).extract({ left: r.left, top: r.top, width: 1, height: 1 }).raw().toBuffer({ resolveWithObject: true });
+    const [red, green, blue] = data;
+    fills.push({ input: { create: { width: r.width, height: r.height, channels: 3, background: { r: red, g: green, b: blue } } }, left: r.left, top: r.top });
+  }
+  const source = fills.length ? await sharp(path.join(SRC, s.file)).composite(fills).png().toBuffer() : path.join(SRC, s.file);
+  await sharp(source)
     .extract(s.crop)
     .resize(s.size.width, s.size.height, { kernel: "lanczos3", fit: "fill" })
     .png({ compressionLevel: 9, effort: 10 })
