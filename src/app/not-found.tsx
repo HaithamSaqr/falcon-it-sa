@@ -1,48 +1,57 @@
+import type { CSSProperties } from "react";
 import { Alexandria, Schibsted_Grotesk } from "next/font/google";
 import Link from "next/link";
-import { cn } from "@/lib/utils";
 
-import "@/app/globals.css";
+// Same faces as [locale]/layout.tsx. Styles are inline on purpose: importing
+// globals.css here adds a root-level CSS chunk that the dev runtime then
+// fails to find on locale pages ("No link element found for chunk").
+const schibsted = Schibsted_Grotesk({ subsets: ["latin"], weight: ["400", "800"], display: "swap" });
+const alexandria = Alexandria({ subsets: ["arabic"], weight: ["300", "600"], display: "swap" });
 
-// Same faces and variables as [locale]/layout.tsx, so --font-sans and
-// --font-arabic resolve to the v2 fonts here too.
-const schibsted = Schibsted_Grotesk({
-  subsets: ["latin"],
-  weight: ["400", "800"],
-  variable: "--font-schibsted",
-  display: "swap",
-});
+// v2 colour tokens (globals.css @theme static).
+const C = { page: "#F5F7FA", surface: "#FFFFFF", ink: "#0B1A33", body: "#3A4860", muted: "#5B6880", brand: "#1466C2" };
 
-const alexandria = Alexandria({
-  subsets: ["arabic"],
-  weight: ["300", "600"],
-  variable: "--font-alexandria",
-  display: "swap",
-});
-
-const BUTTON =
-  "inline-flex min-h-11 items-center rounded-full px-6 text-[15px] no-underline transition-colors duration-200 outline-brand focus-visible:outline-3 focus-visible:outline-offset-3";
+const button: CSSProperties = {
+  display: "inline-flex",
+  alignItems: "center",
+  minHeight: 44,
+  padding: "0 24px",
+  borderRadius: 999,
+  fontSize: 15,
+  fontWeight: 600,
+  textDecoration: "none",
+};
 
 /** Root 404 (URLs outside the locale routes). English first, Arabic below. */
 export default function GlobalNotFound() {
   return (
-    <html lang="en" className={cn(schibsted.variable, alexandria.variable)}>
-      <body className="flex min-h-screen items-center justify-center bg-page px-4 font-sans text-ink">
-        <main className="max-w-xl text-center">
-          <p className="text-[72px] font-extrabold leading-none tracking-[-0.035em] text-muted">404</p>
-          <h1 className="mt-4 text-2xl font-extrabold tracking-[-0.02em]">This page could not be found.</h1>
-          <p lang="ar" dir="rtl" className="mt-2 font-arabic text-lg font-light text-body">
+    <html lang="en">
+      <body
+        className={schibsted.className}
+        style={{
+          margin: 0,
+          minHeight: "100vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: "0 16px",
+          background: C.page,
+          color: C.ink,
+        }}
+      >
+        <main style={{ maxWidth: 576, textAlign: "center" }}>
+          <p style={{ margin: 0, fontSize: 72, fontWeight: 800, lineHeight: 1, letterSpacing: "-0.035em", color: C.muted }}>404</p>
+          <h1 style={{ margin: "16px 0 0", fontSize: 24, fontWeight: 800, letterSpacing: "-0.02em" }}>
+            This page could not be found.
+          </h1>
+          <p lang="ar" dir="rtl" className={alexandria.className} style={{ margin: "8px 0 0", fontSize: 18, fontWeight: 300, color: C.body }}>
             لم نعثر على هذه الصفحة.
           </p>
-          <div className="mt-8 flex flex-wrap justify-center gap-3">
-            <Link href="/" className={cn(BUTTON, "bg-brand font-semibold text-white hover:bg-brand-deep")}>
+          <div style={{ marginTop: 32, display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 12 }}>
+            <Link href="/" style={{ ...button, background: C.brand, color: "#FFFFFF" }}>
               Go to the home page
             </Link>
-            <Link
-              href="/ar"
-              lang="ar"
-              className={cn(BUTTON, "bg-surface font-arabic font-semibold text-brand hover:bg-sky")}
-            >
+            <Link href="/ar" lang="ar" className={alexandria.className} style={{ ...button, background: C.surface, color: C.brand }}>
               الصفحة الرئيسية
             </Link>
           </div>
