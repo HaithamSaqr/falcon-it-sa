@@ -126,3 +126,15 @@ for (const prefix of ["", "/ar"]) {
     expect(alts).toEqual(V2_CLIENT_LOGOS.map((l) => (prefix ? l.name.ar : l.name.en)));
   });
 }
+
+for (const prefix of ["", "/ar"]) {
+  test(`${prefix}/about shows the logo strip right under the hero`, async ({ page }) => {
+    await page.goto(`${prefix}/about`);
+    const types = await page.locator("main [data-block-type]").evaluateAll((els) => els.map((e) => e.getAttribute("data-block-type")));
+    expect(types.slice(0, 2)).toEqual(["hero", "logo_wall"]);
+    // The after-hero strip: page tone, no top padding, the marquee.
+    const strip = page.locator(STRIP).first();
+    await expect(strip).toHaveCSS("padding-top", /^(0px|8px)$/);
+    await expect(strip.locator("[data-marquee]")).toHaveCount(1);
+  });
+}

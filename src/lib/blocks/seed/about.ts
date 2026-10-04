@@ -29,6 +29,8 @@ export const ABOUT_SEED = seedPage("about", [
       sectorPills: [],
     },
   },
+  // The client logo strip sits right under the hero, as on every other page.
+  clientsWall(),
   {
     type: "departments",
     content: {
@@ -71,6 +73,5 @@ export const ABOUT_SEED = seedPage("about", [
     },
   },
   processBlock(),
-  clientsWall(),
   generalBookingBlock(),
 ]);

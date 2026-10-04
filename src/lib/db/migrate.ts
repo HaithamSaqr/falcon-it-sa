@@ -462,6 +462,32 @@ async function fixHomeScreens(c: PoolClient): Promise<void> {
 
 export const HOME_SCREENS_FIX_KEY = "v2-home-screens-2026-10";
 
+/** The about page order the first v2 seed shipped, with the logo strip near the bottom. */
+export const ABOUT_OLD_ORDER: readonly string[] = ["hero", "departments", "process", "logo_wall", "booking"];
+
+/**
+ * About: the client logo strip moves back to right under the hero, as on every
+ * other page. Only while the page's enabled blocks are still exactly the old
+ * seeded order; any admin reordering or added block leaves the page alone.
+ * Disabled blocks keep their place relative to the others.
+ */
+async function fixAboutLogoUnderHero(c: PoolClient): Promise<void> {
+  await lockPage(c, "about");
+  const r = await c.query(`SELECT id, type, enabled FROM page_blocks WHERE page = 'about' ORDER BY sort_order, id`);
+  const rows: { id: string; type: string; enabled: boolean }[] = r.rows;
+  const enabled = rows.filter((b) => b.enabled).map((b) => b.type);
+  if (enabled.join(",") !== ABOUT_OLD_ORDER.join(",")) return;
+  const wall = rows.find((b) => b.enabled && b.type === "logo_wall")!;
+  const rest = rows.filter((b) => b !== wall);
+  const hero = rest.findIndex((b) => b.enabled && b.type === "hero");
+  const order = [...rest.slice(0, hero + 1), wall, ...rest.slice(hero + 1)];
+  for (let i = 0; i < order.length; i++) {
+    await c.query(`UPDATE page_blocks SET sort_order = $2, updated_at = now() WHERE id = $1`, [order[i].id, i]);
+  }
+}
+
+export const ABOUT_LOGO_FIX_KEY = "v2-about-logo-under-hero";
+
 const DATA_FIXES: [key: string, fix: (c: PoolClient) => Promise<void>][] = [
   ["v2-sector-slugs", fixSectorSlugs],
   ["v2-sector-titles", fixSectorTitles],
@@ -472,6 +498,7 @@ const DATA_FIXES: [key: string, fix: (c: PoolClient) => Promise<void>][] = [
   ["v2-brochure-copy", fixBrochureCopy],
   [CLIENT_LOGOS_FIX_KEY, fixClientLogos],
   [HOME_SCREENS_FIX_KEY, fixHomeScreens],
+  [ABOUT_LOGO_FIX_KEY, fixAboutLogoUnderHero],
 ];
 
 /** Apply every pending one-off fix. A failing fix is logged and retried next boot; it never blocks the site. */
