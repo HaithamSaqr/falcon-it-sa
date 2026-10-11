@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import type { IntegrationSettings } from "@/types/admin";
+import { extractAdsLabel, isValidAdsId } from "@/lib/ads-label";
 
 const TABS = [
   { key: "odoo", label: "Odoo CRM" },
@@ -23,6 +24,7 @@ export default function IntegrationsPage() {
   const [testing, setTesting] = useState(false);
   const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null);
   const [toast, setToast] = useState("");
+  const [extractedLabel, setExtractedLabel] = useState<string | null>(null);
 
   useEffect(() => {
     fetch("/api/admin/integrations")
@@ -269,31 +271,41 @@ export default function IntegrationsPage() {
                 value={settings.google.adsId}
                 onChange={(v) => update("google", "adsId", v)}
                 placeholder="AW-XXXXXXXXX"
+                warning={
+                  settings.google.adsId.trim() && !isValidAdsId(settings.google.adsId)
+                    ? "This does not look like a Google Ads ID. Expected AW- followed by digits only, for example AW-123456789."
+                    : undefined
+                }
               />
-              <Field
-                label="Quote-form conversion label"
-                value={settings.google.adsQuoteLabel}
-                onChange={(v) => update("google", "adsQuoteLabel", v)}
-                placeholder="e.g. qeqKCOOYwb4cEOLBtusD"
-              />
-              <Field
-                label="Demo-form conversion label"
-                value={settings.google.adsDemoLabel}
-                onChange={(v) => update("google", "adsDemoLabel", v)}
-                placeholder="e.g. MYEqCKe3rr4cEOLBtusD"
-              />
-              <Field
-                label="Contact-form conversion label"
-                value={settings.google.adsContactLabel}
-                onChange={(v) => update("google", "adsContactLabel", v)}
-                placeholder="e.g. c6-fCJyKxL4cEOLBtusD"
-              />
-              <Field
-                label="WhatsApp-click conversion label"
-                value={settings.google.adsWhatsappLabel}
-                onChange={(v) => update("google", "adsWhatsappLabel", v)}
-                placeholder="e.g. GOAtCJeOxL4cEOLBtusD"
-              />
+              <AdsLabelGuide adsId={settings.google.adsId} />
+              {(
+                [
+                  ["adsQuoteLabel", "Quote-form conversion label", "e.g. qeqKCOOYwb4cEOLBtusD", "Fires on: quote request (sector quote calculator)"],
+                  ["adsDemoLabel", "Demo-form conversion label", "e.g. MYEqCKe3rr4cEOLBtusD", "Fires on: demo booking (/demo)"],
+                  ["adsContactLabel", "Contact-form conversion label", "e.g. c6-fCJyKxL4cEOLBtusD", "Fires on: contact form (/contact)"],
+                  ["adsWhatsappLabel", "WhatsApp-click conversion label", "e.g. GOAtCJeOxL4cEOLBtusD", "Fires on: WhatsApp click (floating button, mobile bar, contact CTA)"],
+                ] as const
+              ).map(([key, label, placeholder, hint]) => (
+                <Field
+                  key={key}
+                  label={label}
+                  value={settings.google[key]}
+                  onChange={(v) => {
+                    update("google", key, v);
+                    if (extractedLabel === key) setExtractedLabel(null);
+                  }}
+                  onBlur={() => {
+                    const extracted = extractAdsLabel(settings.google[key]);
+                    if (extracted !== null) {
+                      update("google", key, extracted);
+                      setExtractedLabel(key);
+                    }
+                  }}
+                  placeholder={placeholder}
+                  hint={hint}
+                  note={extractedLabel === key ? "Label extracted" : undefined}
+                />
+              ))}
               <p className="-mt-2 text-xs text-slate-400">
                 Each label fires a Google Ads conversion: sector quote calculator, /demo booking, /contact form, and clicks on
                 the standalone WhatsApp buttons (floating button, mobile bar, contact CTA). Paste only the label (after
@@ -593,27 +605,190 @@ function Field({
   label,
   value,
   onChange,
+  onBlur,
   type = "text",
   placeholder,
+  hint,
+  note,
+  warning,
 }: {
   label: string;
   value: string;
   onChange: (v: string) => void;
+  onBlur?: () => void;
   type?: string;
   placeholder?: string;
+  hint?: string;
+  note?: string;
+  warning?: string;
 }) {
+  const inputId = useId();
   return (
     <div>
-      <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500">
+      <label htmlFor={inputId} className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500">
         {label}
       </label>
       <input
+        id={inputId}
         type={type}
         value={value}
         onChange={(e) => onChange(e.target.value)}
+        onBlur={onBlur}
         placeholder={placeholder}
         className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-cyan-400 focus:outline-none focus:ring-1 focus:ring-cyan-400"
       />
+      {hint && <p className="mt-1 text-xs text-slate-400">{hint}</p>}
+      {note && <p className="mt-1 text-xs font-medium text-emerald-600">{note}</p>}
+      {warning && <p className="mt-1 text-xs font-medium text-amber-600">{warning}</p>}
     </div>
+  );
+}
+
+function Ar({ children }: { children: React.ReactNode }) {
+  return (
+    <bdi lang="ar" dir="rtl">
+      {children}
+    </bdi>
+  );
+}
+
+function Code({ children }: { children: React.ReactNode }) {
+  return <code className="rounded bg-slate-100 px-1 text-slate-700">{children}</code>;
+}
+
+/** Collapsible how-to for creating Google Ads conversion actions and copying their labels. */
+function AdsLabelGuide({ adsId }: { adsId: string }) {
+  const id = adsId.trim() || "AW-XXXXXXXXXX";
+  const heading = "mb-1.5 text-sm font-semibold text-slate-800";
+  const list = "list-decimal space-y-1 ps-5 text-sm text-slate-600";
+  return (
+    <details className="group rounded-lg border border-slate-200 bg-slate-50">
+      <summary className="flex cursor-pointer select-none items-center justify-between gap-3 px-4 py-3 text-sm font-semibold text-slate-700 hover:text-slate-900">
+        <span>
+          How to get the conversion labels <span className="font-normal text-slate-400">/</span>{" "}
+          <Ar>كيفية الحصول على معرّفات الإحالات الناجحة</Ar>
+        </span>
+        <span aria-hidden className="text-slate-400 transition-transform group-open:rotate-180">
+          &#9662;
+        </span>
+      </summary>
+      <div className="space-y-6 border-t border-slate-200 px-4 py-4">
+        <div lang="en" dir="ltr" className="space-y-4">
+          <div>
+            <h4 className={heading}>First: create a conversion action</h4>
+            <ol className={list}>
+              <li>
+                In Google Ads, from the left-hand menu open Goals <Ar>(الأهداف)</Ar> &rarr; Conversions{" "}
+                <Ar>(الإحالات الناجحة)</Ar> &rarr; Summary <Ar>(ملخص)</Ar>.
+              </li>
+              <li>
+                Click <b>+ Create conversion action</b> <Ar>(إنشاء إجراء إحالة ناجحة)</Ar>.
+              </li>
+              <li>
+                Choose <b>Website</b> <Ar>(موقع إلكتروني)</Ar>, enter <Code>falcon-it.sa</Code>, then click{" "}
+                <b>Scan</b>.
+              </li>
+              <li>
+                At the bottom of the page, choose <b>Add a conversion action manually</b>{" "}
+                <Ar>(إضافة إجراء يدويًا)</Ar>.
+              </li>
+              <li>
+                Fill in: Category &quot;Book appointment&quot; for the demo booking, or &quot;Submit lead
+                form&quot; for the contact form; Name e.g. &quot;Demo booking&quot;; Count &quot;One&quot;{" "}
+                <Ar>(واحدة)</Ar>.
+              </li>
+              <li>
+                Click <b>Done</b> <Ar>(تم)</Ar>, then <b>Save and continue</b> <Ar>(حفظ ومتابعة)</Ar>.
+              </li>
+            </ol>
+          </div>
+          <div>
+            <h4 className={heading}>Second: copy the label</h4>
+            <ol className={list}>
+              <li>
+                Choose <b>Use Google tag</b> &rarr; <b>Install the tag yourself</b>{" "}
+                <Ar>(تثبيت العلامة بنفسك)</Ar>.
+              </li>
+              <li>
+                Under <b>Event snippet</b> <Ar>(مقتطف الحدث)</Ar> find a line like{" "}
+                <Code>&apos;send_to&apos;: &apos;{id}/AbC123xYz&apos;</Code>
+              </li>
+              <li>
+                The label is the part after the slash (<Code>AbC123xYz</Code>). Copy it into the matching
+                field below.
+              </li>
+              <li>
+                Don&apos;t paste any code into the site: the Google tag is already installed; only the label
+                is needed.
+              </li>
+            </ol>
+          </div>
+          <p className="text-sm text-slate-600">
+            Repeat for each event: Demo booking, Contact form, WhatsApp click, Quote request (optional).
+          </p>
+          <p className="text-sm text-slate-600">
+            To find a label later: Goals &rarr; Conversions &rarr; click the action&apos;s name &rarr; Tag
+            setup <Ar>(إعداد العلامة)</Ar>.
+          </p>
+        </div>
+
+        <div lang="ar" dir="rtl" className="space-y-4 border-t border-slate-200 pt-4">
+          <div>
+            <h4 className={heading}>أولًا: إنشاء إجراء إحالة ناجحة</h4>
+            <ol className={list}>
+              <li>
+                في Google Ads، من القائمة الجانبية افتح <b>الأهداف</b> (Goals) &larr;{" "}
+                <b>الإحالات الناجحة</b> (Conversions) &larr; <b>ملخص</b> (Summary).
+              </li>
+              <li>
+                انقر على <b>+ إنشاء إجراء إحالة ناجحة</b> (Create conversion action).
+              </li>
+              <li>
+                اختر <b>موقع إلكتروني</b> (Website)، وأدخل <Code>falcon-it.sa</Code>، ثم انقر على{" "}
+                <b>Scan</b>.
+              </li>
+              <li>
+                في أسفل الصفحة، اختر <b>إضافة إجراء يدويًا</b> (Add a conversion action manually).
+              </li>
+              <li>
+                املأ الحقول: الفئة (Category) &quot;Book appointment&quot; لحجز العرض التجريبي، أو
+                &quot;Submit lead form&quot; لنموذج التواصل؛ الاسم مثل &quot;Demo booking&quot;؛ العدّ
+                (Count) &quot;واحدة&quot; (One).
+              </li>
+              <li>
+                انقر على <b>تم</b> (Done)، ثم <b>حفظ ومتابعة</b> (Save and continue).
+              </li>
+            </ol>
+          </div>
+          <div>
+            <h4 className={heading}>ثانيًا: نسخ المعرّف (label)</h4>
+            <ol className={list}>
+              <li>
+                اختر <b>Use Google tag</b> &larr; <b>تثبيت العلامة بنفسك</b> (Install the tag yourself).
+              </li>
+              <li>
+                تحت <b>مقتطف الحدث</b> (Event snippet) ستجد سطرًا مثل{" "}
+                <span dir="ltr" className="inline-block">
+                  <Code>&apos;send_to&apos;: &apos;{id}/AbC123xYz&apos;</Code>
+                </span>
+              </li>
+              <li>
+                المعرّف هو الجزء الذي يلي الشرطة المائلة (<Code>AbC123xYz</Code>). انسخه إلى الحقل
+                المطابق أدناه.
+              </li>
+              <li>لا تلصق أي كود في الموقع: علامة Google مثبّتة بالفعل، والمطلوب هو المعرّف فقط.</li>
+            </ol>
+          </div>
+          <p className="text-sm text-slate-600">
+            كرّر الخطوات لكل حدث: حجز العرض التجريبي، نموذج التواصل، النقر على واتساب، طلب عرض السعر
+            (اختياري).
+          </p>
+          <p className="text-sm text-slate-600">
+            للعثور على المعرّف لاحقًا: الأهداف &larr; الإحالات الناجحة &larr; انقر على اسم الإجراء &larr;{" "}
+            <b>إعداد العلامة</b> (Tag setup).
+          </p>
+        </div>
+      </div>
+    </details>
   );
 }
