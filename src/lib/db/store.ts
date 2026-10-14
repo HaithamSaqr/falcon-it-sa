@@ -37,6 +37,7 @@ import {
   DEFAULT_HOME,
   DEFAULT_PRIMARY_CTA,
 } from "./defaults";
+import { normalizeAssignment } from "@/lib/odoo/assignment";
 
 function newId(prefix: string): string {
   try {
@@ -696,6 +697,8 @@ export async function readIntegrations(pool: Pool): Promise<IntegrationSettings>
       db: r.odoo_db,
       username: r.odoo_username,
       apiKey: r.odoo_api_key ?? "",
+      salespersonId: r.odoo_salesperson_id ?? DEFAULT_INTEGRATIONS.odoo.salespersonId,
+      teamId: r.odoo_team_id ?? DEFAULT_INTEGRATIONS.odoo.teamId,
       lastTestedAt: r.odoo_last_tested_at ? new Date(r.odoo_last_tested_at).toISOString() : undefined,
       lastTestResult: (r.odoo_last_test_result as "success" | "failed" | null) ?? undefined,
     },
@@ -761,8 +764,9 @@ export async function writeIntegrations(pool: Pool, ig: IntegrationSettings): Pr
        whatsapp_enabled, whatsapp_api_token, whatsapp_phone_id,
        helpdesk_enabled, helpdesk_default_team_id, helpdesk_allow_rating, helpdesk_allow_new_tickets,
        google_enabled, google_verification, google_gtm_id, google_ga4_id, google_ads_id, google_ads_quote_label, google_ads_demo_label, google_ads_contact_label, google_ads_whatsapp_label,
-       snapchat_enabled, snapchat_pixel_id
-     ) VALUES (1, $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31,$32,$33,$34,$35,$36,$37,$38,$39,$40,$41)
+       snapchat_enabled, snapchat_pixel_id,
+       odoo_salesperson_id, odoo_team_id
+     ) VALUES (1, $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31,$32,$33,$34,$35,$36,$37,$38,$39,$40,$41,$42,$43)
      ON CONFLICT (id) DO UPDATE SET
        odoo_enabled = EXCLUDED.odoo_enabled, odoo_url = EXCLUDED.odoo_url, odoo_db = EXCLUDED.odoo_db,
        odoo_username = EXCLUDED.odoo_username, odoo_api_key = EXCLUDED.odoo_api_key,
@@ -781,7 +785,8 @@ export async function writeIntegrations(pool: Pool, ig: IntegrationSettings): Pr
        google_gtm_id = EXCLUDED.google_gtm_id, google_ga4_id = EXCLUDED.google_ga4_id, google_ads_id = EXCLUDED.google_ads_id,
        google_ads_quote_label = EXCLUDED.google_ads_quote_label, google_ads_demo_label = EXCLUDED.google_ads_demo_label,
        google_ads_contact_label = EXCLUDED.google_ads_contact_label, google_ads_whatsapp_label = EXCLUDED.google_ads_whatsapp_label,
-       snapchat_enabled = EXCLUDED.snapchat_enabled, snapchat_pixel_id = EXCLUDED.snapchat_pixel_id`,
+       snapchat_enabled = EXCLUDED.snapchat_enabled, snapchat_pixel_id = EXCLUDED.snapchat_pixel_id,
+       odoo_salesperson_id = EXCLUDED.odoo_salesperson_id, odoo_team_id = EXCLUDED.odoo_team_id`,
     [
       ig.odoo.enabled, ig.odoo.url, ig.odoo.db, ig.odoo.username, ig.odoo.apiKey,
       ig.odoo.lastTestedAt ? new Date(ig.odoo.lastTestedAt) : null, ig.odoo.lastTestResult ?? null,
@@ -795,6 +800,7 @@ export async function writeIntegrations(pool: Pool, ig: IntegrationSettings): Pr
       ig.google?.ga4Id ?? "", ig.google?.adsId ?? "", ig.google?.adsQuoteLabel ?? "", ig.google?.adsDemoLabel ?? "",
       ig.google?.adsContactLabel ?? "", ig.google?.adsWhatsappLabel ?? "",
       ig.snapchat?.enabled ?? true, ig.snapchat?.pixelId ?? "",
+      normalizeAssignment(ig.odoo).salespersonId, normalizeAssignment(ig.odoo).teamId,
     ]
   );
 }

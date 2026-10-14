@@ -573,6 +573,8 @@ export const DEFAULT_INTEGRATIONS: IntegrationSettings = {
     db: process.env.ODOO_DB || "",
     username: process.env.ODOO_USERNAME || "",
     apiKey: process.env.ODOO_API_KEY || process.env.ODOO_PASSWORD || "",
+    salespersonId: 2,
+    teamId: 1,
   },
   ai: {
     enabled: false,

@@ -7,6 +7,13 @@
 
 import xmlrpc from "odoo-xmlrpc";
 import { getIntegrations } from "@/lib/data-store";
+import {
+  DEFAULT_ODOO_ASSIGNMENT,
+  calendarAssignmentValues,
+  leadAssignmentValues,
+  normalizeAssignment,
+  type OdooAssignment,
+} from "./assignment";
 
 // ── Config (dynamic — reads from integrations store or .env) ────────
 interface OdooConfig {
@@ -15,6 +22,7 @@ interface OdooConfig {
   username: string;
   password: string;
   enabled: boolean;
+  assignment: OdooAssignment;
 }
 
 async function getOdooConfig(): Promise<OdooConfig> {
@@ -28,6 +36,7 @@ async function getOdooConfig(): Promise<OdooConfig> {
         username: integrations.odoo.username,
         password: integrations.odoo.apiKey,
         enabled: true,
+        assignment: normalizeAssignment(integrations.odoo),
       };
     }
   } catch {
@@ -45,6 +54,10 @@ async function getOdooConfig(): Promise<OdooConfig> {
     username,
     password,
     enabled: Boolean(url && db && username && password && !password.startsWith("changeme")),
+    assignment: normalizeAssignment({
+      salespersonId: process.env.ODOO_SALESPERSON_ID ?? DEFAULT_ODOO_ASSIGNMENT.salespersonId,
+      teamId: process.env.ODOO_TEAM_ID ?? DEFAULT_ODOO_ASSIGNMENT.teamId,
+    }),
   };
 }
 
@@ -113,25 +126,11 @@ const COUNTRY_MAP: Record<string, number> = {
   bahrain: 18, // Bahrain
 };
 
-// ── Country → Sales Team mapping ────────────────────────────────────
-const TEAM_MAP: Record<string, number> = {
-  ksa: 1,   // KSA Sales Team
-  uae: 1,   // Gulf Sales Team (same as KSA for MVP)
-  qatar: 1,
-  kuwait: 1,
-  oman: 1,
-  bahrain: 1,
-  egypt: 2, // Egypt Sales Team
-};
-
 // ── Helpers ─────────────────────────────────────────────────────────
 function getOdooCountryId(country: string): number | false {
   return COUNTRY_MAP[country.toLowerCase()] || false;
 }
 
-function getTeamByCountry(country: string): number {
-  return TEAM_MAP[country.toLowerCase()] || 1;
-}
 
 // ── Odoo Connection ─────────────────────────────────────────────────
 interface OdooInstance {
@@ -285,15 +284,14 @@ export async function createLead(data: LeadData): Promise<number | null> {
     partner_name: data.companyName || "",
     function: data.jobTitle || "",
     type: "opportunity",
-    user_id: 2, // Assign to admin user
     description: rows.join(""),
+    ...leadAssignmentValues((await getOdooConfig()).assignment),
   };
 
   // Country mapping
   if (data.country) {
     const countryId = getOdooCountryId(data.country);
     if (countryId) values.country_id = countryId;
-    values.team_id = getTeamByCountry(data.country);
   }
 
   return createRecord("crm.lead", values);
@@ -399,6 +397,9 @@ export async function createCalendarEvent(
   const startStr = startDate.toISOString().replace("T", " ").substring(0, 19);
   const stopStr = endDate.toISOString().replace("T", " ").substring(0, 19);
 
+  const { assignment } = await getOdooConfig();
+  const partnerId = assignment.salespersonId ? await getUserPartnerId(assignment.salespersonId) : null;
+
   const values: Record<string, unknown> = {
     name: data.name,
     start: startStr,
@@ -407,14 +408,65 @@ export async function createCalendarEvent(
     duration: data.duration,
     description: `${data.description || ""}\n\nAttendee: ${data.attendeeName} (${data.attendeeEmail})`,
     location: "Online - Link will be shared",
-    user_id: 2,
-    partner_ids: [[4, 3]], // Link admin partner (partner_id=3 for user_id=2)
+    ...calendarAssignmentValues(assignment, partnerId),
   };
 
   console.log("[Odoo] Creating calendar event:", { name: data.name, start: startStr, stop: stopStr });
   const result = await createRecord("calendar.event", values);
   console.log("[Odoo] Calendar event result:", result);
   return result;
+}
+
+/** The res.partner behind an Odoo user, so the salesperson attends the booked demo. */
+async function getUserPartnerId(userId: number): Promise<number | null> {
+  try {
+    const rows = await searchRecords("res.users", [["id", "=", userId]], ["partner_id"], 1);
+    const partner = rows[0]?.partner_id;
+    return Array.isArray(partner) && typeof partner[0] === "number" ? partner[0] : null;
+  } catch {
+    return null;
+  }
+}
+
+// ── Assignment options (admin picker) ───────────────────────────────
+export interface OdooOption {
+  id: number;
+  name: string;
+  detail?: string;
+}
+
+/** Internal users and CRM teams of the Odoo given by these credentials. */
+export async function listAssignmentOptions(
+  url: string,
+  db: string,
+  username: string,
+  password: string
+): Promise<{ success: true; users: OdooOption[]; teams: OdooOption[] } | { success: false; message: string }> {
+  try {
+    const resolvedUrl = await resolveOdooUrl(url);
+    const odoo = new (await import("odoo-xmlrpc")).default({ url: resolvedUrl, db, username, password });
+    await new Promise<void>((resolve, reject) => odoo.connect((err: Error | null) => (err ? reject(err) : resolve())));
+
+    const call = (model: string, domain: unknown[][], fields: string[]) =>
+      new Promise<Record<string, unknown>[]>((resolve, reject) =>
+        (odoo as unknown as OdooInstance).execute_kw(model, "search_read", [[domain, fields, 0, 500]], (err, result) =>
+          err ? reject(err) : resolve(result as unknown as Record<string, unknown>[])
+        )
+      );
+
+    const [users, teams] = await Promise.all([
+      call("res.users", [["share", "=", false], ["active", "=", true]], ["id", "name", "login"]),
+      call("crm.team", [], ["id", "name"]),
+    ]);
+
+    return {
+      success: true,
+      users: users.map((u) => ({ id: Number(u.id), name: String(u.name), detail: String(u.login ?? "") })),
+      teams: teams.map((t) => ({ id: Number(t.id), name: String(t.name) })),
+    };
+  } catch (error) {
+    return { success: false, message: friendlyOdooError(error instanceof Error ? error.message : "Unknown error") };
+  }
 }
 
 // ── Test Connection ─────────────────────────────────────────────────
@@ -769,4 +821,4 @@ export async function getHelpdeskTicketCount(
   }
 }
 
-export { getOdooCountryId, getTeamByCountry };
+export { getOdooCountryId };

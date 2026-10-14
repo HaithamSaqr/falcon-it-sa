@@ -25,6 +25,9 @@ export default function IntegrationsPage() {
   const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null);
   const [toast, setToast] = useState("");
   const [extractedLabel, setExtractedLabel] = useState<string | null>(null);
+  const [odooOptions, setOdooOptions] = useState<{ users: OdooOption[]; teams: OdooOption[] } | null>(null);
+  const [loadingOptions, setLoadingOptions] = useState(false);
+  const [optionsError, setOptionsError] = useState("");
 
   useEffect(() => {
     fetch("/api/admin/integrations")
@@ -81,6 +84,30 @@ export default function IntegrationsPage() {
       setTestResult({ success: false, message: "Network error" });
     } finally {
       setTesting(false);
+    }
+  }
+
+  async function loadOdooOptions() {
+    if (!settings) return;
+    setLoadingOptions(true);
+    setOptionsError("");
+    try {
+      const res = await fetch("/api/admin/integrations/odoo-options", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(settings.odoo),
+      });
+      const data = await res.json();
+      if (data.data?.success) {
+        setOdooOptions({ users: data.data.users, teams: data.data.teams });
+      } else {
+        setOdooOptions(null);
+        setOptionsError(data.data?.message || data.error || "Could not load users and teams");
+      }
+    } catch {
+      setOptionsError("Network error");
+    } finally {
+      setLoadingOptions(false);
     }
   }
 
@@ -177,6 +204,47 @@ export default function IntegrationsPage() {
                 </span>
               )}
             </div>
+          </div>
+
+          <div className="rounded-xl border border-slate-200 bg-white p-6">
+            <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
+              <div>
+                <h3 className="text-lg font-semibold text-slate-900">Lead assignment</h3>
+                <p className="text-sm text-slate-500">
+                  Who owns website leads and booked demos in Odoo. Load the lists after a successful connection test.
+                </p>
+              </div>
+              <button
+                onClick={loadOdooOptions}
+                disabled={loadingOptions}
+                className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 disabled:opacity-50"
+              >
+                {loadingOptions ? "Loading..." : "Load users & teams from Odoo"}
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <OdooPicker
+                label="Salesperson"
+                value={settings.odoo.salespersonId}
+                options={odooOptions?.users}
+                onChange={(v) => update("odoo", "salespersonId", v)}
+                hint="Odoo user set as salesperson on every website lead and as organiser of booked demos."
+              />
+              <OdooPicker
+                label="Sales team"
+                value={settings.odoo.teamId}
+                options={odooOptions?.teams}
+                onChange={(v) => update("odoo", "teamId", v)}
+                hint="CRM team (pipeline) the leads land in."
+              />
+            </div>
+            {optionsError && <p className="mt-4 text-sm font-medium text-red-600">✗ {optionsError}</p>}
+            <p className="mt-4 text-xs text-slate-400">
+              Choose “Odoo default” to leave the field empty and let Odoo decide. Save the page to apply. If demo
+              booking is on, set the Calendar tab’s “Odoo Calendar User ID” to the same salesperson so booked
+              slots show as busy.
+            </p>
           </div>
         </div>
       )}
@@ -596,6 +664,63 @@ export default function IntegrationsPage() {
           {saving ? "Saving..." : "Save Settings"}
         </button>
       </div>
+    </div>
+  );
+}
+
+type OdooOption = { id: number; name: string; detail?: string };
+
+// ── Odoo id picker: a list once loaded from Odoo, a plain id field before ──
+function OdooPicker({
+  label,
+  value,
+  options,
+  onChange,
+  hint,
+}: {
+  label: string;
+  value: number;
+  options?: OdooOption[];
+  onChange: (v: number) => void;
+  hint?: string;
+}) {
+  const inputId = useId();
+  const known = options?.some((o) => o.id === value);
+  return (
+    <div>
+      <label htmlFor={inputId} className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500">
+        {label}
+      </label>
+      {options ? (
+        <select
+          id={inputId}
+          value={value}
+          onChange={(e) => onChange(Number(e.target.value))}
+          className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900"
+        >
+          <option value={0}>Odoo default</option>
+          {!known && value > 0 && <option value={value}>ID {value} (not found in this Odoo)</option>}
+          {options.map((o) => (
+            <option key={o.id} value={o.id}>
+              {o.name}
+              {o.detail ? ` (${o.detail})` : ""} · ID {o.id}
+            </option>
+          ))}
+        </select>
+      ) : (
+        <input
+          id={inputId}
+          type="number"
+          min={0}
+          value={String(value ?? 0)}
+          onChange={(e) => onChange(Number(e.target.value) || 0)}
+          className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:border-cyan-400 focus:outline-none focus:ring-1 focus:ring-cyan-400"
+        />
+      )}
+      {hint && <p className="mt-1 text-xs text-slate-400">{hint}</p>}
+      {options && !known && value > 0 && (
+        <p className="mt-1 text-xs font-medium text-amber-600">The saved ID does not exist in this Odoo. Pick one from the list.</p>
+      )}
     </div>
   );
 }
