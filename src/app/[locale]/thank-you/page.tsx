@@ -5,6 +5,7 @@ import Container from "@/components/v2/ui/container";
 import Button from "@/components/v2/ui/button";
 import Icon from "@/components/v2/ui/icon";
 import { parseThankYouType } from "@/lib/thank-you";
+import { PROFILE_DOWNLOAD_NAME, PROFILE_URL, getProfileInfo } from "@/lib/company-profile";
 
 type Props = {
   params: Promise<{ locale: string }>;
@@ -34,6 +35,8 @@ export default async function ThankYouPage({ params, searchParams }: Props) {
   setRequestLocale(locale);
   const type = parseThankYouType((await searchParams).type);
   const t = await getTranslations("thankYou");
+  // The download button shows only while the admin has a profile uploaded.
+  const hasProfile = (await getProfileInfo()) !== null;
 
   return (
     <Section tone="page" className="pt-14 md:pt-20 lg:pt-24" data-thank-you={type}>
@@ -46,6 +49,13 @@ export default async function ThankYouPage({ params, searchParams }: Props) {
         </span>
         <h1 className="v2-h2 animate-rise rise-d1 mt-6 max-w-[680px]">{t(`${type}.title`)}</h1>
         <p className="v2-copy animate-rise rise-d2 mt-4 max-w-[560px] text-[17px] text-body">{t(`${type}.body`)}</p>
+        {hasProfile && (
+          <div className="animate-rise rise-d2 mt-8">
+            <Button href={PROFILE_URL} download={PROFILE_DOWNLOAD_NAME} size="lg" data-profile-download="">
+              {t("downloadProfile")}
+            </Button>
+          </div>
+        )}
 
         {type === "demo" && (
           <div className="animate-rise rise-d3 mt-12 w-full max-w-[880px] text-start">
