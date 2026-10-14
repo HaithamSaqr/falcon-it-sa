@@ -540,7 +540,7 @@
     "metaTitle": "Thank you",
     "demo": {
       "title": "Thank you. Your demo request is in.",
-      "body": "We will contact you to confirm a time and ask a few questions, so the session runs on your own workflow."
+      "body": "Our team will contact you to arrange a convenient time for your demo."
     },
     "contact": {
       "title": "Thank you. Your message is in.",
@@ -562,6 +562,7 @@
     "bookDemo": "Book a free demo",
     "seeOdoo": "Our Odoo services",
     "seeFalcon": "About Falcon ERP",
-    "home": "Back to the home page"
+    "home": "Back to the home page",
+    "downloadProfile": "Download our company profile"
   }
 }

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import type { SiteSettings, SeoSettings, FooterLink } from "@/types/admin";
 import { CTA_LABEL_MAX, normalizeV2Settings, validateV2Settings } from "@/lib/admin/settings-validation";
+import CompanyProfileCard from "@/components/admin/company-profile-card";
 
 interface DbConn {
   host: string;
@@ -473,6 +474,9 @@ export default function SettingsPage() {
           <span className="text-xs text-slate-400">JSON bundle of all images. Restore adds them back (overwrites same names).</span>
         </div>
       </div>
+
+      {/* Company Profile PDF (thank-you page download) */}
+      <CompanyProfileCard />
 
       {/* Company Info */}
       <div className="rounded-xl border border-slate-200 bg-white p-6">
