@@ -333,6 +333,10 @@ export interface IntegrationSettings {
     db: string;
     username: string;
     apiKey: string;
+    /** Odoo res.users id that owns website leads and booked demos; 0 = Odoo default. */
+    salespersonId: number;
+    /** Odoo crm.team id for website leads; 0 = Odoo default. */
+    teamId: number;
     lastTestedAt?: string;
     lastTestResult?: "success" | "failed";
   };
