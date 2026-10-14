@@ -9,7 +9,9 @@ import CalendarPicker from "@/components/forms/calendar-picker";
 import { useSettings } from "@/components/providers/settings-provider";
 import { api } from "@/lib/api-client";
 import { pickBi } from "@/lib/blocks/bi";
-import { fireAdsConversion, adsSendTo } from "@/lib/gtag";
+import { fireAdsConversionThen, adsSendTo } from "@/lib/gtag";
+import { useRouter } from "@/i18n/navigation";
+import { thankYouPath } from "@/lib/thank-you";
 import { DEMO_SECTOR_OPTIONS, industryForSector, type LeadAttribution } from "@/lib/lead-attribution";
 import { makeDemoFormSchema, type DemoFormData } from "@/lib/validations";
 import { Field, FormError, SelectShell, SentNotice, privacyLink, useFormMessages } from "./parts";
@@ -48,6 +50,7 @@ export default function DemoForm({ attribution, submitLabel }: Props) {
   const locale = useLocale();
   const lang = locale === "ar" ? "ar" : "en";
   const { googleAds } = useSettings();
+  const router = useRouter();
   const [submitted, setSubmitted] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
   const [preferredDateTime, setPreferredDateTime] = useState<string | null>(null);
@@ -75,8 +78,10 @@ export default function DemoForm({ attribution, submitLabel }: Props) {
     const result = await api.submitDemo(payload);
     if (result.success) {
       setSubmitted(true);
-      // Google Ads conversion (demo booked): fire-and-forget, no redirect.
-      fireAdsConversion(adsSendTo(googleAds?.adsId, googleAds?.demoLabel));
+      // Google Ads conversion, then the thank-you page (the notice shows meanwhile).
+      fireAdsConversionThen(adsSendTo(googleAds?.adsId, googleAds?.demoLabel), () =>
+        router.push(thankYouPath("demo")),
+      );
     } else {
       setServerError(result.error || t("error"));
     }

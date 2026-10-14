@@ -243,7 +243,9 @@ test.describe("demo booking attribution", () => {
     expect(body.industry).toBe("indRetail");
     const res = await req.response();
     expect(res?.status()).toBe(200);
-    await expect(page.locator('[data-demo-success]')).toBeVisible();
+    // The form confirms, then lands on the thank-you page.
+    await page.waitForURL(/\/thank-you\?type=demo$/);
+    await expect(page.locator('[data-thank-you="demo"] h1')).toBeVisible();
 
     const db = testDb();
     try {
@@ -296,7 +298,8 @@ test.describe("contact form", () => {
     ]);
     expect(Object.keys(req.postDataJSON()).sort()).toEqual(["email", "message", "name", "phone", "subject"]);
     expect((await req.response())?.status()).toBe(200);
-    await expect(page.locator("[data-contact-success]")).toBeVisible();
+    await page.waitForURL(/\/thank-you\?type=contact$/);
+    await expect(page.locator('[data-thank-you="contact"] h1')).toBeVisible();
     const db = testDb();
     try {
       await db.query(`DELETE FROM leads WHERE data->>'email' = $1`, [email]);
