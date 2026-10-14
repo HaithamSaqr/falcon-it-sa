@@ -7,7 +7,9 @@ import { useTranslations } from "next-intl";
 import Button from "@/components/v2/ui/button";
 import { useSettings } from "@/components/providers/settings-provider";
 import { api } from "@/lib/api-client";
-import { fireAdsConversion, adsSendTo } from "@/lib/gtag";
+import { fireAdsConversionThen, adsSendTo } from "@/lib/gtag";
+import { useRouter } from "@/i18n/navigation";
+import { thankYouPath } from "@/lib/thank-you";
 import { makeContactFormSchema, type ContactFormData } from "@/lib/validations";
 import { Field, FormError, SentNotice, privacyLink, useFormMessages } from "./parts";
 import { FIELD, NOTE, TEXTAREA } from "./styles";
@@ -16,6 +18,7 @@ import { FIELD, NOTE, TEXTAREA } from "./styles";
 export default function ContactForm() {
   const t = useTranslations("contact");
   const { googleAds } = useSettings();
+  const router = useRouter();
   const [submitted, setSubmitted] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
 
@@ -36,8 +39,10 @@ export default function ContactForm() {
     const result = await api.submitContact(data);
     if (result.success) {
       setSubmitted(true);
-      // Google Ads conversion (contact form): fire-and-forget, no redirect.
-      fireAdsConversion(adsSendTo(googleAds?.adsId, googleAds?.contactLabel));
+      // Google Ads conversion, then the thank-you page (the notice shows meanwhile).
+      fireAdsConversionThen(adsSendTo(googleAds?.adsId, googleAds?.contactLabel), () =>
+        router.push(thankYouPath("contact")),
+      );
     } else {
       setServerError(result.error || t("error"));
     }

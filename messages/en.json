@@ -535,5 +535,33 @@
     "body": "The link may be out of date, or the page has moved.",
     "home": "Go to the home page",
     "sectors": "See the sectors"
+  },
+  "thankYou": {
+    "metaTitle": "Thank you",
+    "demo": {
+      "title": "Thank you. Your demo request is in.",
+      "body": "We will contact you to confirm a time and ask a few questions, so the session runs on your own workflow."
+    },
+    "contact": {
+      "title": "Thank you. Your message is in.",
+      "body": "Our team will reply as soon as possible."
+    },
+    "nextTitle": "What happens next",
+    "stepConfirm": {
+      "title": "We confirm a time",
+      "line": "Our team contacts you to agree on a time that suits you."
+    },
+    "stepSession": {
+      "title": "Your workflow, live",
+      "line": "We show the ERP on your own processes, not a generic tour."
+    },
+    "stepRecommendation": {
+      "title": "A written recommendation",
+      "line": "Which system, what scope and how long, in writing after the session."
+    },
+    "bookDemo": "Book a free demo",
+    "seeOdoo": "Our Odoo services",
+    "seeFalcon": "About Falcon ERP",
+    "home": "Back to the home page"
   }
 }

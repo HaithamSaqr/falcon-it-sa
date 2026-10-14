@@ -15,6 +15,28 @@ export function fireAdsConversion(sendTo: string | undefined | null): void {
   }
 }
 
+/**
+ * Fire a conversion, then run `next` once Google confirms it was sent, or
+ * after `timeoutMs` at the latest, so a page change right after a submit
+ * cannot drop the hit. Without gtag or a label, `next` runs at once.
+ */
+export function fireAdsConversionThen(sendTo: string | undefined | null, next: () => void, timeoutMs = 1000): void {
+  let done = false;
+  const go = () => {
+    if (done) return;
+    done = true;
+    next();
+  };
+  try {
+    const w = window as unknown as { gtag?: (...args: unknown[]) => void };
+    if (!sendTo || typeof w.gtag !== "function") return go();
+    setTimeout(go, timeoutMs);
+    w.gtag("event", "conversion", { send_to: sendTo, event_callback: go });
+  } catch {
+    go();
+  }
+}
+
 /** Build the send_to string from an Ads id + a conversion label. */
 export function adsSendTo(adsId?: string, label?: string): string {
   return adsId && label ? `${adsId}/${label}` : "";
