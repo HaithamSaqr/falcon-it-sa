@@ -3,9 +3,11 @@
 import { useEffect, useId, useState } from "react";
 import type { IntegrationSettings } from "@/types/admin";
 import { extractAdsLabel, isValidAdsId } from "@/lib/ads-label";
+import OdooPricingCard from "@/components/admin/odoo-pricing-card";
 
 const TABS = [
   { key: "odoo", label: "Odoo CRM" },
+  { key: "odooPricing", label: "Odoo prices" },
   { key: "ai", label: "AI Assistant" },
   { key: "google", label: "Google" },
   { key: "snapchat", label: "Snapchat" },
@@ -248,6 +250,9 @@ export default function IntegrationsPage() {
           </div>
         </div>
       )}
+
+      {/* ── Odoo prices (Egypt) Tab ── */}
+      {activeTab === "odooPricing" && <OdooPricingCard />}
 
       {/* ── AI Assistant Tab ── */}
       {activeTab === "ai" && (
