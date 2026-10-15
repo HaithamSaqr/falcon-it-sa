@@ -454,6 +454,12 @@ ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS landing_cta_note_ar text NOT 
 ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS clients_speed numeric NOT NULL DEFAULT 3;
 ALTER TABLE integrations ADD COLUMN IF NOT EXISTS snapchat_enabled boolean NOT NULL DEFAULT true;
 ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS egypt_entity jsonb NOT NULL DEFAULT '{}';
+ALTER TABLE integrations ADD COLUMN IF NOT EXISTS odoo_pricing_enabled boolean NOT NULL DEFAULT false;
+ALTER TABLE integrations ADD COLUMN IF NOT EXISTS odoo_pricing_proxy text NOT NULL DEFAULT '';
+ALTER TABLE integrations ADD COLUMN IF NOT EXISTS odoo_pricing_attempt_at timestamptz;
+ALTER TABLE integrations ADD COLUMN IF NOT EXISTS odoo_pricing_success_at timestamptz;
+ALTER TABLE integrations ADD COLUMN IF NOT EXISTS odoo_pricing_last_usd text NOT NULL DEFAULT '';
+ALTER TABLE integrations ADD COLUMN IF NOT EXISTS odoo_pricing_last_error text NOT NULL DEFAULT '';
 ALTER TABLE integrations ADD COLUMN IF NOT EXISTS odoo_salesperson_id int NOT NULL DEFAULT 2;
 ALTER TABLE integrations ADD COLUMN IF NOT EXISTS odoo_team_id int NOT NULL DEFAULT 1;
 ALTER TABLE integrations ADD COLUMN IF NOT EXISTS snapchat_pixel_id text NOT NULL DEFAULT 'c0116458-0cf9-41e9-a95b-4f29bd552620';

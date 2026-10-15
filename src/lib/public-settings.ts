@@ -7,6 +7,7 @@
  */
 import { headers } from "next/headers";
 import { getUsdEgpRate } from "@/lib/fx-rate";
+import { refreshOdooEgyptPrice } from "@/lib/odoo-pricing";
 import { getFooterLinks, getIntegrations, getProducts, getSectors, getSettings } from "@/lib/data-store";
 import { pagesWithBlocks } from "@/lib/blocks/store";
 import { ERP_PRODUCT_SLUGS, buildPublicSettings, type PublicSettings, type VisitorContext } from "@/lib/public-chrome";
@@ -43,6 +44,8 @@ export async function getPublicSettings(visitor?: VisitorContext): Promise<Publi
   // The live USD→EGP rate is only needed for a visitor in Egypt with the Odoo price kept in USD.
   const inEgypt = (visitor?.country ?? "").trim().toUpperCase() === "EG";
   const usdEgpRate = inEgypt && settings.egyptEntity?.odooFromUsd ? await getUsdEgpRate() : null;
+  // A visit from Egypt also keeps Odoo's own Egypt price fresh (at most daily, in the background).
+  if (inEgypt) void refreshOdooEgyptPrice().catch(() => {});
   return buildPublicSettings({
     settings,
     footerLinks,
