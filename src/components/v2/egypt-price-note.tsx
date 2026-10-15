@@ -27,7 +27,7 @@ export default async function EgyptPriceNote({
           </span>
           <span className="flex flex-col gap-0.5">
             <span className="v2-title text-[17px] font-bold leading-snug text-ink">{t(system, { price })}</span>
-            <span className="v2-copy text-[14px] text-muted">{t("note")}</span>
+            <span className="v2-copy text-[14px] text-muted">{t(`${system}Note`)}</span>
           </span>
         </div>
       </Container>

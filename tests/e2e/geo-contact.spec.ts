@@ -69,7 +69,7 @@ test("a visitor in Egypt gets the Egypt number in the footer, contact page and W
   await expect(page.locator("footer")).toContainText(ENTITY.addressAr);
   // EGP starting price under the Odoo hero; none on Falcon ERP (no price set).
   await page.goto("/erp/odoo");
-  await expect(page.locator('[data-egypt-price="odoo"]')).toContainText("25,000 EGP");
+  await expect(page.locator('[data-egypt-price="odoo"]')).toContainText("start from 25,000 EGP per user per month");
   await page.screenshot({ path: test.info().outputPath("odoo-eg.png"), fullPage: false });
   await page.goto("/erp/falcon");
   await expect(page.locator("[data-egypt-price]")).toHaveCount(0);
