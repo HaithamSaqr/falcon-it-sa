@@ -194,6 +194,30 @@ export function sanitizeWhatsappRouting(
   };
 }
 
+/**
+ * Points CMS `https://wa.me/<number>` links that use one of the company's own
+ * numbers at this visitor's WhatsApp number (e.g. the Egypt number for a
+ * visitor in Egypt), keeping any `?text=`. Links to other numbers stay as typed.
+ */
+export function localizeWhatsappLinks<T>(value: T, companyNumbers: string[], visitorNumber: string): T {
+  const own = new Set(companyNumbers.map((n) => intlDigits(n)).filter(Boolean));
+  const target = intlDigits(visitorNumber);
+  if (!target || own.size === 0) return value;
+  const fix = (v: unknown): unknown => {
+    if (typeof v === "string") {
+      return v.replace(/(https:\/\/wa\.me\/)(\d+)/g, (m, prefix: string, digits: string) =>
+        own.has(digits) ? `${prefix}${target}` : m,
+      );
+    }
+    if (Array.isArray(v)) return v.map(fix);
+    if (v && typeof v === "object") {
+      return Object.fromEntries(Object.entries(v as Record<string, unknown>).map(([k, x]) => [k, fix(x)]));
+    }
+    return v;
+  };
+  return fix(value) as T;
+}
+
 /** Supporting services for the footer: every product except the ERP products. */
 export function supportingServices<T extends { slug: string }>(products: T[]): T[] {
   return products.filter((p) => !ERP_PRODUCT_SLUGS.has(p.slug));

@@ -37,6 +37,9 @@ test("a visitor in Egypt gets the Egypt number in the footer, contact page and W
   await expect(page.locator(`main a[href="tel:${EG_PHONE}"]`).first()).toBeVisible();
   await expect(page.locator('main a[href^="https://wa.me/201132323095"]').first()).toBeVisible();
   await expect(page.locator("body")).not.toContainText(/Cairo|القاهرة/);
+  // The home hero's "Talk on WhatsApp" link (CMS content) follows the country too.
+  await page.goto("/");
+  await expect(page.locator('a[href^="https://wa.me/966"]')).toHaveCount(0);
   await ctx.close();
 });
 
