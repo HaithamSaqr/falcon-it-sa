@@ -509,6 +509,42 @@ export default function SettingsPage() {
         </div>
       </div>
 
+      {/* Egypt: company details and starting prices shown to visitors in Egypt only */}
+      <div className="rounded-xl border border-slate-200 bg-white p-6" data-egypt-entity-card="">
+        <h3 className="mb-1 text-sm font-semibold text-slate-700">Egypt (visitors in Egypt only)</h3>
+        <p className="mb-4 text-xs text-slate-400">
+          Visitors whose IP is in Egypt see this company in the footer and on the contact page, with the Phone (Egypt)
+          number above. Everyone else keeps the Saudi details. The Egyptian office appears once both addresses are filled.
+          Starting prices show under the hero of the Odoo and Falcon ERP pages; leave a price empty to hide it.
+        </p>
+        <div className="grid gap-4 sm:grid-cols-2">
+          {(
+            [
+              ["nameEn", "Company name (EN)", "Falcon IT Smart Solutions LLC", "ltr"],
+              ["nameAr", "Company name (AR)", "شركة فالكون لتقنية المعلومات والحلول الذكية ذ.م.م", "rtl"],
+              ["addressEn", "Registered address (EN)", "17 North 90th Street, Fifth Settlement, New Cairo, Cairo, Egypt", "ltr"],
+              ["addressAr", "Registered address (AR)", "17 شارع التسعين الشمالي، التجمع الخامس، القاهرة الجديدة", "rtl"],
+              ["crNumber", "Commercial register no.", "268153", "ltr"],
+              ["taxNumber", "Tax registration no.", "774-895-454", "ltr"],
+              ["odooFromEgp", "Odoo starts from (EGP)", "25,000", "ltr"],
+              ["falconFromEgp", "Falcon ERP starts from (EGP)", "15,000", "ltr"],
+            ] as const
+          ).map(([key, label, placeholder, dir]) => (
+            <div key={key} className={key.startsWith("address") ? "sm:col-span-2" : undefined}>
+              <label className={labelClasses}>{label}</label>
+              <input
+                value={settings.egyptEntity?.[key] ?? ""}
+                onChange={(e) => set(`egyptEntity.${key}`, e.target.value)}
+                className={inputClasses}
+                dir={dir}
+                placeholder={placeholder}
+              />
+            </div>
+          ))}
+        </div>
+        <p className="mt-3 text-xs text-slate-400">Prices accept digits only, e.g. 25,000. Press Save at the bottom to apply.</p>
+      </div>
+
       {/* v2 website: blog, primary CTA, company registration */}
       <div className="rounded-xl border border-slate-200 bg-white p-6">
         <h3 className="mb-1 text-sm font-semibold text-slate-700">Website</h3>

@@ -18,6 +18,7 @@ import type {
 } from "@/types/admin";
 import arMessages from "../../../messages/ar.json";
 import enMessages from "../../../messages/en.json";
+import { EMPTY_EGYPT_ENTITY } from "@/lib/egypt-entity";
 
 export const DEFAULT_CONTENT: SiteContent = {
   hero: {
@@ -319,6 +320,7 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   blogEnabled: false,
   primaryCta: DEFAULT_PRIMARY_CTA,
   clientsSpeed: 3,
+  egyptEntity: { ...EMPTY_EGYPT_ENTITY },
   whatsappRouting: { domains: [], countries: [] },
   landingCta: { mode: "whatsapp", url: "", label: { en: "", ar: "" }, note: { en: "", ar: "" } },
   regional: {

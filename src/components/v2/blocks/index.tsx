@@ -60,6 +60,8 @@ export type BlockRendererContext = {
   demoForm?: ReactNode;
   /** The contact form, shown beside the details of a `contact_info` block. */
   contactForm?: ReactNode;
+  /** Shown right after the first block (the hero), e.g. the Egypt price line. */
+  afterFirst?: ReactNode;
 };
 
 type BlockRendererProps = {
@@ -208,7 +210,10 @@ export default async function BlockRenderer({ blocks, locale, context = {} }: Bl
   };
 
   const rendered = blocks.map((block, i) => (
-    <Fragment key={block.id || `${block.type}-${i}`}>{renderBlock(block, ctx, places[i])}</Fragment>
+    <Fragment key={block.id || `${block.type}-${i}`}>
+      {renderBlock(block, ctx, places[i])}
+      {i === 0 && context.afterFirst}
+    </Fragment>
   ));
 
   if (roleIds.length === 0) return <>{rendered}</>;
