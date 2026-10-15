@@ -82,7 +82,7 @@ export const HOME_SEED = seedPage("home", [
         "المحاسبة والمخزون والمبيعات والمشاريع والفوترة الإلكترونية في نظام واحد، مضبوط على طريقة عملك الحالية.",
       ),
       primaryCta: demoCta(),
-      secondaryCta: { label: b("Talk on WhatsApp", "تحدث معنا على واتساب"), href: "https://wa.me/966568406006" },
+      secondaryCta: { label: b("Talk on WhatsApp", "تحدث معنا على واتساب"), href: "https://wa.me/966568842663" },
       sectorsLabel: b("See it for", "شاهده لقطاع"),
       card: {
         image: HOME_SCREENS.dashboard.image,

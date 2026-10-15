@@ -3,7 +3,7 @@ import { getTranslations } from "next-intl/server";
 import type { Bi } from "@/lib/blocks/bi";
 import type { Block, BlockType } from "@/lib/blocks/types";
 import { getClients } from "@/lib/data-store";
-import { getPublicSettings } from "@/lib/public-settings";
+import { getPublicSettings, visitorContext } from "@/lib/public-settings";
 import { safeDemoUrl } from "@/lib/blocks/cta";
 import { V2_CLIENT_LOGOS } from "@/lib/blocks/seed/clients";
 import type { SectionTone } from "@/components/v2/ui/section";
@@ -160,7 +160,7 @@ async function loadClients(): Promise<RenderContext["clients"]> {
 export default async function BlockRenderer({ blocks, locale, context = {} }: BlockRendererProps) {
   const lang = locale === "ar" ? "ar" : "en";
   const needsSettings = !context.demoUrl || blocks.some((b) => b.type === "contact_info");
-  const settings = needsSettings ? await getPublicSettings() : undefined;
+  const settings = needsSettings ? await getPublicSettings(await visitorContext()) : undefined;
   const clients = blocks.some((b) => b.type === "logo_wall") ? await loadClients() : [];
 
   const t = await getTranslations({ locale: lang, namespace: "blocks" });

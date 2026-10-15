@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { pickBi } from "@/lib/blocks/bi";
 import { isSafeLink } from "@/lib/blocks/links";
-import { displayPhone, isHiddenPhone, isUnusableWhatsapp, telHref, type PublicSettings } from "@/lib/public-chrome";
+import { displayPhone, isHiddenPhone, telHref, type PublicSettings } from "@/lib/public-chrome";
 import Container from "@/components/v2/ui/container";
 import Section from "@/components/v2/ui/section";
 import Icon from "@/components/v2/ui/icon";
@@ -39,8 +39,8 @@ export default function ContactInfoBlock({ content: c, ctx, place }: BlockProps<
   const { show } = c;
   const lang = ctx.locale;
   const phone = s && !isHiddenPhone(s.company.phone.ksa) ? s.company.phone.ksa : "";
-  // Digits only for wa.me; Egyptian, placeholder and blank numbers are never shown.
-  const whatsapp = s && !isUnusableWhatsapp(s.company.whatsapp) ? s.company.whatsapp.replace(/\D/g, "").replace(/^00/, "") : "";
+  // Digits only for wa.me. The number is already the one for this visitor's country.
+  const whatsapp = s && !isHiddenPhone(s.company.whatsapp) ? s.company.whatsapp.replace(/\D/g, "").replace(/^00/, "") : "";
   const branches = s?.company.branches ?? [];
   // Settings-sourced links: only paths and https URLs are rendered.
   const socials = s ? SOCIAL.filter((x) => isSafeLink((s.social[x.key] ?? "").trim())) : [];

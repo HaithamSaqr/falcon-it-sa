@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 import { pickBi } from "@/lib/blocks/bi";
-import { getPublicSettings } from "@/lib/public-settings";
+import { getPublicSettings, visitorContext } from "@/lib/public-settings";
 import Section from "@/components/v2/ui/section";
 import Container from "@/components/v2/ui/container";
 import Button from "@/components/v2/ui/button";
@@ -22,7 +22,7 @@ export default async function LocaleNotFound() {
   const locale = await getLocale();
   const lang = locale === "ar" ? "ar" : "en";
   const t = await getTranslations("notFound");
-  const settings = await getPublicSettings();
+  const settings = await getPublicSettings(await visitorContext());
   const cta = pickBi(settings.primaryCta.label, lang);
 
   return (

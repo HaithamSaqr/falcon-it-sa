@@ -9,7 +9,7 @@ try {
 }
 
 /** Specs that change site-wide settings or shared page content; they run in their own project, last. */
-const SITE_WIDE = /(blog-enabled|admin-pages|empty-listings|company-profile)\.spec\.ts$/;
+const SITE_WIDE = /(blog-enabled|admin-pages|empty-listings|company-profile|geo-contact)\.spec\.ts$/;
 /** Switches the Snap Pixel on (dummy id, requests intercepted), which shows the cookie banner site-wide; runs alone, last. */
 const CONSENT = /consent\.spec\.ts$/;
 

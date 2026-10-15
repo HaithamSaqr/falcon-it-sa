@@ -17,7 +17,7 @@ import WhatsAppWidget from "@/components/layout/whatsapp-widget";
 import MobileBottomBar from "@/components/layout/mobile-bottom-bar";
 import CookieConsent from "@/components/layout/cookie-consent";
 import { SettingsProvider } from "@/components/providers/settings-provider";
-import { getPublicSettings } from "@/lib/public-settings";
+import { getPublicSettings, visitorContext } from "@/lib/public-settings";
 import { JsonLd } from "@/components/v2/json-ld";
 import { SITE_URL, organizationLd } from "@/lib/seo";
 import { CONSENT_COOKIE, parseConsent } from "@/lib/consent";
@@ -103,7 +103,7 @@ export default async function LocaleLayout({
 
   // Chrome data (nav, footer, WhatsApp) rendered on the server; the client
   // provider only adds geo-based WhatsApp routing on top.
-  const publicSettings = await getPublicSettings();
+  const publicSettings = await getPublicSettings(await visitorContext());
 
   // Marketing tags — injected only when enabled in Integrations.
   const integrations = await getIntegrations().catch(() => null);
