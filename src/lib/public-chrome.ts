@@ -20,6 +20,7 @@ import type {
 import { resolveKeptRoute } from "@/lib/kept-routes";
 import { isSafeLink } from "@/lib/blocks/links";
 import { normalizeEgyptEntity } from "@/lib/egypt-entity";
+import { usdToEgpText } from "@/lib/fx-rate-text";
 
 export interface BilingualText {
   en: string;
@@ -287,6 +288,8 @@ export interface PublicSettingsInput {
   integrations: IntegrationSettings;
   /** The visitor, for country-based contact numbers; omit for the generic (cacheable) settings. */
   visitor?: VisitorContext;
+  /** Today's USD to EGP rate, for the Odoo price kept in USD (null when unavailable). */
+  usdEgpRate?: number | null;
 }
 
 /** What the public layout and `/api/settings/public` expose. */
@@ -297,6 +300,7 @@ export function buildPublicSettings({
   sectors,
   integrations,
   visitor,
+  usdEgpRate = null,
 }: PublicSettingsInput): PublicSettings {
   const g = integrations.google;
   const blogEnabled = settings.blogEnabled === true;
@@ -365,7 +369,10 @@ export function buildPublicSettings({
       legal: egyptOffice ? "eg" : "sa",
       legalName: egyptOffice ? { en: eg.nameEn, ar: eg.nameAr } : { en: "", ar: "" },
     },
-    egpPrices: inEgypt ? { odoo: eg.odooFromEgp, falcon: eg.falconFromEgp } : { odoo: "", falcon: "" },
+    // Odoo: the USD price at today's rate, else the manual EGP price.
+    egpPrices: inEgypt
+      ? { odoo: usdToEgpText(eg.odooFromUsd, usdEgpRate) || eg.odooFromEgp, falcon: eg.falconFromEgp }
+      : { odoo: "", falcon: "" },
     social: { ...settings.social, tiktok: settings.social?.tiktok ?? "" },
     footerLinks: footerLinks
       .filter((l) => (blogEnabled || !isBlogUrl(l.url)) && (l.url ?? "").trim() !== "")

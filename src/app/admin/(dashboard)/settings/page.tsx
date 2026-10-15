@@ -526,7 +526,8 @@ export default function SettingsPage() {
               ["addressAr", "Registered address (AR)", "17 شارع التسعين الشمالي، التجمع الخامس، القاهرة الجديدة", "rtl"],
               ["crNumber", "Commercial register no.", "268153", "ltr"],
               ["taxNumber", "Tax registration no.", "774-895-454", "ltr"],
-              ["odooFromEgp", "Odoo starts from (EGP)", "25,000", "ltr"],
+              ["odooFromUsd", "Odoo Egypt price (USD per user / month)", "8.95", "ltr"],
+              ["odooFromEgp", "Odoo fallback price (EGP)", "475", "ltr"],
               ["falconFromEgp", "Falcon ERP starts from (EGP)", "15,000", "ltr"],
             ] as const
           ).map(([key, label, placeholder, dir]) => (
@@ -542,7 +543,12 @@ export default function SettingsPage() {
             </div>
           ))}
         </div>
-        <p className="mt-3 text-xs text-slate-400">Prices accept digits only, e.g. 25,000. Press Save at the bottom to apply.</p>
+        <p className="mt-3 text-xs text-slate-400">
+          The Odoo line shows the USD price converted to EGP at today&rsquo;s exchange rate (updated automatically several
+          times a day). Use Odoo&rsquo;s Egypt price from odoo.com/pricing opened from Egypt (Standard, billed yearly);
+          other regions see different prices. The EGP fallback is shown only if the rate cannot be fetched. Prices accept
+          digits only, e.g. 25,000. Press Save at the bottom to apply.
+        </p>
       </div>
 
       {/* v2 website: blog, primary CTA, company registration */}

@@ -17,6 +17,10 @@ const ENTITY = {
   odooFromEgp: "25,000",
   falconFromEgp: "",
 };
+// Both tests share the settings row set up in beforeAll: run them in one worker,
+// or one worker's afterAll restores it while the other is still reading.
+test.describe.configure({ mode: "serial" });
+
 let original: string | null = null;
 let originalEntity: unknown = null;
 

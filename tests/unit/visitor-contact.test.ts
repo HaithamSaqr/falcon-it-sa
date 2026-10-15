@@ -126,6 +126,7 @@ describe("Egyptian company for visitors in Egypt", () => {
     addressAr: "17 شارع التسعين الشمالي، التجمع الخامس، القاهرة الجديدة",
     crNumber: "268153",
     taxNumber: "774-895-454",
+    odooFromUsd: "",
     odooFromEgp: "25,000",
     falconFromEgp: "",
   };
@@ -170,5 +171,72 @@ describe("Egyptian company for visitors in Egypt", () => {
     expect(egpAmount("25k")).toBe("");
     expect(egpAmount("<b>1</b>")).toBe("");
     expect(normalizeEgyptEntity(null).nameEn).toBe("");
+  });
+});
+
+describe("Odoo price kept in USD, shown in EGP at today's rate", () => {
+  const ENTITY = {
+    nameEn: "Falcon IT Smart Solutions LLC",
+    nameAr: "شركة فالكون",
+    addressEn: "17 North 90th Street, New Cairo",
+    addressAr: "17 شارع التسعين الشمالي",
+    crNumber: "268153",
+    taxNumber: "774-895-454",
+    odooFromUsd: "8.95",
+    odooFromEgp: "475",
+    falconFromEgp: "",
+  };
+  const settings = { ...SETTINGS, egyptEntity: ENTITY } as SiteSettings;
+  const withRate = (rate: number | null) =>
+    buildPublicSettings({
+      settings,
+      footerLinks: DEFAULT_FOOTER_LINKS,
+      products: DEFAULT_PRODUCTS.filter((p) => p.enabled),
+      sectors: DEFAULT_SECTORS.filter((s) => s.enabled),
+      integrations: DEFAULT_INTEGRATIONS,
+      visitor: { country: "EG" },
+      usdEgpRate: rate,
+    });
+
+  it("converts at the live rate, rounded to whole pounds", () => {
+    expect(withRate(53.095).egpPrices.odoo).toBe("475");
+    expect(withRate(60).egpPrices.odoo).toBe("537");
+    expect(withRate(124.5).egpPrices.odoo).toBe("1,114");
+  });
+
+  it("falls back to the manual EGP price without a rate", () => {
+    expect(withRate(null).egpPrices.odoo).toBe("475");
+  });
+});
+
+describe("USD to EGP rate", () => {
+  it("accepts only a plausible EGP rate from the API", async () => {
+    const { parseEgpRate } = await import("@/lib/fx-rate");
+    expect(parseEgpRate({ rates: { EGP: 53.1 } })).toBe(53.1);
+    expect(parseEgpRate({ rates: { EGP: "53" } })).toBeNull();
+    expect(parseEgpRate({ rates: { EGP: 0.02 } })).toBeNull();
+    expect(parseEgpRate(null)).toBeNull();
+  });
+
+  it("caches the rate, retries later, and keeps the last good one when the API fails", async () => {
+    const { getUsdEgpRate, resetFxCache } = await import("@/lib/fx-rate");
+    resetFxCache();
+    let calls = 0;
+    let answer: unknown = { rates: { EGP: 50 } };
+    const fake = (async () => {
+      calls++;
+      if (answer instanceof Error) throw answer;
+      return { ok: true, json: async () => answer } as Response;
+    }) as unknown as typeof fetch;
+    const t0 = 1_000_000;
+    expect(await getUsdEgpRate(t0, fake)).toBe(50);
+    expect(await getUsdEgpRate(t0 + 60_000, fake)).toBe(50);
+    expect(calls).toBe(1); // cached
+    answer = new Error("down");
+    expect(await getUsdEgpRate(t0 + 7 * 3600_000, fake)).toBe(50); // stale but kept
+    answer = { rates: { EGP: 55 } };
+    expect(await getUsdEgpRate(t0 + 7 * 3600_000 + 60_000, fake)).toBe(50); // waits before retrying
+    expect(await getUsdEgpRate(t0 + 7 * 3600_000 + 11 * 60_000, fake)).toBe(55);
+    resetFxCache();
   });
 });

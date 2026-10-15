@@ -6,6 +6,7 @@
  * generic (visitor-free, cacheable) version.
  */
 import { headers } from "next/headers";
+import { getUsdEgpRate } from "@/lib/fx-rate";
 import { getFooterLinks, getIntegrations, getProducts, getSectors, getSettings } from "@/lib/data-store";
 import { pagesWithBlocks } from "@/lib/blocks/store";
 import { ERP_PRODUCT_SLUGS, buildPublicSettings, type PublicSettings, type VisitorContext } from "@/lib/public-chrome";
@@ -39,6 +40,9 @@ export async function getPublicSettings(visitor?: VisitorContext): Promise<Publi
     ...sectors.map((s) => `sector:${s.id}`),
     ...products.filter((p) => !ERP_PRODUCT_SLUGS.has(p.slug)).map((p) => `product:${p.slug}`),
   ]);
+  // The live USD→EGP rate is only needed for a visitor in Egypt with the Odoo price kept in USD.
+  const inEgypt = (visitor?.country ?? "").trim().toUpperCase() === "EG";
+  const usdEgpRate = inEgypt && settings.egyptEntity?.odooFromUsd ? await getUsdEgpRate() : null;
   return buildPublicSettings({
     settings,
     footerLinks,
@@ -46,5 +50,6 @@ export async function getPublicSettings(visitor?: VisitorContext): Promise<Publi
     sectors: sectors.filter((s) => listable.has(`sector:${s.id}`)),
     integrations,
     visitor,
+    usdEgpRate,
   });
 }
