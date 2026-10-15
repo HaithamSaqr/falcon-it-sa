@@ -285,14 +285,14 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   company: {
     name: { en: "Falcon Smart Solutions", ar: "فالكون للحلول الذكية" },
     email: "info@falcon-v.com",
-    phone: { ksa: "00966568406006", egypt: "+201000000000" },
-    whatsapp: "966568406006",
+    phone: { ksa: "00966568842663", egypt: "+201000000000" },
+    whatsapp: "966568842663",
     branches: [
       {
         id: "ksa",
         name: { en: "Saudi Arabia Office", ar: "مكتب السعودية" },
         address: { en: "Riyadh, Saudi Arabia", ar: "الرياض، المملكة العربية السعودية" },
-        phone: "00966568406006",
+        phone: "00966568842663",
       },
       {
         id: "egypt",

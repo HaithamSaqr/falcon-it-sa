@@ -190,8 +190,8 @@ describe("buildPublicSettings", () => {
   it("keeps the Saudi office and number", () => {
     const s = build();
     expect(s.company.branches.map((b) => b.id)).toEqual(["ksa"]);
-    expect(s.company.phone.ksa).toBe("00966568406006");
-    expect(s.company.whatsapp).toBe("966568406006");
+    expect(s.company.phone.ksa).toBe("00966568842663");
+    expect(s.company.whatsapp).toBe("966568842663");
   });
 
   it("falls back to the Saudi WhatsApp number when the stored one is Egyptian", () => {

@@ -5,6 +5,9 @@
  *
  * Owner decision (2026-10-03): the Egypt office is hidden. Placeholder phones
  * never reach the page and WhatsApp never routes to an Egyptian number.
+ * Exception (owner, 2026-10-15): visitors whose IP is in Egypt see the Egypt
+ * phone (Settings > Company > Phone Egypt) for calls and WhatsApp; the office
+ * itself stays hidden and everyone else keeps the Saudi number.
  */
 import type {
   Branch,
@@ -66,14 +69,13 @@ export interface PublicSettings {
   primaryCta: { label: BilingualText; demoUrl: string };
   products: PublicProduct[];
   sectors: PublicSector[];
-  whatsappRouting: WhatsappRouting;
   landingCta: LandingCta;
   /** Public Google Ads conversion config (no secrets). */
   googleAds: { adsId: string; quoteLabel: string; demoLabel: string; contactLabel: string; whatsappLabel: string };
   company: {
     name: BilingualText;
     email: string;
-    /** Only the Saudi phone is public; the Egypt office is hidden. */
+    /** The phone shown to this visitor: the Saudi one, or the Egypt one for visitors in Egypt. */
     phone: { ksa: string };
     whatsapp: string;
     branches: PublicBranch[];
@@ -105,7 +107,7 @@ export function safeSocialHref(value: string | null | undefined): string {
 }
 
 /** Saudi WhatsApp number used whenever a stored or routed number is unusable. */
-export const SAUDI_WHATSAPP_FALLBACK = "966568406006";
+export const SAUDI_WHATSAPP_FALLBACK = "966568842663";
 
 /** Products that moved to the /erp pages (old slug to new path); every other product is a supporting service. */
 export const ERP_PRODUCT_PAGE: Record<string, string> = {
@@ -165,7 +167,7 @@ export function isUnusableWhatsapp(number: string | null | undefined): boolean {
 
 /**
  * The number itself when usable, else the fallback, else the Saudi number,
- * always as wa.me digits (`+966 56 840 6006` becomes `966568406006`).
+ * always as wa.me digits (`+966 56 884 2663` becomes `966568842663`).
  */
 export function safeWhatsapp(number: string | null | undefined, fallback: string): string {
   if (!isUnusableWhatsapp(number)) return intlDigits(number as string);
@@ -202,6 +204,47 @@ export function isBlogUrl(url: string): boolean {
   return /^\/(?:ar\/|en\/)?blog(?:[/?#]|$)/.test((url ?? "").trim());
 }
 
+/** Who is asking: ISO-2 country from the CDN (cf-ipcountry) and the request host. */
+export interface VisitorContext {
+  country?: string | null;
+  host?: string | null;
+}
+
+/**
+ * The WhatsApp number for a visitor outside Egypt: their country rule, then a
+ * rule for the request domain, then the company number (never Egyptian).
+ */
+export function routedWhatsapp(
+  routing: SiteSettings["whatsappRouting"] | WhatsappRouting | null | undefined,
+  visitor: VisitorContext | undefined,
+  fallback: string,
+): string {
+  const safe = sanitizeWhatsappRouting(routing);
+  const country = (visitor?.country ?? "").trim().toUpperCase();
+  const byCountry = country ? safe.countries.find((c) => c.country === country)?.number : "";
+  const host = (visitor?.host ?? "").toLowerCase().replace(/:\d+$/, "");
+  const byDomain = host
+    ? safe.domains.find((d) => {
+        const dom = d.domain.toLowerCase().replace(/^https?:\/\//, "").replace(/\/.*$/, "").trim();
+        return dom && (host === dom || host.endsWith("." + dom));
+      })?.number
+    : "";
+  return safeWhatsapp(byCountry || byDomain || "", fallback);
+}
+
+/** The Egypt contact (display phone + wa.me digits) for a visitor in Egypt, or null. */
+export function egyptContact(
+  settings: Pick<SiteSettings, "company" | "whatsappRouting">,
+  visitor: VisitorContext | undefined,
+): { phone: string; whatsapp: string } | null {
+  if ((visitor?.country ?? "").trim().toUpperCase() !== "EG") return null;
+  const phone = (settings.company.phone?.egypt ?? "").trim();
+  if (isHiddenPhone(phone)) return null;
+  const rule = (settings.whatsappRouting?.countries ?? []).find((c) => (c.country ?? "").trim().toUpperCase() === "EG");
+  const whatsapp = rule && !isHiddenPhone(rule.number) ? intlDigits(rule.number) : intlDigits(phone);
+  return { phone, whatsapp };
+}
+
 export interface PublicSettingsInput {
   settings: SiteSettings;
   footerLinks: FooterLink[];
@@ -210,6 +253,8 @@ export interface PublicSettingsInput {
   /** Enabled sectors. */
   sectors: Sector[];
   integrations: IntegrationSettings;
+  /** The visitor, for country-based contact numbers; omit for the generic (cacheable) settings. */
+  visitor?: VisitorContext;
 }
 
 /** What the public layout and `/api/settings/public` expose. */
@@ -219,11 +264,13 @@ export function buildPublicSettings({
   products,
   sectors,
   integrations,
+  visitor,
 }: PublicSettingsInput): PublicSettings {
   const g = integrations.google;
   const blogEnabled = settings.blogEnabled === true;
   const phoneKsa = isHiddenPhone(settings.company.phone?.ksa) ? "" : settings.company.phone.ksa;
   const ksaWhatsapp = intlDigits(phoneKsa);
+  const egypt = egyptContact(settings, visitor);
 
   return {
     gulfOnly: settings.regional?.gulfOnly ?? false,
@@ -245,7 +292,6 @@ export function buildPublicSettings({
           whatsappLabel: g.adsWhatsappLabel,
         }
       : { adsId: "", quoteLabel: "", demoLabel: "", contactLabel: "", whatsappLabel: "" },
-    whatsappRouting: sanitizeWhatsappRouting(settings.whatsappRouting),
     landingCta: settings.landingCta ?? {
       mode: "whatsapp",
       url: "",
@@ -257,13 +303,16 @@ export function buildPublicSettings({
     company: {
       name: settings.company.name,
       email: settings.company.email,
-      phone: { ksa: phoneKsa },
-      whatsapp: safeWhatsapp(settings.company.whatsapp, ksaWhatsapp),
+      phone: { ksa: egypt ? egypt.phone : phoneKsa },
+      whatsapp: egypt
+        ? egypt.whatsapp
+        : routedWhatsapp(settings.whatsappRouting, visitor, safeWhatsapp(settings.company.whatsapp, ksaWhatsapp)),
       branches: (settings.company.branches ?? []).filter(isVisibleBranch).map((b) => ({
         id: b.id,
         name: b.name,
         address: b.address,
-        phone: b.phone,
+        // Visitors in Egypt call the Egypt number from every listed office.
+        phone: egypt ? egypt.phone : b.phone,
       })),
       crNumber: (settings.company.crNumber ?? "").trim(),
       vatNumber: (settings.company.vatNumber ?? "").trim(),
@@ -280,13 +329,20 @@ export function buildPublicSettings({
 export function telHref(phone: string): string {
   const trimmed = phone.trim();
   const digits = intlDigits(trimmed);
-  const international = trimmed.startsWith("+") || trimmed.startsWith("00") || digits.startsWith("966");
+  const international =
+    trimmed.startsWith("+") || trimmed.startsWith("00") || digits.startsWith("966") || /^201\d{9}$/.test(digits);
   return `tel:${international ? "+" : ""}${digits}`;
 }
 
-/** Saudi mobile numbers read as `+966 56 840 6006`; anything else is shown as stored. */
+/**
+ * Saudi mobiles read as `+966 56 884 2663`, Egyptian mobiles (stored with +20
+ * or 0020) as `+20 11 3232 3095`; anything else is shown as stored.
+ */
 export function displayPhone(phone: string): string {
   const digits = intlDigits(phone);
-  const m = /^966(5\d)(\d{3})(\d{4})$/.exec(digits);
-  return m ? `+966 ${m[1]} ${m[2]} ${m[3]}` : phone.trim();
+  const sa = /^966(5\d)(\d{3})(\d{4})$/.exec(digits);
+  if (sa) return `+966 ${sa[1]} ${sa[2]} ${sa[3]}`;
+  const eg = /^20(1\d)(\d{4})(\d{4})$/.exec(digits);
+  if (eg) return `+20 ${eg[1]} ${eg[2]} ${eg[3]}`;
+  return phone.trim();
 }

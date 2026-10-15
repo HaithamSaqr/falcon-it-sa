@@ -1,16 +1,31 @@
 /**
  * Server-side public settings for the layout chrome. The locale layout passes
  * the result to the client SettingsProvider as `initial`, so the SSR HTML
- * already holds the nav, footer links, products and sectors; the client only
- * adds geo-based WhatsApp routing. `/api/settings/public` returns the same data.
+ * already holds the nav, footer links, products and sectors, and the phone and
+ * WhatsApp number for the visitor's country. `/api/settings/public` returns the
+ * generic (visitor-free, cacheable) version.
  */
+import { headers } from "next/headers";
 import { getFooterLinks, getIntegrations, getProducts, getSectors, getSettings } from "@/lib/data-store";
 import { pagesWithBlocks } from "@/lib/blocks/store";
-import { ERP_PRODUCT_SLUGS, buildPublicSettings, type PublicSettings } from "@/lib/public-chrome";
+import { ERP_PRODUCT_SLUGS, buildPublicSettings, type PublicSettings, type VisitorContext } from "@/lib/public-chrome";
 
 export type { PublicSettings } from "@/lib/public-chrome";
 
-export async function getPublicSettings(): Promise<PublicSettings> {
+/** The visitor's country (Cloudflare's cf-ipcountry) and the request host. */
+export async function visitorContext(): Promise<VisitorContext> {
+  try {
+    const h = await headers();
+    return {
+      country: h.get("cf-ipcountry") || h.get("x-vercel-ip-country") || null,
+      host: h.get("x-forwarded-host") || h.get("host") || null,
+    };
+  } catch {
+    return {}; // outside a request (build time): generic settings
+  }
+}
+
+export async function getPublicSettings(visitor?: VisitorContext): Promise<PublicSettings> {
   // Every getter falls back to defaults on its own when the DB is unreachable.
   const [settings, footerLinks, products, sectors, integrations] = await Promise.all([
     getSettings(),
@@ -30,5 +45,6 @@ export async function getPublicSettings(): Promise<PublicSettings> {
     products: products.filter((p) => ERP_PRODUCT_SLUGS.has(p.slug) || listable.has(`product:${p.slug}`)),
     sectors: sectors.filter((s) => listable.has(`sector:${s.id}`)),
     integrations,
+    visitor,
   });
 }

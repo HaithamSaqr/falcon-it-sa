@@ -319,7 +319,7 @@ describe("JSON-LD helpers", () => {
 
   it("organizationLd fallbacks are the Saudi office only (no Egypt, no placeholder phone)", () => {
     const ld = organizationLd();
-    expect(ld.telephone).toBe("+966568406006");
+    expect(ld.telephone).toBe("+966568842663");
     const json = JSON.stringify(ld);
     expect(json).not.toMatch(/egypt|cairo|مصر|\+20/i);
   });

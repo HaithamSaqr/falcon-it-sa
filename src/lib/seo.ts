@@ -137,7 +137,7 @@ export async function buildMetadata(input: BuildMetadataInput): Promise<Metadata
 
 export type JsonLdData = Record<string, unknown>;
 
-/** `00966568406006` and `966568406006` both become `+966568406006`. */
+/** `00966568842663` and `966568842663` both become `+966568842663`. */
 function e164(phone: string): string {
   const digits = phone.replace(/\D/g, "").replace(/^00/, "");
   return digits ? `+${digits}` : "";
@@ -147,7 +147,7 @@ function e164(phone: string): string {
 const ORG_DEFAULTS = {
   name: { en: "Falcon Smart Solutions", ar: "فالكون للحلول الذكية" },
   email: "info@falcon-v.com",
-  phone: "00966568406006",
+  phone: "00966568842663",
   address: "Riyadh, Saudi Arabia",
   social: {
     linkedin: "https://linkedin.com/company/falcon-smart-solutions",
