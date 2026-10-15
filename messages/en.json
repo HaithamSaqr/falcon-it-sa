@@ -568,8 +568,9 @@
     "downloadProfile": "Download our company profile"
   },
   "egyptPrice": {
-    "odoo": "Odoo implementation in Egypt starts from {price} EGP.",
+    "odoo": "Odoo licenses in Egypt start from {price} EGP per user per month.",
     "falcon": "Falcon ERP in Egypt starts from {price} EGP.",
-    "note": "The final price depends on your scope. You get a written proposal after the demo."
+    "odooNote": "Official Odoo Standard plan price, billed yearly. Implementation is quoted in writing after the demo.",
+    "falconNote": "The final price depends on your scope. You get a written proposal after the demo."
   }
 }
