@@ -38,6 +38,7 @@ import {
   DEFAULT_PRIMARY_CTA,
 } from "./defaults";
 import { normalizeAssignment } from "@/lib/odoo/assignment";
+import { normalizeEgyptEntity } from "@/lib/egypt-entity";
 
 function newId(prefix: string): string {
   try {
@@ -198,6 +199,7 @@ export async function readSettings(pool: Pool): Promise<SiteSettings> {
       demoUrl: r.demo_url || DEFAULT_PRIMARY_CTA.demoUrl,
     },
     clientsSpeed: r.clients_speed == null ? 3 : Number(r.clients_speed),
+    egyptEntity: normalizeEgyptEntity(r.egypt_entity),
     whatsappRouting,
     landingCta,
     regional: { gulfOnly: r.gulf_only },
@@ -272,7 +274,8 @@ export async function writeSettings(pool: Pool, s: SiteSettings): Promise<void> 
        cta_label_ar = COALESCE($3, cta_label_ar),
        demo_url     = COALESCE($4, demo_url),
        cr_number    = COALESCE($5, cr_number),
-       vat_number   = COALESCE($6, vat_number)
+       vat_number   = COALESCE($6, vat_number),
+       egypt_entity = COALESCE($7::jsonb, egypt_entity)
      WHERE id = 1`,
     [
       typeof s.blogEnabled === "boolean" ? s.blogEnabled : null,
@@ -281,6 +284,7 @@ export async function writeSettings(pool: Pool, s: SiteSettings): Promise<void> 
       s.primaryCta?.demoUrl || null,
       typeof s.company.crNumber === "string" ? s.company.crNumber.trim() : null,
       typeof s.company.vatNumber === "string" ? s.company.vatNumber.trim() : null,
+      s.egyptEntity && typeof s.egyptEntity === "object" ? JSON.stringify(normalizeEgyptEntity(s.egyptEntity)) : null,
     ]
   );
   await writeBranches(pool, s.company.branches ?? []);

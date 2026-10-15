@@ -497,7 +497,9 @@
     "consentPrivacy": "سياسة الخصوصية",
     "consentAccept": "موافق",
     "consentDecline": "رفض",
-    "cookieSettings": "إعدادات ملفات تعريف الارتباط"
+    "cookieSettings": "إعدادات ملفات تعريف الارتباط",
+    "egCrNumber": "سجل تجاري رقم {number}",
+    "egTaxNumber": "رقم التسجيل الضريبي {number}"
   },
   "blocks": {
     "seeModules": "شاهد الوحدات",
@@ -564,5 +566,10 @@
     "seeFalcon": "عن فالكون ERP",
     "home": "العودة للصفحة الرئيسية",
     "downloadProfile": "حمّل الملف التعريفي للشركة"
+  },
+  "egyptPrice": {
+    "odoo": "تطبيق أودو في مصر يبدأ من {price} جنيه مصري.",
+    "falcon": "فالكون ERP في مصر يبدأ من {price} جنيه مصري.",
+    "note": "السعر النهائي حسب نطاق مشروعك، ويصلك عرض مكتوب بعد العرض التجريبي."
   }
 }

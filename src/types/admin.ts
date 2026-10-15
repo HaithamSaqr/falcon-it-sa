@@ -126,6 +126,8 @@ export interface Branch {
 }
 
 export interface SiteSettings {
+  /** Egyptian company details, shown to visitors in Egypt only. Missing on save = keep the stored value. */
+  egyptEntity?: import("@/lib/egypt-entity").EgyptEntity;
   company: {
     name: BilingualText;
     email: string;

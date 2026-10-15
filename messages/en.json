@@ -497,7 +497,9 @@
     "consentPrivacy": "Privacy policy",
     "consentAccept": "Accept",
     "consentDecline": "Decline",
-    "cookieSettings": "Cookie settings"
+    "cookieSettings": "Cookie settings",
+    "egCrNumber": "Commercial Register No. {number}",
+    "egTaxNumber": "Tax Registration No. {number}"
   },
   "blocks": {
     "seeModules": "See the modules",
@@ -564,5 +566,10 @@
     "seeFalcon": "About Falcon ERP",
     "home": "Back to the home page",
     "downloadProfile": "Download our company profile"
+  },
+  "egyptPrice": {
+    "odoo": "Odoo implementation in Egypt starts from {price} EGP.",
+    "falcon": "Falcon ERP in Egypt starts from {price} EGP.",
+    "note": "The final price depends on your scope. You get a written proposal after the demo."
   }
 }

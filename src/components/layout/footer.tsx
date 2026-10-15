@@ -127,11 +127,14 @@ export default async function Footer({
   const companyLinks = linksIn("about", "support");
   const legalLinks = linksIn("legal");
 
+  // Visitors in Egypt see the Egyptian company: commercial register and tax registration numbers.
+  const eg = settings.company.legal === "eg";
   const ids = [
-    settings.company.crNumber ? t("crNumber", { number: settings.company.crNumber }) : "",
-    settings.company.vatNumber ? t("vatNumber", { number: settings.company.vatNumber }) : "",
+    settings.company.crNumber ? t(eg ? "egCrNumber" : "crNumber", { number: settings.company.crNumber }) : "",
+    settings.company.vatNumber ? t(eg ? "egTaxNumber" : "vatNumber", { number: settings.company.vatNumber }) : "",
   ].filter(Boolean);
-  const copyright = t("copyright", { year: new Date().getFullYear(), name });
+  const legalName = L(settings.company.legalName) || name;
+  const copyright = t("copyright", { year: new Date().getFullYear(), name: legalName });
   const legalLine = ids.length ? `${copyright} ${ids.join(lang === "ar" ? "، " : ", ")}` : copyright;
 
   const legalNav =

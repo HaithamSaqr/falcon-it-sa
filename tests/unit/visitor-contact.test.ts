@@ -117,3 +117,58 @@ describe("CMS WhatsApp links", () => {
     expect(blocks[0].content.secondaryCta.href).toBe("https://wa.me/966568842663?text=Hi");
   });
 });
+
+describe("Egyptian company for visitors in Egypt", () => {
+  const ENTITY = {
+    nameEn: "Falcon IT Smart Solutions LLC",
+    nameAr: "شركة فالكون لتقنية المعلومات والحلول الذكية ذ.م.م",
+    addressEn: "17 North 90th Street, Fifth Settlement, New Cairo, Cairo, Egypt",
+    addressAr: "17 شارع التسعين الشمالي، التجمع الخامس، القاهرة الجديدة",
+    crNumber: "268153",
+    taxNumber: "774-895-454",
+    odooFromEgp: "25,000",
+    falconFromEgp: "",
+  };
+  const WITH_ENTITY: SiteSettings = { ...SETTINGS, crNumber: undefined, egyptEntity: ENTITY } as SiteSettings;
+  WITH_ENTITY.company = { ...SETTINGS.company, crNumber: "7049432656", vatNumber: "311410985900003" };
+
+  it("shows the Egyptian office, register and tax numbers and EGP prices in Egypt", () => {
+    const s = build({ country: "EG" }, WITH_ENTITY);
+    expect(s.company.legal).toBe("eg");
+    expect(s.company.legalName.en).toBe("Falcon IT Smart Solutions LLC");
+    expect(s.company.crNumber).toBe("268153");
+    expect(s.company.vatNumber).toBe("774-895-454");
+    expect(s.company.branches).toEqual([
+      expect.objectContaining({ id: "egypt", address: { en: ENTITY.addressEn, ar: ENTITY.addressAr }, phone: EG_PHONE }),
+    ]);
+    expect(s.egpPrices).toEqual({ odoo: "25,000", falcon: "" });
+  });
+
+  it("keeps the Saudi company, numbers and no EGP prices everywhere else", () => {
+    for (const visitor of [{ country: "SA" }, { country: "AE" }, undefined]) {
+      const s = build(visitor, WITH_ENTITY);
+      expect(s.company.legal).toBe("sa");
+      expect(s.company.crNumber).toBe("7049432656");
+      expect(s.company.vatNumber).toBe("311410985900003");
+      expect(s.egpPrices).toEqual({ odoo: "", falcon: "" });
+      expect(JSON.stringify(s)).not.toMatch(/268153|774-895-454|New Cairo|القاهرة/);
+    }
+  });
+
+  it("waits for both addresses before showing the Egyptian office", () => {
+    const partial = { ...WITH_ENTITY, egyptEntity: { ...ENTITY, addressAr: "" } } as SiteSettings;
+    const s = build({ country: "EG" }, partial);
+    expect(s.company.legal).toBe("sa");
+    expect(s.company.branches[0].id).toBe("ksa");
+  });
+
+  it("accepts only plain EGP amounts", async () => {
+    const { egpAmount, normalizeEgyptEntity } = await import("@/lib/egypt-entity");
+    expect(egpAmount("25,000")).toBe("25,000");
+    expect(egpAmount("25000")).toBe("25000");
+    expect(egpAmount("٢٥٠٠٠")).toBe("25000");
+    expect(egpAmount("25k")).toBe("");
+    expect(egpAmount("<b>1</b>")).toBe("");
+    expect(normalizeEgyptEntity(null).nameEn).toBe("");
+  });
+});

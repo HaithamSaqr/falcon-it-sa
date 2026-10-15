@@ -5,6 +5,8 @@ import { buildMetadata } from "@/lib/seo";
 import { getPageBlocks } from "@/lib/blocks/store";
 import { seedHero } from "@/lib/blocks/seed";
 import PageBlocks from "@/components/v2/page-blocks";
+import EgyptPriceNote from "@/components/v2/egypt-price-note";
+import { getPublicSettings, visitorContext } from "@/lib/public-settings";
 
 type Props = { params: Promise<{ locale: string; system: string }> };
 
@@ -40,10 +42,13 @@ export default async function ErpPage({ params }: Props) {
   setRequestLocale(locale);
 
   const lang = locale === "ar" ? "ar" : "en";
-  const [blocks, chrome] = await Promise.all([
+  const [blocks, chrome, settings] = await Promise.all([
     getPageBlocks(`erp:${slug}`),
     getTranslations({ locale: lang, namespace: "chrome" }),
+    getPublicSettings(await visitorContext()),
   ]);
+  // Visitors in Egypt see the starting price in EGP under the hero.
+  const price = settings.egpPrices[slug];
   // A page the admin emptied has nothing to show.
   if (blocks.length === 0) notFound();
 
@@ -52,6 +57,7 @@ export default async function ErpPage({ params }: Props) {
       blocks={blocks}
       locale={locale}
       crumbs={[{ name: chrome(SYSTEMS[slug].crumb), path: `/erp/${slug}` }]}
+      context={price ? { afterFirst: <EgyptPriceNote system={slug} price={price} locale={locale} /> } : undefined}
     />
   );
 }

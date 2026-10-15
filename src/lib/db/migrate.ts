@@ -74,6 +74,7 @@ function mergeSettings(s: any): SiteSettings {
     loginUrl: s?.loginUrl ?? DEFAULT_SETTINGS.loginUrl,
     clientsSpeed: typeof s?.clientsSpeed === "number" ? s.clientsSpeed : DEFAULT_SETTINGS.clientsSpeed,
     whatsappRouting: s?.whatsappRouting ?? DEFAULT_SETTINGS.whatsappRouting,
+    egyptEntity: DEFAULT_SETTINGS.egyptEntity,
     landingCta: s?.landingCta ?? DEFAULT_SETTINGS.landingCta,
     regional: { ...DEFAULT_SETTINGS.regional, ...s?.regional },
     security: { ...DEFAULT_SETTINGS.security, ...s?.security },

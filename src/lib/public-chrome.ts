@@ -19,6 +19,7 @@ import type {
 } from "@/types/admin";
 import { resolveKeptRoute } from "@/lib/kept-routes";
 import { isSafeLink } from "@/lib/blocks/links";
+import { normalizeEgyptEntity } from "@/lib/egypt-entity";
 
 export interface BilingualText {
   en: string;
@@ -79,10 +80,17 @@ export interface PublicSettings {
     phone: { ksa: string };
     whatsapp: string;
     branches: PublicBranch[];
-    /** Unified national number. */
+    /** Unified national number (Saudi) or commercial register number (Egypt, see `legal`). */
     crNumber: string;
+    /** VAT number (Saudi) or tax registration number (Egypt). */
     vatNumber: string;
+    /** Which company the legal line describes: "sa" by default, "eg" for visitors in Egypt. */
+    legal: "sa" | "eg";
+    /** Registered company name for the legal line; empty = the brand name. */
+    legalName: BilingualText;
   };
+  /** "Starts from" prices in EGP, only for visitors in Egypt (empty strings otherwise). */
+  egpPrices: { odoo: string; falcon: string };
   social: {
     linkedin: string;
     twitter: string;
@@ -295,6 +303,11 @@ export function buildPublicSettings({
   const phoneKsa = isHiddenPhone(settings.company.phone?.ksa) ? "" : settings.company.phone.ksa;
   const ksaWhatsapp = intlDigits(phoneKsa);
   const egypt = egyptContact(settings, visitor);
+  const inEgypt = (visitor?.country ?? "").trim().toUpperCase() === "EG";
+  const eg = normalizeEgyptEntity(settings.egyptEntity);
+  // Visitors in Egypt see the Egyptian company once its registered address is set.
+  const egyptOffice = inEgypt && eg.addressEn !== "" && eg.addressAr !== "";
+  const egPhone = egypt ? egypt.phone : phoneKsa;
 
   return {
     gulfOnly: settings.regional?.gulfOnly ?? false,
@@ -331,16 +344,28 @@ export function buildPublicSettings({
       whatsapp: egypt
         ? egypt.whatsapp
         : routedWhatsapp(settings.whatsappRouting, visitor, safeWhatsapp(settings.company.whatsapp, ksaWhatsapp)),
-      branches: (settings.company.branches ?? []).filter(isVisibleBranch).map((b) => ({
-        id: b.id,
-        name: b.name,
-        address: b.address,
-        // Visitors in Egypt call the Egypt number from every listed office.
-        phone: egypt ? egypt.phone : b.phone,
-      })),
-      crNumber: (settings.company.crNumber ?? "").trim(),
-      vatNumber: (settings.company.vatNumber ?? "").trim(),
+      branches: egyptOffice
+        ? [
+            {
+              id: "egypt",
+              name: { en: eg.nameEn || "Falcon IT Smart Solutions", ar: eg.nameAr || "فالكون لتقنية المعلومات والحلول الذكية" },
+              address: { en: eg.addressEn, ar: eg.addressAr },
+              phone: egPhone,
+            },
+          ]
+        : (settings.company.branches ?? []).filter(isVisibleBranch).map((b) => ({
+            id: b.id,
+            name: b.name,
+            address: b.address,
+            // Visitors in Egypt call the Egypt number from every listed office.
+            phone: egypt ? egypt.phone : b.phone,
+          })),
+      crNumber: egyptOffice ? eg.crNumber : (settings.company.crNumber ?? "").trim(),
+      vatNumber: egyptOffice ? eg.taxNumber : (settings.company.vatNumber ?? "").trim(),
+      legal: egyptOffice ? "eg" : "sa",
+      legalName: egyptOffice ? { en: eg.nameEn, ar: eg.nameAr } : { en: "", ar: "" },
     },
+    egpPrices: inEgypt ? { odoo: eg.odooFromEgp, falcon: eg.falconFromEgp } : { odoo: "", falcon: "" },
     social: { ...settings.social, tiktok: settings.social?.tiktok ?? "" },
     footerLinks: footerLinks
       .filter((l) => (blogEnabled || !isBlogUrl(l.url)) && (l.url ?? "").trim() !== "")
