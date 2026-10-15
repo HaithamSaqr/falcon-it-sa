@@ -104,3 +104,16 @@ describe("Egyptian phone display", () => {
     expect(displayPhone("+966568842663")).toBe("+966 56 884 2663");
   });
 });
+
+describe("CMS WhatsApp links", () => {
+  it("point the company's own number at the visitor's number and keep the message", async () => {
+    const { localizeWhatsappLinks } = await import("@/lib/public-chrome");
+    const blocks = [
+      { content: { secondaryCta: { href: "https://wa.me/966568842663?text=Hi" }, other: "https://wa.me/971500000009" } },
+    ];
+    const out = localizeWhatsappLinks(blocks, ["966568842663"], "201132323095");
+    expect(out[0].content.secondaryCta.href).toBe("https://wa.me/201132323095?text=Hi");
+    expect(out[0].content.other).toBe("https://wa.me/971500000009");
+    expect(blocks[0].content.secondaryCta.href).toBe("https://wa.me/966568842663?text=Hi");
+  });
+});

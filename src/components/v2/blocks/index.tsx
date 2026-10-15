@@ -5,6 +5,7 @@ import type { Block, BlockType } from "@/lib/blocks/types";
 import { getClients } from "@/lib/data-store";
 import { getPublicSettings, visitorContext } from "@/lib/public-settings";
 import { safeDemoUrl } from "@/lib/blocks/cta";
+import { SAUDI_WHATSAPP_FALLBACK, localizeWhatsappLinks } from "@/lib/public-chrome";
 import { V2_CLIENT_LOGOS } from "@/lib/blocks/seed/clients";
 import type { SectionTone } from "@/components/v2/ui/section";
 import { RoleProvider } from "@/components/v2/islands/role-provider";
@@ -159,8 +160,14 @@ async function loadClients(): Promise<RenderContext["clients"]> {
  */
 export default async function BlockRenderer({ blocks, locale, context = {} }: BlockRendererProps) {
   const lang = locale === "ar" ? "ar" : "en";
-  const needsSettings = !context.demoUrl || blocks.some((b) => b.type === "contact_info");
+  // CMS WhatsApp links follow the visitor's country, like the chrome does.
+  const hasWhatsappLink = JSON.stringify(blocks).includes("wa.me/");
+  const needsSettings = !context.demoUrl || hasWhatsappLink || blocks.some((b) => b.type === "contact_info");
   const settings = needsSettings ? await getPublicSettings(await visitorContext()) : undefined;
+  if (settings && hasWhatsappLink) {
+    const generic = await getPublicSettings();
+    blocks = localizeWhatsappLinks(blocks, [generic.company.whatsapp, SAUDI_WHATSAPP_FALLBACK], settings.company.whatsapp);
+  }
   const clients = blocks.some((b) => b.type === "logo_wall") ? await loadClients() : [];
 
   const t = await getTranslations({ locale: lang, namespace: "blocks" });
