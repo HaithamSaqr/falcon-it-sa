@@ -14,7 +14,9 @@ export interface EgyptEntity {
   crNumber: string;
   /** Tax registration number. */
   taxNumber: string;
-  /** Starting prices in EGP as shown ("25,000"); empty = no price line. */
+  /** Odoo's Egypt regional price in USD per user per month ("8.95"); converted to EGP automatically. */
+  odooFromUsd: string;
+  /** Starting prices in EGP as shown ("25,000"); for Odoo only used when the USD price or the rate is missing. */
   odooFromEgp: string;
   falconFromEgp: string;
 }
@@ -26,6 +28,7 @@ export const EMPTY_EGYPT_ENTITY: EgyptEntity = {
   addressAr: "",
   crNumber: "",
   taxNumber: "",
+  odooFromUsd: "",
   odooFromEgp: "",
   falconFromEgp: "",
 };
@@ -49,6 +52,7 @@ export function normalizeEgyptEntity(raw: unknown): EgyptEntity {
     addressAr: text(r.addressAr, 300),
     crNumber: text(r.crNumber, 40),
     taxNumber: text(r.taxNumber, 40),
+    odooFromUsd: egpAmount(r.odooFromUsd),
     odooFromEgp: egpAmount(r.odooFromEgp),
     falconFromEgp: egpAmount(r.falconFromEgp),
   };
