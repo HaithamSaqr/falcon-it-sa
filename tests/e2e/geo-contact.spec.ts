@@ -58,6 +58,11 @@ test("a visitor in Egypt gets the Egypt number in the footer, contact page and W
   await expect(footer).toContainText("Tax Registration No. 774-895-454");
   await expect(footer).toContainText("Falcon IT Smart Solutions LLC");
   await expect(page.locator("main")).toContainText(ENTITY.addressEn);
+  // Search engines keep the Saudi company in the structured data.
+  const ld = await page.locator('script[type="application/ld+json"]').allTextContents();
+  const org = ld.map((t) => JSON.parse(t)).find((d) => d["@type"] === "Organization");
+  expect(org.address.addressCountry).toBe("SA");
+  expect(JSON.stringify(org)).not.toMatch(/New Cairo|\+20/);
   await page.screenshot({ path: test.info().outputPath("contact-eg.png"), fullPage: true });
   await page.goto("/ar/contact");
   await expect(page.locator("footer")).toContainText("سجل تجاري رقم 268153");

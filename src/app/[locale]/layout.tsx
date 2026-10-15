@@ -101,9 +101,12 @@ export default async function LocaleLayout({
   const messages = clientMessages(await getMessages());
   const isRTL = locale === "ar";
 
-  // Chrome data (nav, footer, WhatsApp) rendered on the server; the client
-  // provider only adds geo-based WhatsApp routing on top.
-  const publicSettings = await getPublicSettings(await visitorContext());
+  // Chrome data (nav, footer, WhatsApp) rendered on the server for this
+  // visitor's country. Structured data always describes the Saudi company.
+  const [publicSettings, orgSettings] = await Promise.all([
+    getPublicSettings(await visitorContext()),
+    getPublicSettings(),
+  ]);
 
   // Marketing tags — injected only when enabled in Integrations.
   const integrations = await getIntegrations().catch(() => null);
@@ -127,7 +130,7 @@ export default async function LocaleLayout({
       <body
         className={cn(isRTL ? "font-arabic" : "font-sans", "antialiased")}
       >
-        <JsonLd data={organizationLd(publicSettings)} />
+        <JsonLd data={organizationLd(orgSettings)} />
 
         {/* Google Tag Manager (noscript) */}
         {googleOn && g?.gtmId && (
